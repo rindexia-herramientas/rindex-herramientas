@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Liquidador de Recibos — CCT 130/75 Comercio</title>
+<style>
+:root{
+  --azul-oscuro:#1B3A6B; --azul-medio:#2E5A9C; --azul-claro:#6E96C4;
+  --celeste-bg:#EAF1FA; --celeste-bg2:#D9E6F5; --gris-linea:#9AAEC7;
+  --negro:#1A1A1A; --nota-bg:#FBF3E3; --nota-border:#D9B36C; --nota-texto:#8A2E2E;
+}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+body{font-family:Helvetica,Arial,sans-serif;margin:0;background:#eef1f6;color:var(--negro);}
+.app{display:flex;gap:16px;padding:16px;max-width:1500px;margin:0 auto;align-items:flex-start;}
+
+/* ---------- FORMULARIO ---------- */
+.panel-form{flex:0 0 420px;background:#fff;border-radius:10px;padding:16px;
+  box-shadow:0 1px 6px rgba(0,0,0,.12);max-height:96vh;overflow-y:auto;position:sticky;top:16px;}
+.panel-form h2{font-size:16px;color:var(--azul-oscuro);margin:0 0 4px;}
+.panel-form p.sub{font-size:11px;color:#666;margin:0 0 10px;}
+fieldset{border:1px solid #dfe4ee;border-radius:8px;margin-bottom:10px;padding:10px 10px 12px;}
+legend{font-weight:bold;color:var(--azul-oscuro);font-size:12px;padding:0 5px;}
+label{display:block;font-size:10.5px;margin-top:7px;color:#333;font-weight:600;}
+label.inline{display:inline-flex;align-items:center;gap:5px;font-weight:600;margin-top:8px;}
+input[type=text],input[type=number],input[type=date],select{
+  width:100%;padding:5px 6px;font-size:12px;border:1px solid #ccd3e0;border-radius:5px;margin-top:2px;font-family:inherit;}
+input[type=checkbox]{width:14px;height:14px;}
+.row2{display:flex;gap:8px;}
+.row2>div{flex:1;min-width:0;}
+.hint{font-size:9.5px;color:#777;margin-top:2px;line-height:1.3;}
+.btn-add{background:var(--celeste-bg2);border:1px solid var(--azul-claro);color:var(--azul-oscuro);
+  border-radius:5px;padding:5px 9px;font-size:10.5px;margin-top:7px;cursor:pointer;font-weight:600;}
+.btn-add:hover{background:#c9dcf2;}
+.btn-primary{background:var(--azul-oscuro);color:#fff;border:none;border-radius:7px;
+  padding:11px 16px;font-size:14px;width:100%;margin-top:6px;cursor:pointer;font-weight:bold;}
+.btn-primary:hover{background:#152f57;}
+.dyn-row{display:flex;gap:6px;align-items:center;margin-top:5px;}
+.dyn-row input{flex:1;min-width:0;}
+.dyn-row .amt{width:100px;flex:none;}
+.del-btn{color:#a33;cursor:pointer;background:none;border:none;font-size:16px;line-height:1;padding:0 4px;}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.quick button{font-size:9.5px;padding:4px 7px;}
+.pct-row{display:flex;gap:8px;align-items:center;}
+.pct-row label{margin-top:0;flex:1;font-weight:500;}
+.pct-row input{width:70px;flex:none;}
+details summary{cursor:pointer;font-size:11.5px;color:var(--azul-medio);font-weight:bold;margin-top:2px;}
+.sac-box{background:#FFF7E6;border:1px solid #E4C57A;border-radius:6px;padding:8px;margin-top:6px;}
+.sac-box .hint{color:#7a5b17;}
+
+/* ---------- VISTA PREVIA / RECIBO ---------- */
+.panel-preview{flex:1;display:flex;flex-direction:column;align-items:center;}
+.preview-toolbar{width:210mm;max-width:100%;display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:8px;}
+.preview-toolbar span{font-size:12px;color:#555;}
+.recibo{width:210mm;min-height:297mm;background:#fff;box-shadow:0 1px 10px rgba(0,0,0,.25);
+  padding:6mm;font-size:8.1px;line-height:1.2;}
+.header-bar{background:var(--azul-oscuro);color:#fff;text-align:center;padding:5px 4px 4px;border-radius:2px 2px 0 0;}
+.header-bar h1{margin:0;font-size:14px;letter-spacing:.3px;}
+.header-bar .sub{font-size:7.2px;margin-top:2px;opacity:.95;}
+.periodo-bar{background:var(--azul-claro);color:#fff;text-align:center;font-size:8.6px;font-weight:bold;padding:3px;}
+.nota-box{background:var(--nota-bg);border:1px solid var(--nota-border);color:var(--nota-texto);
+  font-style:italic;font-size:6.6px;padding:3px 7px;margin-top:3px;line-height:1.3;}
+.section-title{background:var(--azul-oscuro);color:#fff;display:flex;justify-content:space-between;
+  gap:8px;padding:3px 7px;font-size:9.2px;font-weight:bold;margin-top:4px;}
+.section-title .cita{font-style:italic;font-weight:normal;font-size:6.9px;white-space:nowrap;align-self:center;}
+.field-row{display:flex;border:1px solid var(--gris-linea);border-top:none;padding:2.6px 6px;font-size:7.6px;}
+.field-row:first-of-type{border-top:1px solid var(--gris-linea);}
+.field-row .lbl{font-weight:bold;width:46%;flex:none;}
+table.rtable{width:100%;border-collapse:collapse;font-size:7.3px;margin-top:0;}
+table.rtable th{background:var(--celeste-bg2);color:var(--azul-oscuro);text-align:left;
+  padding:2.4px 5px;font-size:7.1px;border:1px solid var(--gris-linea);}
+table.rtable td{border:1px solid var(--gris-linea);padding:2.4px 5px;}
+table.rtable td.num{text-align:right;}
+tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-oscuro);font-size:7.6px;}
+.subtitle{color:var(--azul-medio);font-weight:bold;font-size:7.4px;margin-top:3.5px;}
+.rubros{display:flex;margin-top:4px;}
+.rubros .cell{flex:1;border:1px solid var(--gris-linea);text-align:center;padding:2px 1px;font-size:5.8px;}
+.rubros .cell.nombre{background:var(--celeste-bg2);color:var(--azul-medio);font-weight:bold;border-bottom:none;}
+.rubros .cell.pct{border-top:none;font-style:italic;}
+.pie-wrap{display:flex;align-items:center;gap:10px;margin-top:4px;}
+.pie-legend{font-size:7.2px;}
+.pie-legend .item{display:flex;align-items:center;gap:5px;margin:1.5px 0;}
+.pie-legend .swatch{width:8px;height:8px;display:inline-block;}
+.costo-total{text-align:right;font-style:italic;font-size:7px;margin-top:3px;}
+.neto-box{background:var(--celeste-bg2);border:1px solid var(--gris-linea);padding:6px 8px;
+  display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;}
+.neto-box .lbl{color:var(--azul-oscuro);font-weight:bold;font-size:11.5px;}
+.neto-box .val{color:var(--azul-oscuro);font-weight:bold;font-size:11.5px;}
+.son-pesos{font-style:italic;font-size:6.7px;padding:0 8px 4px;background:var(--celeste-bg2);
+  border:1px solid var(--gris-linea);border-top:none;}
+.bp-box{background:var(--celeste-bg);border:1px solid var(--gris-linea);padding:4px 7px;font-size:6.7px;margin-top:4px;}
+.bp-box b{color:var(--azul-oscuro);}
+.firma-line{border-top:1px solid #000;width:42%;margin-top:14px;}
+.firma-label{font-size:6.7px;margin-top:3px;}
+.footer-note{font-style:italic;font-size:6.1px;color:#333;margin-top:8px;line-height:1.35;}
+
+@media print{
+  body{background:#fff;}
+  .no-print{display:none !important;}
+  .app{padding:0;display:block;}
+  .recibo{box-shadow:none;margin:0;width:auto;min-height:auto;}
+  @page{size:A4;margin:8mm;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ FORMULARIO ============ -->
+  <div class="panel-form no-print">
+    <h2>Liquidador — Empleados de Comercio</h2>
+    <p class="sub">CCT 130/75 (FAECYS) · recibo según Art. 140 LCT (Ley 27.802) y Decreto 407/2026</p>
+
+    <fieldset>
+      <legend>Empleador</legend>
+      <label>Razón social</label>
+      <input type="text" id="emp_razon" placeholder="Ej: Almacén y Bazar del Centro S.R.L.">
+      <label>CUIT</label>
+      <input type="text" id="emp_cuit" placeholder="30-XXXXXXXX-X">
+      <label>Domicilio</label>
+      <input type="text" id="emp_domicilio" placeholder="Calle 123, Localidad - Provincia">
+    </fieldset>
+
+    <fieldset>
+      <legend>Trabajador</legend>
+      <label>Nombre y apellido</label>
+      <input type="text" id="trab_nombre" placeholder="APELLIDO, Nombre">
+      <div class="row2">
+        <div><label>CUIL</label><input type="text" id="trab_cuil" placeholder="20-XXXXXXXX-X"></div>
+        <div><label>Legajo</label><input type="text" id="trab_legajo" placeholder="00001"></div>
+      </div>
+      <label>Categoría (CCT 130/75)</label>
+      <select id="trab_categoria">
+        <option>Maestranza y Servicios A</option>
+        <option>Maestranza y Servicios B</option>
+        <option>Maestranza y Servicios C</option>
+        <option>Administrativo A</option>
+        <option>Administrativo B</option>
+        <option>Administrativo C</option>
+        <option>Administrativo D</option>
+        <option>Administrativo E</option>
+        <option>Administrativo F</option>
+        <option>Cajero A</option>
+        <option>Cajero B</option>
+        <option>Cajero C</option>
+        <option>Personal Auxiliar A</option>
+        <option>Personal Auxiliar B</option>
+        <option>Personal Auxiliar C</option>
+        <option>Auxiliar Especializado A</option>
+        <option>Auxiliar Especializado B</option>
+        <option selected>Vendedor A</option>
+        <option>Vendedor B</option>
+        <option>Vendedor C</option>
+        <option>Vendedor D</option>
+      </select>
+      <div class="row2">
+        <div><label>Fecha de ingreso</label><input type="date" id="trab_ingreso"></div>
+        <div><label>Modalidad</label>
+          <select id="trab_modalidad">
+            <option>Tiempo completo — Trabajo permanente</option>
+            <option>Tiempo parcial — Trabajo permanente</option>
+            <option>Plazo fijo</option>
+            <option>Eventual</option>
+          </select>
+        </div>
+      </div>
+      <label>Obra social</label>
+      <input type="text" id="trab_os" placeholder="OSECAC / otra obra social" value="OSECAC">
+      <div class="row2">
+        <div><label>Banco (depósito aportes mes ant.)</label><input type="text" id="dep_banco" placeholder="Banco Nación"></div>
+        <div><label>Fecha depósito</label><input type="date" id="dep_fecha"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Período a liquidar</legend>
+      <div class="row2">
+        <div><label>Mes</label>
+          <select id="per_mes">
+            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+            <option value="7" selected>Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+        </div>
+        <div><label>Año</label><input type="number" id="per_anio" value="2026" min="2020" max="2100"></div>
+      </div>
+      <label>Básico de la categoría vigente ese período ($)</label>
+      <input type="number" id="basico" value="1177947" step="0.01">
+      <p class="hint">La escala de FAECYS cambia varias veces al año: cargá acá el básico oficial vigente para el mes elegido (no se calcula solo).</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Días del mes (feriados / vacaciones)</legend>
+      <p class="hint">Valor día = básico ÷ 25. Feriado no trabajado = 1 día; feriado trabajado = el doble.</p>
+      <div class="row2">
+        <div><label>Feriados NO trabajados (cant.)</label><input type="number" id="fer_no" value="0" min="0"></div>
+        <div><label>Feriados SÍ trabajados (cant.)</label><input type="number" id="fer_si" value="0" min="0"></div>
+      </div>
+      <label>Días de vacaciones tomados</label>
+      <input type="number" id="vacaciones" value="0" min="0">
+      <label class="inline"><input type="checkbox" id="chk_presentismo" checked> Cobra presentismo (Art. 40, 8,33%)</label>
+      <label class="inline"><input type="checkbox" id="chk_antiguedad" checked> Aplica antigüedad (1% por año, Art. 24)</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Conceptos remunerativos adicionales</legend>
+      <div class="quick">
+        <button type="button" class="btn-add" onclick="addRemuExtra('A cuenta de futuros aumentos', 0)">+ A cuenta de futuros aumentos</button>
+        <button type="button" class="btn-add" onclick="addRemuExtra('', 0)">+ Otro concepto</button>
+      </div>
+      <div id="remuExtraList"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Conceptos no remunerativos</legend>
+      <p class="hint">Sumas fijas / recomposiciones de paritaria vigentes ese mes (cargalas a mano, cambian seguido).</p>
+      <button type="button" class="btn-add" onclick="addNoRemu('Suma no remunerativa (paritaria)', 0)">+ Agregar concepto</button>
+      <div id="noRemuList"></div>
+    </fieldset>
+
+    <fieldset id="sacFieldset" style="display:none;">
+      <legend>Aguinaldo (SAC) — este período corresponde</legend>
+      <div class="sac-box">
+        <label class="inline"><input type="checkbox" id="chk_sac" checked> Incluir SAC en este recibo</label>
+        <label>Base de cálculo del SAC ($)</label>
+        <input type="number" id="sac_base" step="0.01">
+        <p class="hint">Por defecto toma el Total Remunerativo de este mismo recibo. Si en algún mes anterior del semestre cobró un remunerativo más alto, cambiá este valor a mano — el SAC es el 50% de la mejor remuneración remunerativa del semestre.</p>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Deducciones (aportes del empleado)</legend>
+      <div class="pct-row"><label>Jubilación (%) s/remunerativo</label><input type="number" id="pct_jub" value="11" step="0.01"></div>
+      <div class="pct-row"><label>Ley 19.032 / INSSJP (%) s/remunerativo</label><input type="number" id="pct_ley19032" value="3" step="0.01"></div>
+      <div class="pct-row"><label>Obra Social (%) s/bruto</label><input type="number" id="pct_os" value="3" step="0.01"></div>
+      <label class="inline"><input type="checkbox" id="chk_afiliado" checked> Afiliado al sindicato (cuota + Faecys)</label>
+      <div class="pct-row"><label>Sindicato Art. 100 (%) s/bruto</label><input type="number" id="pct_sind" value="2" step="0.01"></div>
+      <div class="pct-row"><label>Faecys (%) s/bruto</label><input type="number" id="pct_faecys" value="0.5" step="0.01"></div>
+      <label class="inline"><input type="checkbox" id="chk_osecac" checked> OSECAC Aporte Voluntario (fijo)</label>
+      <div class="pct-row"><label>Monto OSECAC voluntario ($)</label><input type="number" id="monto_osecac" value="100" step="0.01"></div>
+      <button type="button" class="btn-add" onclick="addDeducExtra('', 0)">+ Otra deducción</button>
+      <div id="deducExtraList"></div>
+    </fieldset>
+
+    <details>
+      <summary>Contribuciones del empleador (alícuotas editables)</summary>
+      <fieldset style="margin-top:8px;">
+        <div class="pct-row"><label>Jubilación + F.N. Empleo + Asig. Fam. (%)</label><input type="number" id="pct_jubfne" value="18" step="0.01"></div>
+        <div class="pct-row"><label>Obra Social patronal (%)</label><input type="number" id="pct_ospatr" value="6" step="0.01"></div>
+        <div class="pct-row"><label>ART fijo ($)</label><input type="number" id="art_fijo" value="1765" step="0.01"></div>
+        <div class="pct-row"><label>ART variable (%)</label><input type="number" id="art_pct" value="3" step="0.01"></div>
+        <div class="pct-row"><label>Seguro de vida (Dto. 1567/74) ($)</label><input type="number" id="seguro_vida" value="424.62" step="0.01"></div>
+      </fieldset>
+    </details>
+
+    <button class="btn-primary" onclick="window.print()">🖨️ Descargar / Imprimir PDF</button>
+    <p class="hint" style="margin-top:8px;">Usá "Guardar como PDF" en el diálogo de impresión. Si el recibo sale sin colores, tildá la opción "Gráficos de fondo" en las opciones del navegador.</p>
+  </div>
+
+  <!-- ============ VISTA PREVIA / RECIBO ============ -->
+  <div class="panel-preview">
+    <div class="preview-toolbar no-print"><span>Vista previa — se actualiza sola con cada dato que cargás</span></div>
+    <div class="recibo" id="recibo"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- estado dinámico ---------- */
+let remuExtra = [];
+let noRemu = [];
+let deducExtra = [];
+
+function addRemuExtra(nombre, monto){ remuExtra.push({c:nombre, m:monto}); renderExtraLists(); render(); }
+function addNoRemu(nombre, monto){ noRemu.push({c:nombre, m:monto}); renderExtraLists(); render(); }
+function addDeducExtra(nombre, monto){ deducExtra.push({c:nombre, m:monto}); renderExtraLists(); render(); }
+
+function renderExtraLists(){
+  const mk = (arr, containerId, updateFn) => {
+    const el = document.getElementById(containerId);
+    el.innerHTML = '';
+    arr.forEach((row, i) => {
+      const div = document.createElement('div');
+      div.className = 'dyn-row';
+      div.innerHTML = `<input type="text" placeholder="Concepto" value="${row.c.replace(/"/g,'&quot;')}">
+                        <input type="number" class="amt" step="0.01" value="${row.m}">
+                        <button type="button" class="del-btn" title="Quitar">×</button>`;
+      const [inC, inM, btnDel] = div.children;
+      inC.oninput = () => { arr[i].c = inC.value; render(); };
+      inM.oninput = () => { arr[i].m = parseFloat(inM.value) || 0; render(); };
+      btnDel.onclick = () => { arr.splice(i,1); renderExtraLists(); render(); };
+      el.appendChild(div);
+    });
+  };
+  mk(remuExtra, 'remuExtraList');
+  mk(noRemu, 'noRemuList');
+  mk(deducExtra, 'deducExtraList');
+}
+
+/* ---------- utilidades numéricas ---------- */
+function fmt(n){
+  if (isNaN(n)) n = 0;
+  return n.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function money(n){ return '$ ' + fmt(n); }
+
+const UNIDADES=["","UN","DOS","TRES","CUATRO","CINCO","SEIS","SIETE","OCHO","NUEVE"];
+const DIEZ19=["DIEZ","ONCE","DOCE","TRECE","CATORCE","QUINCE","DIECISEIS","DIECISIETE","DIECIOCHO","DIECINUEVE"];
+const DECENAS=["","","VEINTE","TREINTA","CUARENTA","CINCUENTA","SESENTA","SETENTA","OCHENTA","NOVENTA"];
+const CENTENAS=["","CIENTO","DOSCIENTOS","TRESCIENTOS","CUATROCIENTOS","QUINIENTOS","SEISCIENTOS","SETECIENTOS","OCHOCIENTOS","NOVECIENTOS"];
+function menosCien(n){
+  if(n===0) return "";
+  if(n<10) return UNIDADES[n];
+  if(n<20) return DIEZ19[n-10];
+  if(n<30) return n===20 ? "VEINTE" : "VEINTI"+UNIDADES[n-20];
+  const d=Math.floor(n/10), u=n%10;
+  return u===0 ? DECENAS[d] : `${DECENAS[d]} Y ${UNIDADES[u]}`;
+}
+function menosMil(n){
+  if(n===0) return "";
+  if(n===100) return "CIEN";
+  const c=Math.floor(n/100), r=n%100;
+  if(c===0) return menosCien(r);
+  return r===0 ? CENTENAS[c] : `${CENTENAS[c]} ${menosCien(r)}`;
+}
+function numeroALetras(n){
+  n = Math.trunc(n);
+  if(n===0) return "CERO";
+  let partes=[];
+  const millones = Math.floor(n/1000000);
+  let resto = n % 1000000;
+  const miles = Math.floor(resto/1000);
+  const unidades = resto % 1000;
+  if(millones){ partes.push(millones===1 ? "UN MILLON" : `${menosMil(millones)} MILLONES`); }
+  if(miles){ partes.push(miles===1 ? "MIL" : `${menosMil(miles)} MIL`); }
+  if(unidades){ partes.push(menosMil(unidades)); }
+  return partes.join(" ");
+}
+function sonPesos(monto, prefijo){
+  prefijo = prefijo || 'Son pesos';
+  const totalCentavos = Math.round(monto*100);
+  const entero = Math.floor(totalCentavos/100);
+  const centavos = totalCentavos % 100;
+  return `${prefijo}: ${numeroALetras(entero)} CON ${String(centavos).padStart(2,'0')}/100`;
+}
+function val(id){ return document.getElementById(id).value; }
+function num(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+function chk(id){ return document.getElementById(id).checked; }
+function fechaLarga(dstr){
+  if(!dstr) return '[fecha]';
+  const [y,m,d] = dstr.split('-');
+  return `${d}/${m}/${y}`;
+}
+const MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+/* ---------- calculo principal ---------- */
+function calcular(){
+  const basico = num('basico');
+  const mes = parseInt(val('per_mes'));
+  const anio = val('per_anio');
+
+  // antiguedad
+  let anios = 0;
+  const ingresoStr = val('trab_ingreso');
+  if(ingresoStr && chk('chk_antiguedad')){
+    const ing = new Date(ingresoStr);
+    const periodoRef = new Date(parseInt(anio), mes-1, 1);
+    anios = periodoRef.getFullYear() - ing.getFullYear();
+    const beforeAnniv = (periodoRef.getMonth() < ing.getMonth()) ||
+      (periodoRef.getMonth() === ing.getMonth() && periodoRef.getDate() < ing.getDate());
+    if(beforeAnniv) anios -= 1;
+    if(anios < 0) anios = 0;
+  }
+  const antiguedadMonto = chk('chk_antiguedad') ? basico * 0.01 * anios : 0;
+
+  const valorDia = basico/25;
+  const ferNo = num('fer_no'), ferSi = num('fer_si'), vac = num('vacaciones');
+  const ferNoMonto = valorDia * ferNo;
+  const ferSiMonto = 2 * valorDia * ferSi;
+  const vacMonto = valorDia * vac;
+
+  const presentBase = basico + antiguedadMonto;
+  const presentismoMonto = chk('chk_presentismo') ? presentBase * (100/12) / 100 : 0;
+
+  const remuExtraSum = remuExtra.reduce((a,r)=>a+(r.m||0), 0);
+
+  let totalRemuAntesSac = basico + antiguedadMonto + presentismoMonto + ferNoMonto + ferSiMonto + vacMonto + remuExtraSum;
+
+  const esMesSac = (mes === 6 || mes === 12);
+  let sacMonto = 0;
+  if(esMesSac && chk('chk_sac')){
+    let base = num('sac_base');
+    if(!base) base = totalRemuAntesSac;
+    sacMonto = base/2;
+  }
+  const totalRemunerativo = totalRemuAntesSac + sacMonto;
+
+  const noRemuSum = noRemu.reduce((a,r)=>a+(r.m||0), 0);
+  const totalBruto = totalRemunerativo + noRemuSum;
+
+  const jub = totalRemunerativo * num('pct_jub')/100;
+  const ley19032 = totalRemunerativo * num('pct_ley19032')/100;
+  const os = totalBruto * num('pct_os')/100;
+  const afiliado = chk('chk_afiliado');
+  const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
+  const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
+  const osecac = chk('chk_osecac') ? num('monto_osecac') : 0;
+  const deducExtraSum = deducExtra.reduce((a,r)=>a+(r.m||0), 0);
+  const totalDeducciones = jub+ley19032+os+sind+faecys+osecac+deducExtraSum;
+
+  const neto = totalBruto - totalDeducciones;
+
+  const jubFne = totalRemunerativo * num('pct_jubfne')/100;
+  const osPatr = totalRemunerativo * num('pct_ospatr')/100;
+  const art = num('art_fijo') + totalRemunerativo * num('art_pct')/100;
+  const seguroVida = num('seguro_vida');
+  const totalContrib = jubFne + osPatr + art + seguroVida;
+
+  const costoLaboral = totalBruto + totalContrib;
+
+  return {
+    basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
+    ferNoMonto, ferSiMonto, vacMonto, presentismoMonto,
+    remuExtraSum, totalRemuAntesSac, esMesSac, sacMonto, totalRemunerativo,
+    noRemuSum, totalBruto,
+    jub, ley19032, os, sind, faecys, osecac, deducExtraSum, totalDeducciones,
+    neto, jubFne, osPatr, art, seguroVida, totalContrib, costoLaboral,
+    mes, anio, afiliado
+  };
+}
+
+/* ---------- render del recibo ---------- */
+function trow(concepto, base, unidad, monto){
+  return `<tr><td>${concepto}</td><td>${base}</td><td>${unidad}</td><td class="num">${money(monto)}</td></tr>`;
+}
+function totalRow(label, monto, cols){
+  cols = cols || 4;
+  return `<tr class="total-row"><td colspan="${cols-1}">${label}</td><td class="num">${money(monto)}</td></tr>`;
+}
+function fieldRow(lbl, value){
+  return `<div class="field-row"><div class="lbl">${lbl}</div><div>${value || '&mdash;'}</div></div>`;
+}
+
+function pieSVG(neto, aportes, contrib){
+  const total = neto+aportes+contrib || 1;
+  const colors = ['#1B3A6B','#2E5A9C','#6E96C4'];
+  const vals = [neto, aportes, contrib];
+  let start = -90, paths = '';
+  const cx=30, cy=30, r=30;
+  vals.forEach((v,i)=>{
+    const angle = 360 * (v/total);
+    const end = start + angle;
+    const large = angle > 180 ? 1 : 0;
+    const x1 = cx + r*Math.cos(Math.PI*start/180), y1 = cy + r*Math.sin(Math.PI*start/180);
+    const x2 = cx + r*Math.cos(Math.PI*end/180), y2 = cy + r*Math.sin(Math.PI*end/180);
+    if (angle >= 359.99) {
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${colors[i]}"/>`;
+    } else {
+      paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${colors[i]}"/>`;
+    }
+    start = end;
+  });
+  return `<svg width="60" height="60" viewBox="0 0 60 60">${paths}</svg>`;
+}
+
+function render(){
+  const r = calcular();
+  const categoria = val('trab_categoria');
+  const html = `
+    <div class="header-bar">
+      <h1>RECIBO DE HABERES</h1>
+      <div class="sub">Art. 140 LCT (texto Ley 27.802) y Decreto 407/2026 (Anexo I art.5 / Anexo III) — vigente desde 01/06/2026</div>
+    </div>
+    <div class="periodo-bar">Período: ${MESES[r.mes]} ${r.anio} &nbsp;—&nbsp; CCT 130/75 (FAECYS — Comercio, Rama Mercantil)</div>
+
+    <div class="section-title"><div>1. IDENTIFICACIÓN DEL EMPLEADOR Y DEL TRABAJADOR</div><div class="cita">Art. 140 incs. a, b, d, i LCT</div></div>
+    ${fieldRow('Empleador:', val('emp_razon'))}
+    ${fieldRow('CUIT:', val('emp_cuit'))}
+    ${fieldRow('Domicilio:', val('emp_domicilio'))}
+    ${fieldRow('Trabajador:', val('trab_nombre'))}
+    ${fieldRow('CUIL:', val('trab_cuil'))}
+    ${fieldRow('Legajo / Categoría:', `${val('trab_legajo') || '[legajo]'} &nbsp;—&nbsp; ${categoria} (CCT 130/75)`)}
+    ${fieldRow('Fecha de ingreso / Antigüedad:', `${fechaLarga(val('trab_ingreso'))} &nbsp;—&nbsp; ${r.anios} año(s)`)}
+    ${fieldRow('Modalidad de contratación:', val('trab_modalidad'))}
+    ${fieldRow('Obra social:', val('trab_os'))}
+    ${fieldRow('Dep. aportes mes ant. (Art.12 Dto-Ley 17.250/67):', `${val('dep_banco') || '[banco]'} — ${fechaLarga(val('dep_fecha'))}`)}
+
+    <div class="section-title"><div>2. CONTRIBUCIONES A CARGO DEL EMPLEADOR</div><div class="cita">Art. 140 inc. j LCT — se expone ANTES del bruto</div></div>
+    <table class="rtable">
+      <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
+      ${trow('Jubilación + F.N. Empleo + Asig.Fam. (contrib. unificada Dto. 814/2001)', money(r.totalRemunerativo), num('pct_jubfne')+'%', r.jubFne)}
+      ${trow('Obra Social patronal', money(r.totalRemunerativo), num('pct_ospatr')+'%', r.osPatr)}
+      ${trow('A.R.T.', money(r.totalRemunerativo), 'fijo+'+num('art_pct')+'%', r.art)}
+      ${trow('Seguro de vida (Dto. 1567/74)', '—', '$ fijo', r.seguroVida)}
+      ${totalRow('TOTAL CONTRIBUCIONES DEL EMPLEADOR', r.totalContrib)}
+    </table>
+
+    <div class="section-title"><div>2.1 RESUMEN — COMPOSICIÓN DEL COSTO LABORAL TOTAL</div><div class="cita">agrupado por rubro</div></div>
+    <div class="rubros">
+      <div class="cell nombre">Sindical</div><div class="cell nombre">Seg. Social</div><div class="cell nombre">Obra Social</div>
+      <div class="cell nombre">I.N.S.S.J.P.</div><div class="cell nombre">A.R.T.</div><div class="cell nombre">Cámaras</div><div class="cell nombre">Otros</div>
+    </div>
+    <div class="rubros">
+      <div class="cell pct">0,0%</div>
+      <div class="cell pct">${(r.jubFne/(r.totalContrib||1)*100).toFixed(1)}%</div>
+      <div class="cell pct">${(r.osPatr/(r.totalContrib||1)*100).toFixed(1)}%</div>
+      <div class="cell pct">0,0%</div>
+      <div class="cell pct">${(r.art/(r.totalContrib||1)*100).toFixed(1)}%</div>
+      <div class="cell pct">0,0%</div>
+      <div class="cell pct">${(r.seguroVida/(r.totalContrib||1)*100).toFixed(1)}%</div>
+    </div>
+    <div class="pie-wrap">
+      ${pieSVG(r.neto, r.totalDeducciones, r.totalContrib)}
+      <div class="pie-legend">
+        <div class="item"><span class="swatch" style="background:#1B3A6B;"></span>Sueldo neto del empleado: ${(r.neto/(r.costoLaboral||1)*100).toFixed(1)}%</div>
+        <div class="item"><span class="swatch" style="background:#2E5A9C;"></span>Aportes del empleado: ${(r.totalDeducciones/(r.costoLaboral||1)*100).toFixed(1)}%</div>
+        <div class="item"><span class="swatch" style="background:#6E96C4;"></span>Contribuciones del empleador: ${(r.totalContrib/(r.costoLaboral||1)*100).toFixed(1)}%</div>
+      </div>
+    </div>
+    <div class="costo-total">Costo laboral total (100%): ${money(r.costoLaboral)}</div>
+
+    <div class="section-title"><div>3. REMUNERACIÓN BRUTA Y DEDUCCIONES</div><div class="cita">Art. 140 incs. c, e, f LCT</div></div>
+    <div class="subtitle">3.a Conceptos remunerativos</div>
+    <table class="rtable">
+      <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
+      ${trow('Básico '+categoria+' (CCT 130/75)', 'Categoría de convenio', '—', r.basico)}
+      ${r.anios>0 ? trow('Antigüedad (Art. 24)', money(r.basico), r.anios+' año(s) — 1%/año', r.antiguedadMonto) : ''}
+      ${chk('chk_presentismo') ? trow('Presentismo (Art. 40)', money(r.basico+r.antiguedadMonto), '8,33%', r.presentismoMonto) : ''}
+      ${r.ferNo>0 ? trow('Feriados no trabajados', money(r.valorDia)+' /día', r.ferNo+' día(s)', r.ferNoMonto) : ''}
+      ${r.ferSi>0 ? trow('Feriados trabajados (doble)', money(r.valorDia)+' /día', r.ferSi+' día(s) x2', r.ferSiMonto) : ''}
+      ${r.vac>0 ? trow('Vacaciones', money(r.valorDia)+' /día', r.vac+' día(s)', r.vacMonto) : ''}
+      ${remuExtra.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('')}
+      ${r.esMesSac && chk('chk_sac') ? trow('SAC ('+(r.mes===6?'1er':'2do')+' semestre)', money(num('sac_base')||r.totalRemuAntesSac), '50%', r.sacMonto) : ''}
+    </table>
+    <div class="subtitle">3.b Conceptos no remunerativos</div>
+    <table class="rtable">
+      <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
+      ${noRemu.length ? noRemu.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('') : '<tr><td colspan="4" style="text-align:center;color:#888;">Sin conceptos no remunerativos cargados</td></tr>'}
+      ${totalRow('TOTAL REMUNERACIÓN BRUTA', r.totalBruto)}
+    </table>
+    <div class="subtitle">3.c Deducciones (aportes personales)</div>
+    <table class="rtable">
+      <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
+      ${trow('Jubilación', money(r.totalRemunerativo), num('pct_jub')+'%', r.jub)}
+      ${trow('Ley 19.032 (INSSJP)', money(r.totalRemunerativo), num('pct_ley19032')+'%', r.ley19032)}
+      ${trow('Obra Social', money(r.totalBruto), num('pct_os')+'%', r.os)}
+      ${chk('chk_osecac') ? trow('OSECAC Aporte Voluntario', '—', '$ fijo', r.osecac) : ''}
+      ${r.afiliado ? trow('Sindicato Art. 100', money(r.totalBruto), num('pct_sind')+'%', r.sind) : ''}
+      ${r.afiliado ? trow('Faecys', money(r.totalBruto), num('pct_faecys')+'%', r.faecys) : ''}
+      ${deducExtra.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('')}
+      ${totalRow('TOTAL DEDUCCIONES', r.totalDeducciones)}
+    </table>
+
+    <div class="section-title"><div>4. REMUNERACIÓN NETA</div><div class="cita">Art. 140 inc. g LCT</div></div>
+    <div class="neto-box"><div class="lbl">NETO A PERCIBIR:</div><div class="val">${money(r.neto)}</div></div>
+    <div class="son-pesos">${sonPesos(r.neto)}</div>
+    <div class="bp-box">
+      <b>CCT aplicable:</b> 130/75 (FAECYS) &nbsp;—&nbsp; <b>Total bruto en letras:</b><br>
+      ${sonPesos(r.totalBruto)}
+    </div>
+
+    <div class="firma-line"></div>
+    <div class="firma-label">Constancia de entrega (firma electrónica/digital o acreditación de pago bancario)</div>
+
+    <div class="footer-note">Recibo conforme Art. 140 LCT (texto Ley 27.802, B.O. 6/3/2026) y Decreto 407/2026 (Anexo III), vigente desde 01/06/2026. Escala salarial CCT 130/75 y sumas no remunerativas cargadas a mano por el usuario — verificar contra la circular vigente de FAECYS.</div>
+  `;
+  document.getElementById('recibo').innerHTML = html;
+
+  // mostrar/ocultar bloque SAC segun mes
+  document.getElementById('sacFieldset').style.display = r.esMesSac ? 'block' : 'none';
+  if(r.esMesSac){
+    const sacBaseInput = document.getElementById('sac_base');
+    if(!sacBaseInput.dataset.touched){
+      sacBaseInput.value = r.totalRemuAntesSac.toFixed(2);
+    }
+  }
+}
+
+/* ---------- listeners ---------- */
+document.addEventListener('input', (e)=>{
+  if(e.target.id === 'sac_base') e.target.dataset.touched = '1';
+  render();
+});
+document.addEventListener('change', render);
+
+/* ---------- inicio ---------- */
+renderExtraLists();
+render();
+</script>
+</body>
+</html>
