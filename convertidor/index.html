@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conversor Rindex — convertí, uní, dividí y comprimí archivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14213D; --navy-2:#0E1830; --violet:#7C4DFF; --pink:#F472B6;
+  --grad: linear-gradient(135deg,#7C4DFF 0%, #F472B6 100%);
+  --bg:#F7F6FB; --card:#FFFFFF; --line:#E7E4F3; --text:#20223A; --muted:#6B6E8C;
+  --ok:#1EA672; --warn:#C97A1F; --err:#D8425A;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);}
+h1,h2,h3,.brand{font-family:'Poppins',sans-serif;}
+
+/* ---------- header ---------- */
+.topbar{background:var(--navy);background-image:radial-gradient(circle at 15% -20%, #2A3B66 0%, var(--navy) 55%);color:#fff;padding:26px 20px 60px;text-align:center;}
+.topbar .brand{font-size:15px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin-bottom:8px;}
+.topbar h1{font-size:clamp(22px,4vw,32px);margin:0 0 8px;font-weight:800;}
+.topbar p{max-width:560px;margin:0 auto;color:#C9CEE8;font-size:14.5px;line-height:1.55;}
+.topbar .badge{display:inline-flex;align-items:center;gap:6px;margin-top:16px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);padding:6px 14px;border-radius:999px;font-size:12.5px;color:#E4E7F6;}
+
+.wrap{max-width:920px;margin:-38px auto 60px;padding:0 16px;}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:8px;overflow-x:auto;background:var(--card);border-radius:16px;padding:8px;
+  box-shadow:0 10px 30px rgba(20,33,61,.12);margin-bottom:18px;-webkit-overflow-scrolling:touch;}
+.tab{flex:1 0 auto;border:none;background:transparent;padding:12px 14px;border-radius:11px;cursor:pointer;
+  font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;color:var(--muted);white-space:nowrap;
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:.15s;}
+.tab .ico{font-size:19px;}
+.tab.active{background:var(--grad);color:#fff;box-shadow:0 6px 16px rgba(124,77,255,.35);}
+.tab:not(.active):hover{background:#F1EEFB;color:var(--text);}
+
+.panel{display:none;background:var(--card);border-radius:18px;padding:22px 22px 26px;box-shadow:0 10px 30px rgba(20,33,61,.08);}
+.panel.active{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.panel h2{margin:0 0 4px;font-size:19px;}
+.panel > .desc{color:var(--muted);font-size:13.5px;margin:0 0 18px;line-height:1.5;}
+
+/* ---------- sub-tools dentro de un panel ---------- */
+.subtools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.subtool-btn{border:1.5px solid var(--line);background:#fff;padding:8px 14px;border-radius:10px;cursor:pointer;
+  font-family:'Inter';font-weight:600;font-size:12.8px;color:var(--muted);}
+.subtool-btn.active{border-color:transparent;background:var(--grad);color:#fff;}
+.subpanel{display:none;}
+.subpanel.active{display:block;}
+
+/* ---------- dropzone ---------- */
+.drop{border:2px dashed #CFC9EE;border-radius:14px;background:#FBFAFE;padding:28px 16px;text-align:center;
+  cursor:pointer;transition:.15s;}
+.drop:hover,.drop.dragover{border-color:var(--violet);background:#F4F0FF;}
+.drop .dico{font-size:30px;margin-bottom:6px;}
+.drop .dtitle{font-weight:600;font-size:14.5px;color:var(--text);}
+.drop .dsub{font-size:12px;color:var(--muted);margin-top:3px;}
+.drop input{display:none;}
+
+/* ---------- lista de archivos cargados ---------- */
+.filelist{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.fileitem{display:flex;align-items:center;gap:10px;background:#F9F8FD;border:1px solid var(--line);
+  border-radius:10px;padding:8px 10px;font-size:13px;}
+.fileitem .fname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.fileitem .fsize{color:var(--muted);font-size:11.5px;flex:none;}
+.fileitem button{border:none;background:none;cursor:pointer;color:var(--muted);font-size:15px;padding:2px 5px;flex:none;}
+.fileitem button:hover{color:var(--err);}
+.fileitem .move{cursor:pointer;color:var(--muted);font-size:13px;flex:none;padding:2px 4px;}
+.fileitem .move:hover{color:var(--violet);}
+
+/* ---------- controles ---------- */
+.field{margin-top:14px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.field .hint{font-size:11.3px;color:var(--muted);margin-top:4px;}
+select,input[type=number],input[type=text]{width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:9px;
+  font-family:inherit;font-size:13.5px;background:#fff;}
+input[type=range]{width:100%;accent-color:var(--violet);}
+.radiogroup{display:flex;gap:14px;flex-wrap:wrap;}
+.radiogroup label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--text);}
+.row{display:flex;gap:14px;flex-wrap:wrap;}
+.row > div{flex:1;min-width:140px;}
+
+/* ---------- botones ---------- */
+.btn-main{margin-top:20px;width:100%;background:var(--grad);color:#fff;border:none;border-radius:12px;
+  padding:13px;font-family:'Poppins';font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(124,77,255,.3);}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+.btn-main:hover:not(:disabled){filter:brightness(1.06);}
+.btn-ghost{background:#F1EEFB;color:var(--violet);border:none;border-radius:9px;padding:8px 13px;font-weight:600;
+  font-size:12.5px;cursor:pointer;font-family:'Inter';}
+
+/* ---------- resultado / status ---------- */
+.status{margin-top:14px;font-size:13px;padding:10px 12px;border-radius:10px;display:none;}
+.status.show{display:block;}
+.status.info{background:#EFF3FF;color:#2A54B8;}
+.status.ok{background:#E9F9F1;color:var(--ok);}
+.status.err{background:#FDECEF;color:var(--err);}
+.progress{height:6px;background:#EDEAFA;border-radius:6px;overflow:hidden;margin-top:10px;display:none;}
+.progress.show{display:block;}
+.progress > div{height:100%;background:var(--grad);width:0%;transition:width .2s;}
+
+.results{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+.result-item{display:flex;align-items:center;gap:10px;background:#F4FBF7;border:1px solid #CFEBDC;border-radius:10px;
+  padding:10px 12px;}
+.result-item .rname{flex:1;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.result-item .rsize{font-size:11.5px;color:var(--muted);flex:none;}
+.result-item a{background:var(--navy);color:#fff;text-decoration:none;font-size:12px;font-weight:700;padding:7px 12px;
+  border-radius:8px;flex:none;}
+.result-item a:hover{filter:brightness(1.2);}
+.results-actions{margin-top:8px;}
+
+.privacy{max-width:920px;margin:0 auto 40px;padding:0 16px;text-align:center;color:var(--muted);font-size:12.5px;}
+.privacy b{color:var(--text);}
+footer{text-align:center;padding:26px 16px 44px;color:#9A9DBC;font-size:12px;}
+footer a{color:var(--violet);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Rindex Herramientas</div>
+  <h1>Conversor de archivos</h1>
+  <p>Convertí, uní, dividí y comprimí tus archivos directo desde el navegador — sin instalar nada y sin subir tus archivos a ningún lado.</p>
+  <div class="badge">🔒 Todo se procesa en tu computadora, nada se sube a un servidor</div>
+</div>
+
+<div class="wrap">
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="imagenes"><span class="ico">🖼️</span>Imágenes</button>
+    <button class="tab" data-tab="pdf"><span class="ico">📄</span>PDF</button>
+    <button class="tab" data-tab="zip"><span class="ico">🗜️</span>ZIP</button>
+    <button class="tab" data-tab="datos"><span class="ico">📊</span>Datos</button>
+    <button class="tab" data-tab="partir"><span class="ico">✂️</span>Dividir / Unir</button>
+  </div>
+
+  <!-- ===================== IMÁGENES ===================== -->
+  <div class="panel active" id="panel-imagenes">
+    <h2>Convertir y comprimir imágenes</h2>
+    <p class="desc">Subí una o varias imágenes (JPG, PNG, WEBP, BMP, GIF), elegí el formato de salida y, si querés, bajale el peso.</p>
+
+    <div class="drop" id="drop-img">
+      <div class="dico">📸</div>
+      <div class="dtitle">Arrastrá tus imágenes acá o hacé clic para elegirlas</div>
+      <div class="dsub">Podés cargar varias a la vez</div>
+      <input type="file" id="input-img" accept="image/*" multiple>
+    </div>
+    <div class="filelist" id="list-img"></div>
+
+    <div class="row">
+      <div class="field">
+        <label>Formato de salida</label>
+        <select id="img-format">
+          <option value="image/jpeg">JPG</option>
+          <option value="image/png">PNG</option>
+          <option value="image/webp">WEBP</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ancho máximo (px, opcional)</label>
+        <input type="number" id="img-maxwidth" placeholder="Ej: 1600 (vacío = tamaño original)">
+      </div>
+    </div>
+
+    <div class="field" id="img-quality-wrap">
+      <label>Calidad / peso: <span id="img-quality-val">80%</span></label>
+      <input type="range" id="img-quality" min="10" max="100" value="80">
+      <div class="hint">Más bajo = archivo más liviano, con algo menos de nitidez. PNG no usa este control (es sin pérdida).</div>
+    </div>
+
+    <button class="btn-main" id="btn-img" disabled>Convertir imágenes</button>
+    <div class="progress" id="prog-img"><div></div></div>
+    <div class="status" id="status-img"></div>
+    <div class="results" id="results-img"></div>
+  </div>
+
+  <!-- ===================== PDF ===================== -->
+  <div class="panel" id="panel-pdf">
+    <h2>Herramientas de PDF</h2>
+    <p class="desc">Uní varios PDF en uno, separá páginas, bajale el peso o convertí entre imágenes y PDF.</p>
+
+    <div class="subtools" id="pdf-subtools">
+      <button class="subtool-btn active" data-sub="unir">Unir PDFs</button>
+      <button class="subtool-btn" data-sub="dividir">Dividir PDF</button>
+      <button class="subtool-btn" data-sub="comprimir">Comprimir PDF</button>
+      <button class="subtool-btn" data-sub="img2pdf">Imágenes → PDF</button>
+      <button class="subtool-btn" data-sub="pdf2img">PDF → Imágenes</button>
+    </div>
+
+    <!-- Unir -->
+    <div class="subpanel active" id="sub-unir">
+      <div class="drop" id="drop-pdfunir">
+        <div class="dico">📎</div>
+        <div class="dtitle">Arrastrá 2 o más PDF para unir</div>
+        <div class="dsub">Se unen en el orden de la lista — podés reordenarlos</div>
+        <input type="file" id="input-pdfunir" accept="application/pdf" multiple>
+      </div>
+      <div class="filelist" id="list-pdfunir"></div>
+      <button class="btn-main" id="btn-pdfunir" disabled>Unir PDFs</button>
+      <div class="progress" id="prog-pdfunir"><div></div></div>
+      <div class="status" id="status-pdfunir"></div>
+      <div class="results" id="results-pdfunir"></div>
+    </div>
+
+    <!-- Dividir -->
+    <div class="subpanel" id="sub-dividir">
+      <div class="drop" id="drop-pdfdiv">
+        <div class="dico">✂️</div>
+        <div class="dtitle">Arrastrá un PDF para dividir</div>
+        <div class="dsub">Un solo archivo</div>
+        <input type="file" id="input-pdfdiv" accept="application/pdf">
+      </div>
+      <div class="filelist" id="list-pdfdiv"></div>
+      <div class="field" id="pdfdiv-opts" style="display:none;">
+        <label>¿Cómo lo dividimos?</label>
+        <div class="radiogroup">
+          <label><input type="radio" name="pdfdiv-mode" value="all" checked> Cada página por separado</label>
+          <label><input type="radio" name="pdfdiv-mode" value="range"> Elegir un rango</label>
+        </div>
+        <div class="row" id="pdfdiv-range-row" style="display:none;margin-top:10px;">
+          <div><label>Desde página</label><input type="number" id="pdfdiv-from" min="1" value="1"></div>
+          <div><label>Hasta página</label><input type="number" id="pdfdiv-to" min="1" value="1"></div>
+        </div>
+        <div class="hint" id="pdfdiv-pages"></div>
+      </div>
+      <button class="btn-main" id="btn-pdfdiv" disabled>Dividir PDF</button>
+      <div class="progress" id="prog-pdfdiv"><div></div></div>
+      <div class="status" id="status-pdfdiv"></div>
+      <div class="results" id="results-pdfdiv"></div>
+    </div>
+
+    <!-- Comprimir -->
+    <div class="subpanel" id="sub-comprimir">
+      <div class="drop" id="drop-pdfcomp">
+        <div class="dico">🗜️</div>
+        <div class="dtitle">Arrastrá un PDF para bajarle el peso</div>
+        <div class="dsub">Un solo archivo</div>
+        <input type="file" id="input-pdfcomp" accept="application/pdf">
+      </div>
+      <div class="filelist" id="list-pdfcomp"></div>
+      <div class="field">
+        <label>Nivel de compresión: <span id="pdfcomp-val">Medio</span></label>
+        <input type="range" id="pdfcomp-level" min="1" max="3" value="2" step="1">
+        <div class="hint">La compresión convierte cada página en una imagen liviana. El PDF resultante pesa mucho menos, pero el texto deja de poder seleccionarse/copiarse (queda como una foto de la página). Ideal para mandar por WhatsApp o email.</div>
+      </div>
+      <button class="btn-main" id="btn-pdfcomp" disabled>Comprimir PDF</button>
+      <div class="progress" id="prog-pdfcomp"><div></div></div>
+      <div class="status" id="status-pdfcomp"></div>
+      <div class="results" id="results-pdfcomp"></div>
+    </div>
+
+    <!-- Imagenes a PDF -->
+    <div class="subpanel" id="sub-img2pdf">
+      <div class="drop" id="drop-img2pdf">
+        <div class="dico">🖼️➡️📄</div>
+        <div class="dtitle">Arrastrá una o varias imágenes</div>
+        <div class="dsub">Cada imagen se convierte en una página del PDF, en el orden de la lista</div>
+        <input type="file" id="input-img2pdf" accept="image/*" multiple>
+      </div>
+      <div class="filelist" id="list-img2pdf"></div>
+      <button class="btn-main" id="btn-img2pdf" disabled>Crear PDF</button>
+      <div class="progress" id="prog-img2pdf"><div></div></div>
+      <div class="status" id="status-img2pdf"></div>
+      <div class="results" id="results-img2pdf"></div>
+    </div>
+
+    <!-- PDF a imagenes -->
+    <div class="subpanel" id="sub-pdf2img">
+      <div class="drop" id="drop-pdf2img">
+        <div class="dico">📄➡️🖼️</div>
+        <div class="dtitle">Arrastrá un PDF para convertir sus páginas en imágenes</div>
+        <div class="dsub">Un solo archivo</div>
+        <input type="file" id="input-pdf2img" accept="application/pdf">
+      </div>
+      <div class="filelist" id="list-pdf2img"></div>
+      <div class="row">
+        <div class="field">
+          <label>Formato de imagen</label>
+          <select id="pdf2img-format">
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Calidad</label>
+          <select id="pdf2img-quality">
+            <option value="1.5">Estándar</option>
+            <option value="2.5" selected>Alta</option>
+            <option value="4">Muy alta</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-main" id="btn-pdf2img" disabled>Convertir a imágenes</button>
+      <div class="progress" id="prog-pdf2img"><div></div></div>
+      <div class="status" id="status-pdf2img"></div>
+      <div class="results" id="results-pdf2img"></div>
+    </div>
+  </div>
+
+  <!-- ===================== ZIP ===================== -->
+  <div class="panel" id="panel-zip">
+    <h2>Agrupar y extraer ZIP</h2>
+    <p class="desc">Juntá cualquier tipo de archivo en un único .zip, o abrí un .zip que ya tenés para sacar lo de adentro.</p>
+
+    <div class="subtools">
+      <button class="subtool-btn active" data-sub="agrupar">Crear ZIP</button>
+      <button class="subtool-btn" data-sub="extraer">Extraer ZIP</button>
+    </div>
+
+    <div class="subpanel active" id="sub-agrupar">
+      <div class="drop" id="drop-zipmake">
+        <div class="dico">🗂️</div>
+        <div class="dtitle">Arrastrá los archivos que querés agrupar</div>
+        <div class="dsub">Cualquier tipo y cantidad de archivos</div>
+        <input type="file" id="input-zipmake" multiple>
+      </div>
+      <div class="filelist" id="list-zipmake"></div>
+      <div class="field">
+        <label>Nombre del archivo .zip</label>
+        <input type="text" id="zipmake-name" placeholder="mis-archivos">
+      </div>
+      <button class="btn-main" id="btn-zipmake" disabled>Crear ZIP</button>
+      <div class="progress" id="prog-zipmake"><div></div></div>
+      <div class="status" id="status-zipmake"></div>
+      <div class="results" id="results-zipmake"></div>
+    </div>
+
+    <div class="subpanel" id="sub-extraer">
+      <div class="drop" id="drop-zipext">
+        <div class="dico">📦</div>
+        <div class="dtitle">Arrastrá un archivo .zip para ver qué tiene adentro</div>
+        <input type="file" id="input-zipext" accept=".zip">
+      </div>
+      <div class="status" id="status-zipext"></div>
+      <div class="results" id="results-zipext"></div>
+      <div class="results-actions"></div>
+    </div>
+  </div>
+
+  <!-- ===================== DATOS ===================== -->
+  <div class="panel" id="panel-datos">
+    <h2>Convertir planillas y datos</h2>
+    <p class="desc">Pasá información entre Excel, CSV y JSON sin romper nada.</p>
+
+    <div class="drop" id="drop-data">
+      <div class="dico">📊</div>
+      <div class="dtitle">Arrastrá un archivo .xlsx, .xls, .csv o .json</div>
+      <input type="file" id="input-data" accept=".xlsx,.xls,.csv,.json">
+    </div>
+    <div class="filelist" id="list-data"></div>
+
+    <div class="field">
+      <label>Convertir a</label>
+      <select id="data-format">
+        <option value="xlsx">Excel (.xlsx)</option>
+        <option value="csv">CSV</option>
+        <option value="json">JSON</option>
+      </select>
+    </div>
+
+    <button class="btn-main" id="btn-data" disabled>Convertir</button>
+    <div class="status" id="status-data"></div>
+    <div class="results" id="results-data"></div>
+  </div>
+
+  <!-- ===================== DIVIDIR / UNIR ===================== -->
+  <div class="panel" id="panel-partir">
+    <h2>Dividir o unir cualquier archivo</h2>
+    <p class="desc">Partí un archivo pesado en pedazos más chicos (para mandarlo por mail, WhatsApp o un pendrive), o volvé a unir las partes después. Funciona con cualquier tipo de archivo, porque no mira el contenido — solo lo corta y lo pega.</p>
+
+    <div class="subtools">
+      <button class="subtool-btn active" data-sub="dividirarchivo">Dividir un archivo</button>
+      <button class="subtool-btn" data-sub="unirarchivo">Unir partes</button>
+    </div>
+
+    <div class="subpanel active" id="sub-dividirarchivo">
+      <div class="drop" id="drop-splitfile">
+        <div class="dico">✂️</div>
+        <div class="dtitle">Arrastrá el archivo que querés partir</div>
+        <input type="file" id="input-splitfile">
+      </div>
+      <div class="filelist" id="list-splitfile"></div>
+      <div class="field">
+        <label>Tamaño máximo de cada parte</label>
+        <select id="split-size">
+          <option value="10">10 MB (para email)</option>
+          <option value="25">25 MB</option>
+          <option value="50">50 MB</option>
+          <option value="100" selected>100 MB</option>
+          <option value="700">700 MB (para CD/DVD)</option>
+          <option value="custom">Otro tamaño...</option>
+        </select>
+      </div>
+      <div class="field" id="split-custom-wrap" style="display:none;">
+        <label>Tamaño personalizado (MB)</label>
+        <input type="number" id="split-custom" min="1" value="50">
+      </div>
+      <div class="hint" id="split-preview"></div>
+      <button class="btn-main" id="btn-splitfile" disabled>Dividir archivo</button>
+      <div class="progress" id="prog-splitfile"><div></div></div>
+      <div class="status" id="status-splitfile"></div>
+      <div class="results" id="results-splitfile"></div>
+    </div>
+
+    <div class="subpanel" id="sub-unirarchivo">
+      <div class="drop" id="drop-joinfile">
+        <div class="dico">🧩</div>
+        <div class="dtitle">Arrastrá todas las partes juntas (.001, .002, etc.)</div>
+        <div class="dsub">Se ordenan solas y se unen en el orden correcto</div>
+        <input type="file" id="input-joinfile" multiple>
+      </div>
+      <div class="filelist" id="list-joinfile"></div>
+      <div class="field">
+        <label>Nombre del archivo final (con extensión)</label>
+        <input type="text" id="join-name" placeholder="Ej: video.mp4">
+        <div class="hint">Si partiste el archivo acá mismo, ya te lo completamos solos.</div>
+      </div>
+      <button class="btn-main" id="btn-joinfile" disabled>Unir partes</button>
+      <div class="progress" id="prog-joinfile"><div></div></div>
+      <div class="status" id="status-joinfile"></div>
+      <div class="results" id="results-joinfile"></div>
+    </div>
+  </div>
+</div>
+
+<div class="privacy"><b>100% privado:</b> ningún archivo sale de tu computadora — todo el trabajo lo hace tu propio navegador. Podés incluso desconectarte de internet después de que cargue la página y va a seguir funcionando.</div>
+
+<footer>Hecho por <a href="https://rindex4.wordpress.com/" target="_blank" rel="noopener">Rindex</a> — herramientas simples para tu pyme.</footer>
+
+<script src="libs/pdf-lib.min.js"></script>
+<script src="libs/jszip.min.js"></script>
+<script src="libs/xlsx.full.min.js"></script>
+<script type="module">
+import * as pdfjsLib from './libs/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdf.worker.min.mjs';
+window.pdfjsLib = pdfjsLib;
+window.dispatchEvent(new Event('pdfjs-ready'));
+</script>
+<script>
+/* ============================================================
+   UTILIDADES GENERALES
+   ============================================================ */
+function fmtBytes(b){
+  if(b < 1024) return b + ' B';
+  if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  if(b < 1024*1024*1024) return (b/1024/1024).toFixed(1) + ' MB';
+  return (b/1024/1024/1024).toFixed(2) + ' GB';
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 30000);
+}
+function setStatus(id, type, msg){
+  const el = document.getElementById(id);
+  el.className = 'status show ' + type;
+  el.textContent = msg;
+}
+function clearStatus(id){
+  const el = document.getElementById(id);
+  el.className = 'status';
+  el.textContent = '';
+}
+function setProgress(id, pct){
+  const wrap = document.getElementById(id);
+  wrap.classList.add('show');
+  wrap.querySelector('div').style.width = pct + '%';
+  if(pct >= 100) setTimeout(()=>wrap.classList.remove('show'), 600);
+}
+function addResult(containerId, name, blob){
+  const cont = document.getElementById(containerId);
+  const url = URL.createObjectURL(blob);
+  const div = document.createElement('div');
+  div.className = 'result-item';
+  div.innerHTML = `<div class="rname">${name}</div><div class="rsize">${fmtBytes(blob.size)}</div><a href="${url}" download="${name}">Descargar</a>`;
+  cont.appendChild(div);
+}
+function clearResults(containerId){ document.getElementById(containerId).innerHTML = ''; }
+
+/* ============================================================
+   TABS PRINCIPALES
+   ============================================================ */
+document.querySelectorAll('#tabs .tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#tabs .tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+/* sub-tabs (dentro de PDF, ZIP, Dividir/Unir) */
+document.querySelectorAll('.subtools').forEach(group=>{
+  group.querySelectorAll('.subtool-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      group.querySelectorAll('.subtool-btn').forEach(b=>b.classList.remove('active'));
+      const panel = group.closest('.panel');
+      panel.querySelectorAll('.subpanel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      panel.querySelector('#sub-' + btn.dataset.sub).classList.add('active');
+    });
+  });
+});
+
+/* ============================================================
+   HELPER: dropzone + filelist genérico con reordenable opcional
+   ============================================================ */
+function setupDropzone({dropId, inputId, listId, btnId, multiple, accept, onChange, reorder}){
+  const drop = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+  let files = [];
+
+  drop.addEventListener('click', ()=> input.click());
+  drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e=>{
+    e.preventDefault(); drop.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  input.addEventListener('change', e=> handleFiles(e.target.files));
+
+  function handleFiles(fileList){
+    const arr = Array.from(fileList);
+    files = multiple ? files.concat(arr) : arr.slice(0,1);
+    renderList();
+    if(onChange) onChange(files);
+  }
+  function removeAt(i){
+    files.splice(i,1);
+    renderList();
+    if(onChange) onChange(files);
+  }
+  function moveAt(i, dir){
+    const j = i + dir;
+    if(j < 0 || j >= files.length) return;
+    [files[i], files[j]] = [files[j], files[i]];
+    renderList();
+    if(onChange) onChange(files);
+  }
+  function renderList(){
+    const list = document.getElementById(listId);
+    list.innerHTML = '';
+    files.forEach((f,i)=>{
+      const item = document.createElement('div');
+      item.className = 'fileitem';
+      item.innerHTML = `
+        ${reorder ? `<span class="move" data-i="${i}" data-dir="-1">▲</span><span class="move" data-i="${i}" data-dir="1">▼</span>` : ''}
+        <span class="fname">${f.name}</span><span class="fsize">${fmtBytes(f.size)}</span>
+        <button data-i="${i}">✕</button>`;
+      list.appendChild(item);
+    });
+    list.querySelectorAll('button[data-i]').forEach(b=> b.addEventListener('click', ()=> removeAt(+b.dataset.i)));
+    if(reorder) list.querySelectorAll('.move').forEach(b=> b.addEventListener('click', ()=> moveAt(+b.dataset.i, +b.dataset.dir)));
+  }
+  return { getFiles: ()=>files, clear: ()=>{files=[]; renderList();} };
+}
+
+/* ============================================================
+   MÓDULO 1: IMÁGENES
+   ============================================================ */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-img', inputId:'input-img', listId:'list-img', multiple:true,
+    onChange: (files)=>{ document.getElementById('btn-img').disabled = files.length===0; }
+  });
+  const qualityInput = document.getElementById('img-quality');
+  qualityInput.addEventListener('input', ()=>{
+    document.getElementById('img-quality-val').textContent = qualityInput.value + '%';
+  });
+  document.getElementById('img-format').addEventListener('change', (e)=>{
+    document.getElementById('img-quality-wrap').style.display = e.target.value==='image/png' ? 'none' : 'block';
+  });
+
+  function loadImage(file){
+    return new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = ()=> resolve(img);
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  document.getElementById('btn-img').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-img'); clearResults('results-img');
+    const format = document.getElementById('img-format').value;
+    const quality = parseInt(document.getElementById('img-quality').value)/100;
+    const maxW = parseInt(document.getElementById('img-maxwidth').value) || null;
+    const ext = format==='image/jpeg' ? 'jpg' : format==='image/png' ? 'png' : 'webp';
+    setStatus('status-img','info','Convirtiendo...');
+
+    const outputs = [];
+    for(let i=0;i<files.length;i++){
+      try{
+        const img = await loadImage(files[i]);
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if(maxW && w > maxW){ h = Math.round(h * (maxW/w)); w = maxW; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if(format==='image/jpeg'){ ctx.fillStyle = '#fff'; ctx.fillRect(0,0,w,h); }
+        ctx.drawImage(img, 0, 0, w, h);
+        const blob = await new Promise(res=> canvas.toBlob(res, format, quality));
+        const baseName = files[i].name.replace(/\.[^.]+$/, '');
+        outputs.push({name: baseName + '.' + ext, blob});
+      }catch(err){
+        setStatus('status-img','err','No se pudo procesar "' + files[i].name + '": ' + err.message);
+      }
+      setProgress('prog-img', Math.round(((i+1)/files.length)*100));
+    }
+    if(outputs.length===1){
+      addResult('results-img', outputs[0].name, outputs[0].blob);
+      setStatus('status-img','ok','Listo ✔');
+    } else if(outputs.length>1){
+      const zip = new JSZip();
+      outputs.forEach(o=> zip.file(o.name, o.blob));
+      const zipBlob = await zip.generateAsync({type:'blob'});
+      addResult('results-img', 'imagenes-convertidas.zip', zipBlob);
+      outputs.forEach(o=> addResult('results-img', o.name, o.blob));
+      setStatus('status-img','ok', outputs.length + ' imágenes convertidas ✔');
+    }
+  });
+})();
+
+/* ============================================================
+   MÓDULO 2: PDF (espera a que pdf.js esté listo)
+   ============================================================ */
+let pdfjsReady = false;
+window.addEventListener('pdfjs-ready', ()=> pdfjsReady = true);
+
+async function fileToPdfDoc(file){
+  const bytes = await file.arrayBuffer();
+  return PDFLib.PDFDocument.load(bytes);
+}
+
+/* --- Unir PDFs --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-pdfunir', inputId:'input-pdfunir', listId:'list-pdfunir', multiple:true, reorder:true,
+    onChange: (files)=>{ document.getElementById('btn-pdfunir').disabled = files.length < 2; }
+  });
+  document.getElementById('btn-pdfunir').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    clearStatus('status-pdfunir'); clearResults('results-pdfunir');
+    setStatus('status-pdfunir','info','Uniendo...');
+    try{
+      const merged = await PDFLib.PDFDocument.create();
+      for(let i=0;i<files.length;i++){
+        const src = await fileToPdfDoc(files[i]);
+        const pages = await merged.copyPages(src, src.getPageIndices());
+        pages.forEach(p=> merged.addPage(p));
+        setProgress('prog-pdfunir', Math.round(((i+1)/files.length)*100));
+      }
+      const bytes = await merged.save();
+      addResult('results-pdfunir', 'unido.pdf', new Blob([bytes],{type:'application/pdf'}));
+      setStatus('status-pdfunir','ok','PDF unido ✔ (' + files.length + ' archivos)');
+    }catch(err){
+      setStatus('status-pdfunir','err','Error al unir: ' + err.message);
+    }
+  });
+})();
+
+/* --- Dividir PDF --- */
+(function(){
+  let totalPages = 0;
+  const dz = setupDropzone({
+    dropId:'drop-pdfdiv', inputId:'input-pdfdiv', listId:'list-pdfdiv', multiple:false,
+    onChange: async (files)=>{
+      const btn = document.getElementById('btn-pdfdiv');
+      const opts = document.getElementById('pdfdiv-opts');
+      if(!files.length){ btn.disabled = true; opts.style.display='none'; return; }
+      try{
+        const doc = await fileToPdfDoc(files[0]);
+        totalPages = doc.getPageCount();
+        document.getElementById('pdfdiv-pages').textContent = 'El PDF tiene ' + totalPages + ' página(s).';
+        document.getElementById('pdfdiv-to').value = totalPages;
+        document.getElementById('pdfdiv-from').max = totalPages;
+        document.getElementById('pdfdiv-to').max = totalPages;
+        opts.style.display = 'block';
+        btn.disabled = false;
+      }catch(err){
+        setStatus('status-pdfdiv','err','No se pudo leer el PDF: ' + err.message);
+      }
+    }
+  });
+  document.querySelectorAll('input[name=pdfdiv-mode]').forEach(r=>{
+    r.addEventListener('change', ()=>{
+      document.getElementById('pdfdiv-range-row').style.display = r.value==='range' && r.checked ? 'flex' : (document.querySelector('input[name=pdfdiv-mode]:checked').value==='range' ? 'flex':'none');
+    });
+  });
+  document.getElementById('btn-pdfdiv').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-pdfdiv'); clearResults('results-pdfdiv');
+    const mode = document.querySelector('input[name=pdfdiv-mode]:checked').value;
+    setStatus('status-pdfdiv','info','Dividiendo...');
+    try{
+      const src = await fileToPdfDoc(files[0]);
+      const baseName = files[0].name.replace(/\.pdf$/i,'');
+      if(mode==='all'){
+        const zip = new JSZip();
+        for(let i=0;i<totalPages;i++){
+          const doc = await PDFLib.PDFDocument.create();
+          const [p] = await doc.copyPages(src, [i]);
+          doc.addPage(p);
+          const bytes = await doc.save();
+          zip.file(baseName + '-pag' + String(i+1).padStart(3,'0') + '.pdf', bytes);
+          setProgress('prog-pdfdiv', Math.round(((i+1)/totalPages)*100));
+        }
+        const zipBlob = await zip.generateAsync({type:'blob'});
+        addResult('results-pdfdiv', baseName + '-paginas.zip', zipBlob);
+        setStatus('status-pdfdiv','ok','Dividido en ' + totalPages + ' páginas ✔');
+      } else {
+        let from = parseInt(document.getElementById('pdfdiv-from').value) - 1;
+        let to = parseInt(document.getElementById('pdfdiv-to').value) - 1;
+        from = Math.max(0, Math.min(from, totalPages-1));
+        to = Math.max(from, Math.min(to, totalPages-1));
+        const doc = await PDFLib.PDFDocument.create();
+        const idx = []; for(let i=from;i<=to;i++) idx.push(i);
+        const pages = await doc.copyPages(src, idx);
+        pages.forEach(p=> doc.addPage(p));
+        const bytes = await doc.save();
+        addResult('results-pdfdiv', baseName + '-pag' + (from+1) + 'a' + (to+1) + '.pdf', new Blob([bytes],{type:'application/pdf'}));
+        setStatus('status-pdfdiv','ok','Listo ✔');
+      }
+    }catch(err){
+      setStatus('status-pdfdiv','err','Error: ' + err.message);
+    }
+  });
+})();
+
+/* --- Comprimir PDF (rasteriza cada página con pdf.js y reconstruye con pdf-lib) --- */
+(function(){
+  const levels = {1:{scale:1.0,q:0.55,label:'Alta (más liviano)'}, 2:{scale:1.4,q:0.72,label:'Medio'}, 3:{scale:2.0,q:0.85,label:'Baja (más pesado, mejor calidad)'}};
+  document.getElementById('pdfcomp-level').addEventListener('input', (e)=>{
+    document.getElementById('pdfcomp-val').textContent = levels[e.target.value].label;
+  });
+  const dz = setupDropzone({
+    dropId:'drop-pdfcomp', inputId:'input-pdfcomp', listId:'list-pdfcomp', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-pdfcomp').disabled = files.length===0; }
+  });
+  document.getElementById('btn-pdfcomp').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    if(!pdfjsReady){ setStatus('status-pdfcomp','err','Todavía está cargando el motor de PDF, esperá unos segundos y probá de nuevo.'); return; }
+    clearStatus('status-pdfcomp'); clearResults('results-pdfcomp');
+    setStatus('status-pdfcomp','info','Comprimiendo (esto puede tardar según el tamaño del PDF)...');
+    const level = levels[document.getElementById('pdfcomp-level').value];
+    try{
+      const bytes = await files[0].arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({data: bytes}).promise;
+      const outDoc = await PDFLib.PDFDocument.create();
+      for(let i=1;i<=pdf.numPages;i++){
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({scale: level.scale});
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+        const jpegDataUrl = canvas.toDataURL('image/jpeg', level.q);
+        const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(',')[1]), c=>c.charCodeAt(0));
+        const img = await outDoc.embedJpg(jpegBytes);
+        const pdfPage = outDoc.addPage([viewport.width, viewport.height]);
+        pdfPage.drawImage(img, {x:0, y:0, width:viewport.width, height:viewport.height});
+        setProgress('prog-pdfcomp', Math.round((i/pdf.numPages)*100));
+      }
+      const outBytes = await outDoc.save();
+      const outBlob = new Blob([outBytes],{type:'application/pdf'});
+      const baseName = files[0].name.replace(/\.pdf$/i,'');
+      addResult('results-pdfcomp', baseName + '-comprimido.pdf', outBlob);
+      const reduction = Math.round((1 - outBlob.size/files[0].size)*100);
+      setStatus('status-pdfcomp','ok', 'Listo ✔ — ' + fmtBytes(files[0].size) + ' → ' + fmtBytes(outBlob.size) + (reduction>0 ? ' (' + reduction + '% más liviano)' : ''));
+    }catch(err){
+      setStatus('status-pdfcomp','err','Error al comprimir: ' + err.message);
+    }
+  });
+})();
+
+/* --- Imágenes a PDF --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-img2pdf', inputId:'input-img2pdf', listId:'list-img2pdf', multiple:true, reorder:true,
+    onChange:(files)=>{ document.getElementById('btn-img2pdf').disabled = files.length===0; }
+  });
+  document.getElementById('btn-img2pdf').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-img2pdf'); clearResults('results-img2pdf');
+    setStatus('status-img2pdf','info','Creando PDF...');
+    try{
+      const doc = await PDFLib.PDFDocument.create();
+      for(let i=0;i<files.length;i++){
+        const bytes = await files[i].arrayBuffer();
+        const isPng = files[i].type==='image/png' || /\.png$/i.test(files[i].name);
+        let img;
+        try{
+          img = isPng ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+        }catch(e){
+          // formatos no soportados nativamente (webp, gif, bmp): pasar por canvas y reconvertir a jpg
+          const imageEl = await new Promise((res,rej)=>{ const im = new Image(); im.onload=()=>res(im); im.onerror=rej; im.src = URL.createObjectURL(files[i]); });
+          const canvas = document.createElement('canvas'); canvas.width = imageEl.naturalWidth; canvas.height = imageEl.naturalHeight;
+          const ctx = canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(imageEl,0,0);
+          const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          const jpegBytes = Uint8Array.from(atob(jpegDataUrl.split(',')[1]), c=>c.charCodeAt(0));
+          img = await doc.embedJpg(jpegBytes);
+        }
+        const page = doc.addPage([img.width, img.height]);
+        page.drawImage(img, {x:0, y:0, width:img.width, height:img.height});
+        setProgress('prog-img2pdf', Math.round(((i+1)/files.length)*100));
+      }
+      const bytes = await doc.save();
+      addResult('results-img2pdf', 'imagenes.pdf', new Blob([bytes],{type:'application/pdf'}));
+      setStatus('status-img2pdf','ok','PDF creado ✔ (' + files.length + ' página/s)');
+    }catch(err){
+      setStatus('status-img2pdf','err','Error: ' + err.message);
+    }
+  });
+})();
+
+/* --- PDF a imagenes --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-pdf2img', inputId:'input-pdf2img', listId:'list-pdf2img', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-pdf2img').disabled = files.length===0; }
+  });
+  document.getElementById('btn-pdf2img').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    if(!pdfjsReady){ setStatus('status-pdf2img','err','Todavía está cargando el motor de PDF, esperá unos segundos y probá de nuevo.'); return; }
+    clearStatus('status-pdf2img'); clearResults('results-pdf2img');
+    setStatus('status-pdf2img','info','Convirtiendo páginas...');
+    const format = document.getElementById('pdf2img-format').value;
+    const scale = parseFloat(document.getElementById('pdf2img-quality').value);
+    const ext = format==='image/jpeg' ? 'jpg' : 'png';
+    try{
+      const bytes = await files[0].arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({data: bytes}).promise;
+      const baseName = files[0].name.replace(/\.pdf$/i,'');
+      const zip = new JSZip();
+      for(let i=1;i<=pdf.numPages;i++){
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({scale});
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+        const blob = await new Promise(res=> canvas.toBlob(res, format, 0.9));
+        zip.file(baseName + '-pag' + String(i).padStart(3,'0') + '.' + ext, blob);
+        setProgress('prog-pdf2img', Math.round((i/pdf.numPages)*100));
+      }
+      const zipBlob = await zip.generateAsync({type:'blob'});
+      addResult('results-pdf2img', baseName + '-imagenes.zip', zipBlob);
+      setStatus('status-pdf2img','ok', pdf.numPages + ' página/s convertidas ✔');
+    }catch(err){
+      setStatus('status-pdf2img','err','Error: ' + err.message);
+    }
+  });
+})();
+
+/* ============================================================
+   MÓDULO 3: ZIP
+   ============================================================ */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-zipmake', inputId:'input-zipmake', listId:'list-zipmake', multiple:true,
+    onChange:(files)=>{ document.getElementById('btn-zipmake').disabled = files.length===0; }
+  });
+  document.getElementById('btn-zipmake').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-zipmake'); clearResults('results-zipmake');
+    setStatus('status-zipmake','info','Comprimiendo...');
+    try{
+      const zip = new JSZip();
+      files.forEach(f=> zip.file(f.name, f));
+      const blob = await zip.generateAsync({type:'blob'}, (meta)=>{
+        setProgress('prog-zipmake', Math.round(meta.percent));
+      });
+      const name = (document.getElementById('zipmake-name').value.trim() || 'archivos') + '.zip';
+      addResult('results-zipmake', name, blob);
+      setStatus('status-zipmake','ok', files.length + ' archivo/s agrupados ✔');
+    }catch(err){
+      setStatus('status-zipmake','err','Error: ' + err.message);
+    }
+  });
+})();
+
+(function(){
+  const drop = document.getElementById('drop-zipext');
+  const input = document.getElementById('input-zipext');
+  drop.addEventListener('click', ()=> input.click());
+  drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('dragover'); handleZip(e.dataTransfer.files[0]); });
+  input.addEventListener('change', e=> handleZip(e.target.files[0]));
+
+  async function handleZip(file){
+    if(!file) return;
+    clearStatus('status-zipext'); clearResults('results-zipext');
+    setStatus('status-zipext','info','Leyendo el .zip...');
+    try{
+      const zip = await JSZip.loadAsync(file);
+      const entries = Object.values(zip.files).filter(f=>!f.dir);
+      if(!entries.length){ setStatus('status-zipext','err','El .zip está vacío.'); return; }
+      setStatus('status-zipext','ok', entries.length + ' archivo/s encontrados — descargalos abajo:');
+      for(const entry of entries){
+        const blob = await entry.async('blob');
+        addResult('results-zipext', entry.name, blob);
+      }
+    }catch(err){
+      setStatus('status-zipext','err','No se pudo abrir el .zip: ' + err.message);
+    }
+  }
+})();
+
+/* ============================================================
+   MÓDULO 4: DATOS (CSV / XLSX / JSON)
+   ============================================================ */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-data', inputId:'input-data', listId:'list-data', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-data').disabled = files.length===0; }
+  });
+  document.getElementById('btn-data').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-data'); clearResults('results-data');
+    setStatus('status-data','info','Convirtiendo...');
+    try{
+      const file = files[0];
+      const outFormat = document.getElementById('data-format').value;
+      const baseName = file.name.replace(/\.[^.]+$/, '');
+      let wb;
+      if(/\.json$/i.test(file.name)){
+        const text = await file.text();
+        const data = JSON.parse(text);
+        const arr = Array.isArray(data) ? data : [data];
+        const ws = XLSX.utils.json_to_sheet(arr);
+        wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Hoja1');
+      } else {
+        const buf = await file.arrayBuffer();
+        wb = XLSX.read(buf, {type:'array'});
+      }
+
+      if(outFormat==='xlsx'){
+        const out = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+        addResult('results-data', baseName + '.xlsx', new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+      } else if(outFormat==='csv'){
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        addResult('results-data', baseName + '.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+      } else if(outFormat==='json'){
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws);
+        addResult('results-data', baseName + '.json', new Blob([JSON.stringify(json,null,2)],{type:'application/json'}));
+      }
+      setStatus('status-data','ok','Listo ✔');
+    }catch(err){
+      setStatus('status-data','err','No se pudo convertir: ' + err.message);
+    }
+  });
+})();
+
+/* ============================================================
+   MÓDULO 5: DIVIDIR / UNIR CUALQUIER ARCHIVO
+   ============================================================ */
+(function(){
+  const CHUNK_EXT = '.part';
+  document.getElementById('split-size').addEventListener('change', (e)=>{
+    document.getElementById('split-custom-wrap').style.display = e.target.value==='custom' ? 'block' : 'none';
+    updatePreview();
+  });
+  document.getElementById('split-custom').addEventListener('input', updatePreview);
+
+  const dz = setupDropzone({
+    dropId:'drop-splitfile', inputId:'input-splitfile', listId:'list-splitfile', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-splitfile').disabled = files.length===0; updatePreview(); }
+  });
+
+  function getSizeMb(){
+    const v = document.getElementById('split-size').value;
+    return v==='custom' ? (parseFloat(document.getElementById('split-custom').value)||50) : parseFloat(v);
+  }
+  function updatePreview(){
+    const files = dz.getFiles();
+    const el = document.getElementById('split-preview');
+    if(!files.length){ el.textContent=''; return; }
+    const sizeMb = getSizeMb();
+    const parts = Math.ceil(files[0].size / (sizeMb*1024*1024));
+    el.textContent = 'Se va a dividir en ' + parts + ' parte(s) de hasta ' + sizeMb + ' MB cada una.';
+  }
+
+  document.getElementById('btn-splitfile').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-splitfile'); clearResults('results-splitfile');
+    const file = files[0];
+    const sizeBytes = getSizeMb()*1024*1024;
+    const totalParts = Math.ceil(file.size / sizeBytes);
+    if(totalParts <= 1){
+      setStatus('status-splitfile','err','El archivo ya pesa menos que el tamaño elegido, no hace falta dividirlo.');
+      return;
+    }
+    setStatus('status-splitfile','info','Dividiendo en ' + totalParts + ' partes...');
+    try{
+      const zip = new JSZip();
+      const manifest = { originalName: file.name, totalParts, partSizeBytes: sizeBytes, totalSizeBytes: file.size };
+      for(let i=0;i<totalParts;i++){
+        const start = i*sizeBytes, end = Math.min(start+sizeBytes, file.size);
+        const chunk = file.slice(start, end);
+        const partName = file.name + CHUNK_EXT + String(i+1).padStart(3,'0') + 'of' + String(totalParts).padStart(3,'0');
+        zip.file(partName, chunk);
+        setProgress('prog-splitfile', Math.round(((i+1)/totalParts)*100));
+      }
+      zip.file(file.name + '.manifest.json', JSON.stringify(manifest,null,2));
+      const zipBlob = await zip.generateAsync({type:'blob'});
+      addResult('results-splitfile', file.name + '-partes.zip', zipBlob);
+      setStatus('status-splitfile','ok','Dividido en ' + totalParts + ' partes ✔ — descargá el .zip, y cuando quieras volver a armar el archivo, extraé las partes y usá la pestaña "Unir partes" acá mismo.');
+    }catch(err){
+      setStatus('status-splitfile','err','Error: ' + err.message);
+    }
+  });
+
+  /* --- Unir partes --- */
+  const dzJoin = setupDropzone({
+    dropId:'drop-joinfile', inputId:'input-joinfile', listId:'list-joinfile', multiple:true,
+    onChange:(files)=>{
+      document.getElementById('btn-joinfile').disabled = files.length===0;
+      const m = files.length && files[0].name.match(/^(.*?)\.part\d+of\d+$/);
+      if(m) document.getElementById('join-name').value = m[1];
+    }
+  });
+  document.getElementById('btn-joinfile').addEventListener('click', async ()=>{
+    let files = dzJoin.getFiles();
+    if(!files.length) return;
+    clearStatus('status-joinfile'); clearResults('results-joinfile');
+    // ordenar por el número de parte si sigue el patron .partNNNofNNN, si no, por nombre
+    files = files.slice().sort((a,b)=>{
+      const ma = a.name.match(/\.part(\d+)of\d+$/), mb = b.name.match(/\.part(\d+)of\d+$/);
+      if(ma && mb) return parseInt(ma[1]) - parseInt(mb[1]);
+      return a.name.localeCompare(b.name);
+    });
+    const outName = document.getElementById('join-name').value.trim() || 'archivo-unido';
+    setStatus('status-joinfile','info','Uniendo ' + files.length + ' partes...');
+    try{
+      const blobs = [];
+      for(let i=0;i<files.length;i++){
+        blobs.push(files[i]);
+        setProgress('prog-joinfile', Math.round(((i+1)/files.length)*100));
+      }
+      const finalBlob = new Blob(blobs);
+      addResult('results-joinfile', outName, finalBlob);
+      setStatus('status-joinfile','ok','Archivo reconstruido ✔ (' + fmtBytes(finalBlob.size) + ')');
+    }catch(err){
+      setStatus('status-joinfile','err','Error: ' + err.message);
+    }
+  });
+})();
+</script>
+</body>
+</html>
