@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de Sueldo — Rindex</title>
+<link rel="icon" href="../assets/logo-rindex.png">
+<style>
+:root{
+  --navy:#1B1740; --navy2:#241E52; --violet:#7C3AED; --violet-soft:#A78BFA;
+  --pink:#EC4899; --grad: linear-gradient(120deg,#7C3AED 0%,#C026D3 55%,#EC4899 100%);
+  --bg:#F5F3FC; --card-bg:#FFFFFF; --line:#E4DEF7; --text:#241E3D; --text-soft:#6B6484;
+  --ok-bg:#F1EBFF;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;
+}
+h1,h2,h3{font-family:"Poppins","Segoe UI",Arial,sans-serif;}
+
+/* ---------- HEADER ---------- */
+header.top{
+  background:var(--navy);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(124,58,237,.35), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(236,72,153,.30), transparent 50%);
+  color:#fff; padding:22px 20px 26px;
+}
+.top-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+.top-inner img{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+.top-title{display:flex;flex-direction:column;}
+.top-title .brand{font-size:20px;font-weight:700;letter-spacing:.3px;}
+.top-title .tag{font-size:12.5px;color:#CBB9FF;margin-top:1px;}
+.top-desc{max-width:1100px;margin:14px auto 0;font-size:13px;color:#D9CFFB;line-height:1.5;}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px;display:grid;
+  grid-template-columns:380px 1fr;gap:20px;align-items:flex-start;}
+@media (max-width:840px){ .wrap{grid-template-columns:1fr;} }
+
+/* ---------- FORM CARD ---------- */
+.card{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;
+  padding:18px 18px 20px;box-shadow:0 4px 18px rgba(76,29,149,.06);}
+.card h2{font-size:14.5px;color:var(--navy);margin:0 0 2px;}
+.card p.sub{font-size:11.5px;color:var(--text-soft);margin:0 0 14px;}
+fieldset{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;padding:10px 12px 13px;}
+legend{font-weight:700;color:var(--violet);font-size:11.5px;padding:0 6px;}
+label{display:block;font-size:11px;margin-top:8px;color:var(--text);font-weight:600;}
+label.inline{display:inline-flex;align-items:center;gap:6px;font-weight:600;margin-top:9px;}
+input[type=text],input[type=number],input[type=date],select{
+  width:100%;padding:7px 8px;font-size:12.5px;border:1px solid var(--line);border-radius:8px;
+  margin-top:3px;font-family:inherit;background:#FBFAFF;color:var(--text);}
+input:focus,select:focus{outline:none;border-color:var(--violet-soft);background:#fff;}
+input[type=checkbox]{width:14px;height:14px;accent-color:var(--violet);}
+.row2{display:flex;gap:8px;}
+.row2>div{flex:1;min-width:0;}
+.hint{font-size:9.5px;color:var(--text-soft);margin-top:3px;line-height:1.35;}
+.pct-row{display:flex;gap:8px;align-items:center;}
+.pct-row label{margin-top:0;flex:1;font-weight:500;}
+.pct-row input{width:72px;flex:none;}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.btn-add{background:var(--ok-bg);border:1px solid var(--violet-soft);color:var(--violet);
+  border-radius:7px;padding:5px 9px;font-size:10.5px;cursor:pointer;font-weight:600;}
+.btn-add:hover{background:#e7ddff;}
+.dyn-row{display:flex;gap:6px;align-items:center;margin-top:6px;}
+.dyn-row input{flex:1;min-width:0;}
+.dyn-row .amt{width:100px;flex:none;}
+.del-btn{color:var(--pink);cursor:pointer;background:none;border:none;font-size:17px;line-height:1;padding:0 4px;}
+details summary{cursor:pointer;font-size:11.5px;color:var(--violet);font-weight:700;margin-top:2px;}
+.sac-box{background:#FFF3F9;border:1px solid #F3C7DE;border-radius:10px;padding:9px;margin-top:6px;}
+.sac-box .hint{color:#9C4E73;}
+
+/* ---------- RESULTADOS ---------- */
+.neto-card{background:var(--grad);border-radius:18px;padding:22px 24px;color:#fff;
+  box-shadow:0 10px 26px rgba(124,58,237,.28);position:relative;overflow:hidden;}
+.neto-card .lbl{font-size:12.5px;opacity:.9;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+.neto-card .val{font-size:38px;font-weight:800;margin-top:4px;letter-spacing:.2px;}
+.neto-card .letras{font-size:11px;opacity:.85;margin-top:8px;font-style:italic;line-height:1.4;}
+.neto-card .robot{position:absolute;right:14px;bottom:-10px;width:78px;height:78px;opacity:.16;}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+@media (max-width:560px){ .grid3{grid-template-columns:1fr;} }
+.mini-card{background:var(--card-bg);border:1px solid var(--line);border-radius:14px;padding:13px 14px;}
+.mini-card .lbl{font-size:10.5px;color:var(--text-soft);font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.mini-card .val{font-size:19px;font-weight:800;color:var(--navy);margin-top:3px;}
+.mini-card.bruto{border-top:3px solid var(--violet);}
+.mini-card.deduc{border-top:3px solid var(--pink);}
+.mini-card.contrib{border-top:3px solid var(--violet-soft);}
+
+.detalle{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:16px 18px 8px;margin-top:14px;}
+.detalle h3{font-size:13px;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:7px;}
+.detalle h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--grad);display:inline-block;}
+table.dtable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
+table.dtable td{padding:6px 4px;border-bottom:1px solid var(--line);}
+table.dtable td.num{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap;}
+table.dtable tr.total td{font-weight:800;color:var(--violet);border-bottom:none;border-top:1.5px solid var(--violet-soft);}
+table.dtable td.concepto{color:var(--text);}
+table.dtable td.small{font-size:10px;color:var(--text-soft);}
+
+.footnote{font-size:10.5px;color:var(--text-soft);text-align:center;margin-top:22px;line-height:1.5;}
+.footnote a{color:var(--violet);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <img src="../assets/logo-rindex.png" alt="Rindex">
+    <div class="top-title">
+      <span class="brand">Rindex · Calculadora de Sueldo</span>
+      <span class="tag">La IA que te paga en horas</span>
+    </div>
+  </div>
+  <p class="top-desc">Calculá el neto de un empleado de Comercio (CCT 130/75) al toque: cargá los datos y mirá el resultado actualizarse en vivo. Sin recibo, sin imprimir — solo el número que necesitás.</p>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ FORMULARIO ============ -->
+  <div class="card">
+    <h2>Datos para calcular</h2>
+    <p class="sub">CCT 130/75 (FAECYS) — Comercio</p>
+
+    <fieldset>
+      <legend>Categoría y período</legend>
+      <label>Categoría (CCT 130/75)</label>
+      <select id="trab_categoria">
+        <option>Maestranza y Servicios A</option>
+        <option>Maestranza y Servicios B</option>
+        <option>Maestranza y Servicios C</option>
+        <option>Administrativo A</option>
+        <option>Administrativo B</option>
+        <option>Administrativo C</option>
+        <option>Administrativo D</option>
+        <option>Administrativo E</option>
+        <option>Administrativo F</option>
+        <option>Cajero A</option>
+        <option>Cajero B</option>
+        <option>Cajero C</option>
+        <option>Personal Auxiliar A</option>
+        <option>Personal Auxiliar B</option>
+        <option>Personal Auxiliar C</option>
+        <option>Auxiliar Especializado A</option>
+        <option>Auxiliar Especializado B</option>
+        <option selected>Vendedor A</option>
+        <option>Vendedor B</option>
+        <option>Vendedor C</option>
+        <option>Vendedor D</option>
+      </select>
+      <label>Básico de la categoría vigente ese período ($)</label>
+      <input type="number" id="basico" value="1177947" step="0.01">
+      <p class="hint">La escala de FAECYS cambia varias veces al año: cargá el básico oficial vigente (no se calcula solo).</p>
+      <div class="row2">
+        <div><label>Mes</label>
+          <select id="per_mes">
+            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+            <option value="7" selected>Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+        </div>
+        <div><label>Año</label><input type="number" id="per_anio" value="2026" min="2020" max="2100"></div>
+      </div>
+      <label>Fecha de ingreso (para antigüedad)</label>
+      <input type="date" id="trab_ingreso">
+    </fieldset>
+
+    <fieldset>
+      <legend>Días del mes</legend>
+      <p class="hint">Valor día = básico ÷ 25. Feriado trabajado paga doble.</p>
+      <div class="row2">
+        <div><label>Feriados NO trabajados</label><input type="number" id="fer_no" value="0" min="0"></div>
+        <div><label>Feriados SÍ trabajados</label><input type="number" id="fer_si" value="0" min="0"></div>
+      </div>
+      <label>Días de vacaciones tomados</label>
+      <input type="number" id="vacaciones" value="0" min="0">
+      <label class="inline"><input type="checkbox" id="chk_presentismo" checked> Cobra presentismo (8,33%)</label>
+      <label class="inline"><input type="checkbox" id="chk_antiguedad" checked> Aplica antigüedad (1% por año)</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Conceptos remunerativos adicionales</legend>
+      <div class="quick">
+        <button type="button" class="btn-add" onclick="addRemuExtra('A cuenta de futuros aumentos', 0)">+ A cuenta de futuros aumentos</button>
+        <button type="button" class="btn-add" onclick="addRemuExtra('', 0)">+ Otro concepto</button>
+      </div>
+      <div id="remuExtraList"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Conceptos no remunerativos</legend>
+      <button type="button" class="btn-add" onclick="addNoRemu('Suma no remunerativa (paritaria)', 0)">+ Agregar concepto</button>
+      <div id="noRemuList"></div>
+    </fieldset>
+
+    <fieldset id="sacFieldset" style="display:none;">
+      <legend>Aguinaldo (SAC) — corresponde este período</legend>
+      <div class="sac-box">
+        <label class="inline"><input type="checkbox" id="chk_sac" checked> Incluir SAC</label>
+        <label>Base de cálculo del SAC ($)</label>
+        <input type="number" id="sac_base" step="0.01">
+        <p class="hint">Por defecto toma el remunerativo de este mismo mes. El SAC es el 50% de la mejor remuneración del semestre.</p>
+      </div>
+    </fieldset>
+
+    <details>
+      <summary>Aportes y contribuciones (alícuotas editables)</summary>
+      <div style="margin-top:8px;">
+        <div class="pct-row"><label>Jubilación (%) empleado</label><input type="number" id="pct_jub" value="11" step="0.01"></div>
+        <div class="pct-row"><label>Ley 19.032 / INSSJP (%)</label><input type="number" id="pct_ley19032" value="3" step="0.01"></div>
+        <div class="pct-row"><label>Obra Social (%) s/bruto</label><input type="number" id="pct_os" value="3" step="0.01"></div>
+        <label class="inline"><input type="checkbox" id="chk_afiliado" checked> Afiliado al sindicato</label>
+        <div class="pct-row"><label>Sindicato Art. 100 (%)</label><input type="number" id="pct_sind" value="2" step="0.01"></div>
+        <div class="pct-row"><label>Faecys (%)</label><input type="number" id="pct_faecys" value="0.5" step="0.01"></div>
+        <label class="inline"><input type="checkbox" id="chk_osecac" checked> OSECAC voluntario (fijo)</label>
+        <div class="pct-row"><label>Monto OSECAC ($)</label><input type="number" id="monto_osecac" value="100" step="0.01"></div>
+        <button type="button" class="btn-add" onclick="addDeducExtra('', 0)" style="margin-top:8px;">+ Otra deducción</button>
+        <div id="deducExtraList"></div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:12px 0;">
+        <div class="pct-row"><label>Jub.+F.N.Empleo+Asig.Fam. patronal (%)</label><input type="number" id="pct_jubfne" value="18" step="0.01"></div>
+        <div class="pct-row"><label>Obra Social patronal (%)</label><input type="number" id="pct_ospatr" value="6" step="0.01"></div>
+        <div class="pct-row"><label>ART fijo ($)</label><input type="number" id="art_fijo" value="1765" step="0.01"></div>
+        <div class="pct-row"><label>ART variable (%)</label><input type="number" id="art_pct" value="3" step="0.01"></div>
+        <div class="pct-row"><label>Seguro de vida ($)</label><input type="number" id="seguro_vida" value="424.62" step="0.01"></div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ RESULTADOS ============ -->
+  <div class="resultados">
+    <div class="neto-card">
+      <img class="robot" src="../assets/logo-rindex.png" alt="">
+      <div class="lbl">Neto a cobrar</div>
+      <div class="val" id="out_neto">$ 0,00</div>
+      <div class="letras" id="out_letras"></div>
+    </div>
+
+    <div class="grid3">
+      <div class="mini-card bruto"><div class="lbl">Bruto</div><div class="val" id="out_bruto">$ 0</div></div>
+      <div class="mini-card deduc"><div class="lbl">Deducciones</div><div class="val" id="out_deduc">$ 0</div></div>
+      <div class="mini-card contrib"><div class="lbl">Contribuciones patronales</div><div class="val" id="out_contrib">$ 0</div></div>
+    </div>
+
+    <div class="detalle">
+      <h3>Remuneración</h3>
+      <table class="dtable" id="tbl_remu"></table>
+      <h3>Deducciones</h3>
+      <table class="dtable" id="tbl_deduc"></table>
+      <h3>Contribuciones del empleador</h3>
+      <table class="dtable" id="tbl_contrib"></table>
+    </div>
+
+    <p class="footnote">Cálculo orientativo según CCT 130/75 (FAECYS) — verificá siempre contra la circular vigente.<br>
+    ¿Necesitás el recibo en PDF listo para imprimir? <a href="../">Usá el Liquidador completo de Rindex →</a></p>
+  </div>
+
+</div>
+
+<script>
+/* ---------- estado dinámico ---------- */
+let remuExtra = [];
+let noRemu = [];
+let deducExtra = [];
+
+function addRemuExtra(nombre, monto){ remuExtra.push({c:nombre, m:monto}); renderExtraLists(); render(); }
+function addNoRemu(nombre, monto){ noRemu.push({c:nombre, m:monto}); renderExtraLists(); render(); }
+function addDeducExtra(nombre, monto){ deducExtra.push({c:nombre, m:monto}); renderExtraLists(); render(); }
+
+function renderExtraLists(){
+  const mk = (arr, containerId) => {
+    const el = document.getElementById(containerId);
+    el.innerHTML = '';
+    arr.forEach((row, i) => {
+      const div = document.createElement('div');
+      div.className = 'dyn-row';
+      div.innerHTML = `<input type="text" placeholder="Concepto" value="${row.c.replace(/"/g,'&quot;')}">
+                        <input type="number" class="amt" step="0.01" value="${row.m}">
+                        <button type="button" class="del-btn" title="Quitar">×</button>`;
+      const [inC, inM, btnDel] = div.children;
+      inC.oninput = () => { arr[i].c = inC.value; render(); };
+      inM.oninput = () => { arr[i].m = parseFloat(inM.value) || 0; render(); };
+      btnDel.onclick = () => { arr.splice(i,1); renderExtraLists(); render(); };
+      el.appendChild(div);
+    });
+  };
+  mk(remuExtra, 'remuExtraList');
+  mk(noRemu, 'noRemuList');
+  mk(deducExtra, 'deducExtraList');
+}
+
+/* ---------- utilidades numéricas ---------- */
+function fmt(n){ if (isNaN(n)) n = 0; return n.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function money(n){ return '$ ' + fmt(n); }
+
+const UNIDADES=["","UN","DOS","TRES","CUATRO","CINCO","SEIS","SIETE","OCHO","NUEVE"];
+const DIEZ19=["DIEZ","ONCE","DOCE","TRECE","CATORCE","QUINCE","DIECISEIS","DIECISIETE","DIECIOCHO","DIECINUEVE"];
+const DECENAS=["","","VEINTE","TREINTA","CUARENTA","CINCUENTA","SESENTA","SETENTA","OCHENTA","NOVENTA"];
+const CENTENAS=["","CIENTO","DOSCIENTOS","TRESCIENTOS","CUATROCIENTOS","QUINIENTOS","SEISCIENTOS","SETECIENTOS","OCHOCIENTOS","NOVECIENTOS"];
+function menosCien(n){
+  if(n===0) return "";
+  if(n<10) return UNIDADES[n];
+  if(n<20) return DIEZ19[n-10];
+  if(n<30) return n===20 ? "VEINTE" : "VEINTI"+UNIDADES[n-20];
+  const d=Math.floor(n/10), u=n%10;
+  return u===0 ? DECENAS[d] : `${DECENAS[d]} Y ${UNIDADES[u]}`;
+}
+function menosMil(n){
+  if(n===0) return "";
+  if(n===100) return "CIEN";
+  const c=Math.floor(n/100), r=n%100;
+  if(c===0) return menosCien(r);
+  return r===0 ? CENTENAS[c] : `${CENTENAS[c]} ${menosCien(r)}`;
+}
+function numeroALetras(n){
+  n = Math.trunc(n);
+  if(n===0) return "CERO";
+  let partes=[];
+  const millones = Math.floor(n/1000000);
+  let resto = n % 1000000;
+  const miles = Math.floor(resto/1000);
+  const unidades = resto % 1000;
+  if(millones){ partes.push(millones===1 ? "UN MILLON" : `${menosMil(millones)} MILLONES`); }
+  if(miles){ partes.push(miles===1 ? "MIL" : `${menosMil(miles)} MIL`); }
+  if(unidades){ partes.push(menosMil(unidades)); }
+  return partes.join(" ");
+}
+function sonPesos(monto){
+  const totalCentavos = Math.round(monto*100);
+  const entero = Math.floor(totalCentavos/100);
+  const centavos = totalCentavos % 100;
+  return `Son pesos: ${numeroALetras(entero)} CON ${String(centavos).padStart(2,'0')}/100`;
+}
+function val(id){ return document.getElementById(id).value; }
+function num(id){ const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+function chk(id){ return document.getElementById(id).checked; }
+
+/* ---------- calculo principal (mismo motor que el liquidador completo) ---------- */
+function calcular(){
+  const basico = num('basico');
+  const mes = parseInt(val('per_mes'));
+  const anio = val('per_anio');
+
+  let anios = 0;
+  const ingresoStr = val('trab_ingreso');
+  if(ingresoStr && chk('chk_antiguedad')){
+    const ing = new Date(ingresoStr);
+    const periodoRef = new Date(parseInt(anio), mes-1, 1);
+    anios = periodoRef.getFullYear() - ing.getFullYear();
+    const beforeAnniv = (periodoRef.getMonth() < ing.getMonth()) ||
+      (periodoRef.getMonth() === ing.getMonth() && periodoRef.getDate() < ing.getDate());
+    if(beforeAnniv) anios -= 1;
+    if(anios < 0) anios = 0;
+  }
+  const antiguedadMonto = chk('chk_antiguedad') ? basico * 0.01 * anios : 0;
+
+  const valorDia = basico/25;
+  const ferNo = num('fer_no'), ferSi = num('fer_si'), vac = num('vacaciones');
+  const ferNoMonto = valorDia * ferNo;
+  const ferSiMonto = 2 * valorDia * ferSi;
+  const vacMonto = valorDia * vac;
+
+  const presentBase = basico + antiguedadMonto;
+  const presentismoMonto = chk('chk_presentismo') ? presentBase * (100/12) / 100 : 0;
+
+  const remuExtraSum = remuExtra.reduce((a,r)=>a+(r.m||0), 0);
+
+  let totalRemuAntesSac = basico + antiguedadMonto + presentismoMonto + ferNoMonto + ferSiMonto + vacMonto + remuExtraSum;
+
+  const esMesSac = (mes === 6 || mes === 12);
+  let sacMonto = 0;
+  if(esMesSac && chk('chk_sac')){
+    let base = num('sac_base');
+    if(!base) base = totalRemuAntesSac;
+    sacMonto = base/2;
+  }
+  const totalRemunerativo = totalRemuAntesSac + sacMonto;
+
+  const noRemuSum = noRemu.reduce((a,r)=>a+(r.m||0), 0);
+  const totalBruto = totalRemunerativo + noRemuSum;
+
+  const jub = totalRemunerativo * num('pct_jub')/100;
+  const ley19032 = totalRemunerativo * num('pct_ley19032')/100;
+  const os = totalBruto * num('pct_os')/100;
+  const afiliado = chk('chk_afiliado');
+  const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
+  const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
+  const osecac = chk('chk_osecac') ? num('monto_osecac') : 0;
+  const deducExtraSum = deducExtra.reduce((a,r)=>a+(r.m||0), 0);
+  const totalDeducciones = jub+ley19032+os+sind+faecys+osecac+deducExtraSum;
+
+  const neto = totalBruto - totalDeducciones;
+
+  const jubFne = totalRemunerativo * num('pct_jubfne')/100;
+  const osPatr = totalRemunerativo * num('pct_ospatr')/100;
+  const art = num('art_fijo') + totalRemunerativo * num('art_pct')/100;
+  const seguroVida = num('seguro_vida');
+  const totalContrib = jubFne + osPatr + art + seguroVida;
+
+  return {
+    basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
+    ferNoMonto, ferSiMonto, vacMonto, presentismoMonto,
+    remuExtraSum, totalRemuAntesSac, esMesSac, sacMonto, totalRemunerativo,
+    noRemuSum, totalBruto,
+    jub, ley19032, os, sind, faecys, osecac, deducExtraSum, totalDeducciones,
+    neto, jubFne, osPatr, art, seguroVida, totalContrib,
+    mes, anio, afiliado
+  };
+}
+
+/* ---------- render de resultados ---------- */
+function row(concepto, monto, small){
+  return `<tr><td class="concepto">${concepto}${small?`<br><span class="small">${small}</span>`:''}</td><td class="num">${money(monto)}</td></tr>`;
+}
+function totalRow(label, monto){
+  return `<tr class="total"><td>${label}</td><td class="num">${money(monto)}</td></tr>`;
+}
+
+function render(){
+  const r = calcular();
+  const categoria = val('trab_categoria');
+
+  document.getElementById('out_neto').textContent = money(r.neto);
+  document.getElementById('out_letras').textContent = sonPesos(r.neto);
+  document.getElementById('out_bruto').textContent = money(r.totalBruto);
+  document.getElementById('out_deduc').textContent = money(r.totalDeducciones);
+  document.getElementById('out_contrib').textContent = money(r.totalContrib);
+
+  let remuHtml = '';
+  remuHtml += row('Básico '+categoria, r.basico);
+  if(r.anios>0) remuHtml += row('Antigüedad', r.antiguedadMonto, r.anios+' año(s) — 1%/año');
+  if(chk('chk_presentismo')) remuHtml += row('Presentismo', r.presentismoMonto, '8,33%');
+  if(r.ferNo>0) remuHtml += row('Feriados no trabajados', r.ferNoMonto, r.ferNo+' día(s)');
+  if(r.ferSi>0) remuHtml += row('Feriados trabajados (doble)', r.ferSiMonto, r.ferSi+' día(s) x2');
+  if(r.vac>0) remuHtml += row('Vacaciones', r.vacMonto, r.vac+' día(s)');
+  remuExtra.forEach(x => remuHtml += row(x.c || '[concepto]', x.m));
+  if(r.esMesSac && chk('chk_sac')) remuHtml += row('SAC ('+(r.mes===6?'1er':'2do')+' semestre)', r.sacMonto, '50% de la base');
+  noRemu.forEach(x => remuHtml += row(x.c || '[concepto]', x.m, 'no remunerativo'));
+  remuHtml += totalRow('Total bruto', r.totalBruto);
+  document.getElementById('tbl_remu').innerHTML = remuHtml;
+
+  let deducHtml = '';
+  deducHtml += row('Jubilación', r.jub, num('pct_jub')+'%');
+  deducHtml += row('Ley 19.032 (INSSJP)', r.ley19032, num('pct_ley19032')+'%');
+  deducHtml += row('Obra Social', r.os, num('pct_os')+'%');
+  if(chk('chk_osecac')) deducHtml += row('OSECAC voluntario', r.osecac);
+  if(r.afiliado) deducHtml += row('Sindicato Art. 100', r.sind, num('pct_sind')+'%');
+  if(r.afiliado) deducHtml += row('Faecys', r.faecys, num('pct_faecys')+'%');
+  deducExtra.forEach(x => deducHtml += row(x.c || '[concepto]', x.m));
+  deducHtml += totalRow('Total deducciones', r.totalDeducciones);
+  document.getElementById('tbl_deduc').innerHTML = deducHtml;
+
+  let contribHtml = '';
+  contribHtml += row('Jub. + F.N. Empleo + Asig. Fam.', r.jubFne, num('pct_jubfne')+'%');
+  contribHtml += row('Obra Social patronal', r.osPatr, num('pct_ospatr')+'%');
+  contribHtml += row('A.R.T.', r.art, 'fijo + '+num('art_pct')+'%');
+  contribHtml += row('Seguro de vida', r.seguroVida);
+  contribHtml += totalRow('Total contribuciones', r.totalContrib);
+  document.getElementById('tbl_contrib').innerHTML = contribHtml;
+
+  document.getElementById('sacFieldset').style.display = r.esMesSac ? 'block' : 'none';
+  if(r.esMesSac){
+    const sacBaseInput = document.getElementById('sac_base');
+    if(!sacBaseInput.dataset.touched){
+      sacBaseInput.value = r.totalRemuAntesSac.toFixed(2);
+    }
+  }
+}
+
+/* ---------- listeners ---------- */
+document.addEventListener('input', (e)=>{
+  if(e.target.id === 'sac_base') e.target.dataset.touched = '1';
+  render();
+});
+document.addEventListener('change', render);
+
+/* ---------- inicio ---------- */
+renderExtraLists();
+render();
+</script>
+</body>
+</html>
