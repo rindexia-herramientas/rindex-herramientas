@@ -41,7 +41,7 @@ header.top{background:var(--navy);
 .identidad input{width:100%;padding:8px 10px;font-size:14px;border:1px solid var(--line);border-radius:8px;font-family:inherit;background:#FBFAFF;}
 .identidad input:focus{outline:none;border-color:var(--violet-soft);background:#fff;}
 
-.resumen-grid{display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.resumen-grid{display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:14px;margin-top:22px;margin-bottom:22px;}
 @media (max-width:900px){.resumen-grid{grid-template-columns:1fr 1fr;}}
 @media (max-width:560px){.resumen-grid{grid-template-columns:1fr;}}
 
@@ -344,17 +344,6 @@ body.logged-in .sidebar{display:block;}
     </div>
   </div>
 
-  <div class="resumen-grid">
-    <div class="neto-card">
-      <div class="lbl">Resultado neto</div>
-      <div class="val" id="out_neto">$ 0</div>
-      <div class="sub" id="out_neto_sub">Ingresos − Gastos fijos − Gastos variables</div>
-    </div>
-    <div class="mini-card ingresos"><div class="lbl">Ingresos</div><div class="val" id="out_ingresos">$ 0</div></div>
-    <div class="mini-card fijos"><div class="lbl">Gastos fijos</div><div class="val" id="out_fijos">$ 0</div></div>
-    <div class="mini-card variables"><div class="lbl">Gastos variables</div><div class="val" id="out_variables">$ 0</div></div>
-  </div>
-
   <!-- INGRESOS (por fecha) -->
   <div class="section" id="sec_ingresos">
     <h2><span class="dot dot-ingresos"></span>Ingresos</h2>
@@ -447,6 +436,17 @@ body.logged-in .sidebar{display:block;}
 
     <div class="prod-list-title"><span class="dot dot-productos" style="width:8px;height:8px;"></span>Tus productos</div>
     <div id="lista_productos"></div>
+  </div>
+
+  <div class="resumen-grid">
+    <div class="neto-card">
+      <div class="lbl">Resultado neto</div>
+      <div class="val" id="out_neto">$ 0</div>
+      <div class="sub" id="out_neto_sub">Ingresos − Gastos fijos − Gastos variables</div>
+    </div>
+    <div class="mini-card ingresos"><div class="lbl">Ingresos</div><div class="val" id="out_ingresos">$ 0</div></div>
+    <div class="mini-card fijos"><div class="lbl">Gastos fijos</div><div class="val" id="out_fijos">$ 0</div></div>
+    <div class="mini-card variables"><div class="lbl">Gastos variables</div><div class="val" id="out_variables">$ 0</div></div>
   </div>
 
   <div class="pdf-bar">
