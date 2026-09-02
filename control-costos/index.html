@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Control de Costos y Ganancias — Rindex</title>
+<title>Gestión de Costos de Negocio — Rindex</title>
 <link rel="icon" href="../assets/logo-rindex.png">
 <style>
 :root{
@@ -82,6 +82,25 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
 .dot-fijos{background:#2E5A9C;}
 .dot-variables{background:var(--pink);}
 .dot-productos{background:#C026D3;}
+
+/* ---------- RECORRIDO GUIADO (primera vez) ---------- */
+.tour-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,30,.68);z-index:9990;}
+.section{position:relative;}
+.section.tour-active-section{z-index:9995;box-shadow:0 0 0 4px var(--violet), 0 0 46px rgba(124,58,237,.55);}
+.tour-tip{display:none;position:absolute;top:-14px;right:18px;transform:translateY(-100%);
+  background:var(--grad);color:#fff;border-radius:14px;padding:14px 18px;max-width:300px;
+  box-shadow:0 10px 26px rgba(124,58,237,.4);z-index:9999;}
+.tour-tip.active{display:block;}
+.tour-tip::after{content:"";position:absolute;bottom:-8px;right:26px;width:16px;height:16px;
+  background:inherit;transform:rotate(45deg);border-radius:3px;}
+.tour-tip p{margin:0;font-size:13px;line-height:1.4;padding-right:16px;}
+.tour-close{position:absolute;top:8px;right:10px;background:rgba(255,255,255,.25);border:none;color:#fff;
+  width:22px;height:22px;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;font-weight:700;}
+.tour-close:hover{background:rgba(255,255,255,.4);}
+@media (max-width:640px){
+  .tour-tip{position:fixed;top:auto;bottom:20px;left:16px;right:16px;transform:none;max-width:none;}
+  .tour-tip::after{display:none;}
+}
 
 /* ---------- SECCION PRODUCTOS DESTACADA ---------- */
 .section.productos-section{border:2px solid var(--violet);box-shadow:0 8px 26px rgba(124,58,237,.16);}
@@ -194,11 +213,13 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
 </head>
 <body>
 
+<div class="tour-overlay" id="tour_overlay"></div>
+
 <header class="top">
   <div class="top-inner">
     <img src="../assets/logo-rindex.png" alt="Rindex">
     <div class="top-title">
-      <span class="brand">Rindex · Control de Costos y Ganancias</span>
+      <span class="brand">Rindex · Gestión de Costos de Negocio</span>
       <span class="tag">La IA que te paga en horas</span>
     </div>
   </div>
@@ -230,8 +251,12 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
   </div>
 
   <!-- INGRESOS (por fecha) -->
-  <div class="section">
+  <div class="section" id="sec_ingresos">
     <h2><span class="dot dot-ingresos"></span>Ingresos</h2>
+    <div class="tour-tip" id="tip_ingresos">
+      <button type="button" class="tour-close" onclick="tourNext()">×</button>
+      <p>Registrá las ventas que vayas realizando en el mes.</p>
+    </div>
     <p class="sub">Cargá cada venta con su fecha y el producto vendido — podés cargar varias por día. Se van sumando solas.</p>
     <table class="rows" id="tbl_ingresos">
       <thead><tr><th style="width:150px;">Fecha</th><th>Producto / descripción</th><th style="width:160px;">Monto</th><th></th></tr></thead>
@@ -242,8 +267,12 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
   </div>
 
   <!-- GASTOS FIJOS -->
-  <div class="section">
+  <div class="section" id="sec_fijos">
     <h2><span class="dot dot-fijos"></span>Gastos fijos</h2>
+    <div class="tour-tip" id="tip_fijos">
+      <button type="button" class="tour-close" onclick="tourNext()">×</button>
+      <p>Agregá gastos mensuales, y costos no asociados a tus productos.</p>
+    </div>
     <p class="sub">Los que pagás siempre, vendas o no vendas: alquiler, sueldos, servicios, cuotas. Se cargan por mes, no por fecha.</p>
     <table class="rows" id="tbl_fijos">
       <thead><tr><th>Concepto</th><th style="width:160px;">Monto</th><th></th></tr></thead>
@@ -254,8 +283,12 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
   </div>
 
   <!-- GASTOS VARIABLES (por fecha) -->
-  <div class="section">
+  <div class="section" id="sec_variables">
     <h2><span class="dot dot-variables"></span>Gastos variables</h2>
+    <div class="tour-tip" id="tip_variables">
+      <button type="button" class="tour-close" onclick="tourNext()">×</button>
+      <p>Anotá los gastos que vayas teniendo de materia prima, materiales y demás asociados a tus productos.</p>
+    </div>
     <p class="sub">Los que dependen de cuánto vendés: insumos, comisiones, envíos, materia prima. Cargá cada uno con su fecha y descripción.</p>
     <table class="rows" id="tbl_variables">
       <thead><tr><th style="width:150px;">Fecha</th><th>Descripción</th><th style="width:160px;">Monto</th><th></th></tr></thead>
@@ -727,6 +760,49 @@ function generarPDF(){
 
 load();
 render();
+
+/* ---------- recorrido guiado (primera visita) ---------- */
+const TOUR_KEY = "rindex_costos_tour_v1";
+const tourSectionIds = ['sec_ingresos','sec_fijos','sec_variables'];
+let tourStep = 0;
+
+function showTourStep(){
+  tourSectionIds.forEach(id=> document.getElementById(id).classList.remove('tour-active-section'));
+  document.querySelectorAll('.tour-tip').forEach(t=>t.classList.remove('active'));
+  const target = document.getElementById(tourSectionIds[tourStep]);
+  target.classList.add('tour-active-section');
+  const tip = target.querySelector('.tour-tip');
+  if(tip) tip.classList.add('active');
+  target.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function tourNext(){
+  tourStep++;
+  if(tourStep >= tourSectionIds.length){
+    endTour();
+  } else {
+    showTourStep();
+  }
+}
+
+function endTour(){
+  document.getElementById('tour_overlay').style.display = 'none';
+  tourSectionIds.forEach(id=> document.getElementById(id).classList.remove('tour-active-section'));
+  document.querySelectorAll('.tour-tip').forEach(t=>t.classList.remove('active'));
+  try{ localStorage.setItem(TOUR_KEY, '1'); }catch(e){}
+}
+
+function startTourIfNeeded(){
+  let seen = false;
+  try{ seen = !!localStorage.getItem(TOUR_KEY); }catch(e){}
+  if(seen) return;
+  tourStep = 0;
+  document.getElementById('tour_overlay').style.display = 'block';
+  showTourStep();
+}
+
+setTimeout(startTourIfNeeded, 500);
+
 </script>
 <style>
 .rindex-watermark{position:fixed;bottom:0;left:0;width:100%;background:#1B1740;color:#fff;text-align:center;
