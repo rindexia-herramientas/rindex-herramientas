@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gestión de Costos de Negocio — Rindex</title>
 <link rel="icon" href="../assets/logo-rindex.png">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --navy:#1B1740; --navy2:#241E52; --violet:#7C3AED; --violet-soft:#A78BFA;
@@ -207,6 +210,63 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
 .rep-neto .lbl{font-size:13px;font-weight:700;}
 .rep-neto .val{font-size:22px;font-weight:800;}
 .rep-footer{margin-top:20px;font-size:9.5px;color:var(--text-soft);text-align:center;}
+
+/* ---------- LOGIN / CUENTA ---------- */
+.auth-bar{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.top-inner{justify-content:space-between;}
+.btn-auth{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);
+  border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-auth:hover{background:rgba(255,255,255,.22);}
+.auth-user{display:flex;align-items:center;gap:10px;color:#fff;font-size:12.5px;}
+.auth-user .email{opacity:.9;font-weight:600;}
+#auth_logged_in{display:none;}
+body.logged-in #auth_logged_out{display:none;}
+body.logged-in #auth_logged_in{display:flex;}
+
+.auth-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,30,.72);z-index:99990;
+  align-items:center;justify-content:center;padding:20px;}
+.auth-modal-overlay.show{display:flex;}
+.auth-modal{background:#fff;border-radius:16px;padding:26px 28px;max-width:360px;width:100%;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);position:relative;}
+.auth-modal h3{margin:0 0 4px;font-size:18px;color:var(--navy);}
+.auth-modal p.sub{font-size:12px;color:var(--text-soft);margin:0 0 16px;}
+.auth-modal label{display:block;font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;margin:10px 0 4px;}
+.auth-modal input{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--line);border-radius:8px;font-family:inherit;background:#FBFAFF;}
+.auth-modal input:focus{outline:none;border-color:var(--violet-soft);background:#fff;}
+.auth-error{color:var(--neg);font-size:12px;margin-top:8px;min-height:14px;}
+.auth-submit{width:100%;background:var(--violet);color:#fff;border:none;border-radius:9px;padding:12px;
+  font-size:14px;font-weight:700;cursor:pointer;margin-top:14px;}
+.auth-submit:hover{background:#6B2FD6;}
+.auth-toggle-mode{display:block;text-align:center;font-size:12px;color:var(--violet);font-weight:600;
+  margin-top:12px;cursor:pointer;background:none;border:none;font-family:inherit;width:100%;}
+.auth-close{position:absolute;top:14px;right:14px;background:var(--ok-bg);border:none;color:var(--violet);
+  width:26px;height:26px;border-radius:50%;font-size:15px;cursor:pointer;}
+
+/* ---------- BARRA LATERAL DE MESES ---------- */
+.page-layout{display:flex;max-width:1400px;margin:0 auto;align-items:flex-start;}
+.sidebar{display:none;flex:0 0 220px;width:220px;padding:22px 14px;position:sticky;top:16px;}
+body.logged-in .sidebar{display:block;}
+.sidebar-title{font-size:11.5px;font-weight:700;color:var(--text-soft);text-transform:uppercase;
+  letter-spacing:.3px;margin-bottom:10px;padding-left:4px;}
+.sidebar-tabs{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.sidebar-tab{background:#fff;border:1px solid var(--line);color:var(--text);text-align:left;
+  border-radius:9px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.sidebar-tab:hover{border-color:var(--violet-soft);}
+.sidebar-tab.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(124,58,237,.3);}
+.nuevo-mes-panel{display:none;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px;}
+.nuevo-mes-panel.show{display:block;}
+.nuevo-mes-panel label{display:block;font-size:10px;font-weight:700;color:var(--text-soft);text-transform:uppercase;margin:6px 0 3px;}
+.nuevo-mes-panel select,.nuevo-mes-panel input{width:100%;padding:7px 8px;font-size:12.5px;border:1px solid var(--line);
+  border-radius:6px;font-family:inherit;}
+@media (max-width:900px){
+  .page-layout{display:block;}
+  .sidebar{width:100%;flex:none;position:static;padding:0 0 16px;}
+  .sidebar-tabs{flex-direction:row;flex-wrap:wrap;}
+  .sidebar-tab{flex:1 1 auto;}
+}
+
+.periodo-actual{padding:9px 12px;font-size:14px;font-weight:700;color:var(--navy);background:var(--ok-bg);border-radius:8px;}
+
 </style>
 </head>
 <body>
@@ -220,9 +280,56 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
       <span class="brand">Rindex · Gestión de Costos de Negocio</span>
       <span class="tag">La IA que te paga en horas</span>
     </div>
+    <div class="auth-bar">
+      <div class="auth-user" id="auth_logged_out">
+        <button type="button" class="btn-auth" onclick="openAuthModal('login')">Iniciar sesión</button>
+        <button type="button" class="btn-auth" onclick="openAuthModal('signup')">Registrarme</button>
+      </div>
+      <div class="auth-user" id="auth_logged_in">
+        <span class="email" id="auth_email"></span>
+        <button type="button" class="btn-auth" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
   </div>
-  <p class="top-desc">Cargá tus ventas y gastos día a día, y desglosá el costo de cada producto — vas a ver al instante si el precio que le pusiste te conviene, con semáforo de color. Tus datos quedan guardados en este navegador para la próxima vez.</p>
+  <p class="top-desc">Cargá tus ventas y gastos día a día, y desglosá el costo de cada producto — vas a ver al instante si el precio que le pusiste te conviene, con semáforo de color. Registrate para guardar tu información mes a mes en la nube.</p>
 </header>
+
+<div class="auth-modal-overlay" id="auth_modal">
+  <div class="auth-modal">
+    <button type="button" class="auth-close" onclick="closeAuthModal()">×</button>
+    <h3 id="auth_title">Iniciá sesión</h3>
+    <p class="sub">Guardá tu información mes a mes, y accedé desde cualquier dispositivo.</p>
+    <label>Email</label>
+    <input type="email" id="auth_email_input" placeholder="tu@mail.com">
+    <label>Contraseña</label>
+    <input type="password" id="auth_pass_input" placeholder="Mínimo 6 caracteres">
+    <div class="auth-error" id="auth_error"></div>
+    <button type="button" class="auth-submit" id="auth_submit" onclick="submitAuth()">Ingresar</button>
+    <button type="button" class="auth-toggle-mode" id="auth_toggle" onclick="toggleAuthMode()">¿No tenés cuenta? Registrate</button>
+  </div>
+</div>
+
+<div class="page-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">Tus meses</div>
+    <div class="sidebar-tabs" id="sidebar_tabs"></div>
+    <button type="button" class="btn-add" onclick="abrirNuevoMes()">+ Nuevo mes</button>
+    <div class="nuevo-mes-panel" id="nuevo_mes_panel">
+      <label>Mes</label>
+      <select id="nm_mes">
+        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <label>Año</label>
+      <input type="number" id="nm_anio" value="2026" min="2020" max="2100">
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button type="button" class="btn-guardar" style="flex:1;padding:8px;font-size:12px;" onclick="crearNuevoMes()">Crear</button>
+        <button type="button" class="btn-cancelar" style="display:inline-block;padding:8px;font-size:12px;" onclick="cerrarNuevoMes()">Cancelar</button>
+      </div>
+    </div>
+  </aside>
 
 <div class="wrap">
 
@@ -233,7 +340,7 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
     </div>
     <div>
       <label>Período</label>
-      <input type="text" id="neg_periodo" placeholder="Ej: Septiembre 2026">
+      <div class="periodo-actual" id="periodo_actual_label">—</div>
     </div>
   </div>
 
@@ -345,10 +452,11 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
   <div class="pdf-bar">
     <button class="btn-pdf" onclick="generarPDF()">🖨️ Descargar reporte en PDF</button>
   </div>
-  <p class="hint-save">Tus datos se guardan automáticamente en este navegador (no se suben a ningún servidor). Si cambiás de dispositivo, no se transfieren.</p>
+  <p class="hint-save" id="hint_save">Tus datos se guardan automáticamente en este navegador (no se suben a ningún servidor). Si cambiás de dispositivo, no se transfieren.</p>
 
   <p class="footnote">¿Necesitás liquidar un sueldo? <a href="../">Liquidador de sueldos</a> · <a href="../calculadora-sueldo/">Calculadora de sueldo</a> · <a href="../convertidor/">Conversor de archivos</a></p>
 
+</div>
 </div>
 
 <!-- ============ REPORTE IMPRIMIBLE (oculto en pantalla) ============ -->
@@ -387,33 +495,132 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
 </div>
 
 <script>
-const STORAGE_KEY = "rindex_costos_v3";
+const STORAGE_KEY = "rindex_costos_v4";
+const STORAGE_KEY_LEGACY = "rindex_costos_v3";
+
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 let state = {};
 let editingProductId = null;
+let currentUser = null;
+let authMode = 'login';
+let saveTimeout = null;
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
-
-function defaultState(){
-  return {
-    negocio: "", periodo: "",
-    ingresos: [{id:uid(), fecha: todayStr(), c:"", m:0}],
-    fijos: [{id:uid(), c:"Alquiler", m:0}],
-    variables: [{id:uid(), fecha: todayStr(), c:"", m:0}],
-    productos: []
-  };
+function currentMonthKey(d){
+  d = d || new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function keyLabel(key){
+  if(!key) return '—';
+  const [y,m] = key.split('-');
+  return `${MESES[parseInt(m,10)-1]} ${y}`;
 }
 
-function load(){
+function defaultPeriodData(){
+  return {
+    ingresos: [{id:uid(), fecha: todayStr(), c:"", m:0}],
+    fijos: [{id:uid(), c:"Alquiler", m:0}],
+    variables: [{id:uid(), fecha: todayStr(), c:"", m:0}]
+  };
+}
+function defaultState(){
+  const key = currentMonthKey();
+  return {
+    negocio: "",
+    productos: [],
+    periodos: { [key]: defaultPeriodData() },
+    currentKey: key
+  };
+}
+function ensureStateShape(){
+  if(!state || typeof state !== 'object') state = defaultState();
+  if(!state.periodos) state.periodos = {};
+  if(!state.productos) state.productos = [];
+  if(typeof state.negocio !== 'string') state.negocio = "";
+  if(!state.currentKey || !state.periodos[state.currentKey]){
+    const key = state.currentKey || currentMonthKey();
+    if(!state.periodos[key]) state.periodos[key] = defaultPeriodData();
+    state.currentKey = key;
+  }
+}
+function curPeriod(){ return state.periodos[state.currentKey]; }
+function getArr(kind){ return curPeriod()[kind]; }
+function setArr(kind, arr){ curPeriod()[kind] = arr; }
+
+/* ---------- carga / guardado ---------- */
+function loadLocal(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){ state = JSON.parse(raw); if(!state.productos) state.productos=[]; return; }
+    if(raw){ state = JSON.parse(raw); ensureStateShape(); return; }
+  }catch(e){}
+  try{
+    const rawLegacy = localStorage.getItem(STORAGE_KEY_LEGACY);
+    if(rawLegacy){
+      const legacy = JSON.parse(rawLegacy);
+      const key = currentMonthKey();
+      state = {
+        negocio: legacy.negocio || "",
+        productos: legacy.productos || [],
+        periodos: { [key]: { ingresos: legacy.ingresos||[], fijos: legacy.fijos||[], variables: legacy.variables||[] } },
+        currentKey: key
+      };
+      ensureStateShape();
+      saveLocalOnly();
+      return;
+    }
   }catch(e){}
   state = defaultState();
 }
-function save(){
+function saveLocalOnly(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function save(){
+  saveLocalOnly();
+  if(currentUser && db){
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(()=>{
+      db.collection('usuarios').doc(currentUser.uid).set(state)
+        .catch(err=> console.error('Error guardando en la nube:', err));
+    }, 600);
+  }
+}
+
+function loadFromCloud(uid){
+  db.collection('usuarios').doc(uid).get().then(doc=>{
+    if(doc.exists){
+      state = doc.data();
+      ensureStateShape();
+    } else {
+      let migrated = null;
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw){ migrated = JSON.parse(raw); }
+        else {
+          const rawLegacy = localStorage.getItem(STORAGE_KEY_LEGACY);
+          if(rawLegacy){
+            const legacy = JSON.parse(rawLegacy);
+            const key = currentMonthKey();
+            migrated = {
+              negocio: legacy.negocio || "",
+              productos: legacy.productos || [],
+              periodos: { [key]: { ingresos: legacy.ingresos||[], fijos: legacy.fijos||[], variables: legacy.variables||[] } },
+              currentKey: key
+            };
+          }
+        }
+      }catch(e){}
+      state = migrated || defaultState();
+      ensureStateShape();
+      db.collection('usuarios').doc(uid).set(state).catch(err=>console.error(err));
+    }
+    render();
+    renderSidebar();
+  }).catch(err=>{
+    console.error(err);
+    alert('No pude conectar con la nube. Revisá la configuración de Firebase.');
+  });
 }
 
 function fmt(n){ if(isNaN(n)) n=0; return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -430,18 +637,18 @@ function fechaCorta(f){
 
 /* ---------- filas simples (gastos fijos) ---------- */
 function addRow(kind){
-  state[kind].push({id:uid(), c:"", m:0});
+  getArr(kind).push({id:uid(), c:"", m:0});
   save(); render();
 }
 function delRow(kind, id){
-  state[kind] = state[kind].filter(r=>r.id!==id);
+  setArr(kind, getArr(kind).filter(r=>r.id!==id));
   save(); render();
 }
 function renderSimpleTable(kind, bodyId, totalId){
   const body = document.getElementById(bodyId);
   body.innerHTML = '';
   let total = 0;
-  state[kind].forEach(row=>{
+  getArr(kind).forEach(row=>{
     total += (row.m||0);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><input type="text" value="${(row.c||'').replace(/"/g,'&quot;')}" placeholder="Concepto"></td>
@@ -451,7 +658,7 @@ function renderSimpleTable(kind, bodyId, totalId){
     const btnDel = tr.querySelector('.del-btn');
     inC.oninput = ()=>{ row.c = inC.value; save(); };
     inM.oninput = ()=>{ row.m = parseFloat(inM.value)||0; save(); renderSummary();
-      document.getElementById('tot_'+kind).textContent = money(state[kind].reduce((a,r)=>a+(r.m||0),0)); };
+      document.getElementById('tot_'+kind).textContent = money(getArr(kind).reduce((a,r)=>a+(r.m||0),0)); };
     inM.onblur = ()=> formatDec(inM);
     btnDel.onclick = ()=> delRow(kind, row.id);
     body.appendChild(tr);
@@ -461,12 +668,12 @@ function renderSimpleTable(kind, bodyId, totalId){
 
 /* ---------- filas con fecha (ingresos, gastos variables) ---------- */
 function addFechaRow(kind){
-  state[kind].push({id:uid(), fecha: todayStr(), c:"", m:0});
+  getArr(kind).push({id:uid(), fecha: todayStr(), c:"", m:0});
   save(); renderFechaTable(kind);
   renderSummary();
 }
 function delFechaRow(kind, id){
-  state[kind] = state[kind].filter(r=>r.id!==id);
+  setArr(kind, getArr(kind).filter(r=>r.id!==id));
   save(); renderFechaTable(kind); renderSummary();
 }
 function renderFechaTable(kind){
@@ -474,8 +681,7 @@ function renderFechaTable(kind){
   const totId = kind==='ingresos' ? 'tot_ingresos' : 'tot_variables';
   const body = document.getElementById(bodyId);
   body.innerHTML = '';
-  // ordenar por fecha ascendente para que se vea prolijo
-  const rows = [...state[kind]].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''));
+  const rows = [...getArr(kind)].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''));
   let total = 0;
   rows.forEach(row=>{
     total += (row.m||0);
@@ -489,7 +695,7 @@ function renderFechaTable(kind){
     inF.oninput = ()=>{ row.fecha = inF.value; save(); };
     inC.oninput = ()=>{ row.c = inC.value; save(); };
     inM.oninput = ()=>{ row.m = parseFloat(inM.value)||0; save(); renderSummary();
-      document.getElementById(totId).textContent = money(state[kind].reduce((a,r)=>a+(r.m||0),0)); };
+      document.getElementById(totId).textContent = money(getArr(kind).reduce((a,r)=>a+(r.m||0),0)); };
     inM.onblur = ()=> formatDec(inM);
     btnDel.onclick = ()=> delFechaRow(kind, row.id);
     body.appendChild(tr);
@@ -497,7 +703,7 @@ function renderFechaTable(kind){
   document.getElementById(totId).textContent = money(total);
 }
 
-/* ---------- productos: form + lista ---------- */
+/* ---------- productos: form + lista (catálogo global, no por período) ---------- */
 function emptyForm(){
   return {nombre:"", materiales:0, transporte:0, comisiones:0, otros:0, precio:0, descActivo:false, descPct:0};
 }
@@ -656,9 +862,9 @@ function renderListaProductos(){
 
 /* ---------- resumen ---------- */
 function renderSummary(){
-  const tIng = state.ingresos.reduce((a,r)=>a+(r.m||0),0);
-  const tFij = state.fijos.reduce((a,r)=>a+(r.m||0),0);
-  const tVar = state.variables.reduce((a,r)=>a+(r.m||0),0);
+  const tIng = getArr('ingresos').reduce((a,r)=>a+(r.m||0),0);
+  const tFij = getArr('fijos').reduce((a,r)=>a+(r.m||0),0);
+  const tVar = getArr('variables').reduce((a,r)=>a+(r.m||0),0);
   const neto = tIng - tFij - tVar;
   document.getElementById('out_ingresos').textContent = money(tIng);
   document.getElementById('out_fijos').textContent = money(tFij);
@@ -669,6 +875,7 @@ function renderSummary(){
 }
 
 function render(){
+  ensureStateShape();
   renderFechaTable('ingresos');
   renderSimpleTable('fijos','body_fijos','tot_fijos');
   renderFechaTable('variables');
@@ -676,11 +883,49 @@ function render(){
   updateForm();
   renderSummary();
   document.getElementById('neg_nombre').value = state.negocio || '';
-  document.getElementById('neg_periodo').value = state.periodo || '';
+  document.getElementById('periodo_actual_label').textContent = keyLabel(state.currentKey);
 }
 
 document.getElementById('neg_nombre').oninput = (e)=>{ state.negocio = e.target.value; save(); };
-document.getElementById('neg_periodo').oninput = (e)=>{ state.periodo = e.target.value; save(); };
+
+/* ---------- barra lateral de meses ---------- */
+function renderSidebar(){
+  const cont = document.getElementById('sidebar_tabs');
+  if(!cont) return;
+  cont.innerHTML = '';
+  const keys = Object.keys(state.periodos).sort().reverse();
+  keys.forEach(key=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sidebar-tab' + (key===state.currentKey ? ' active' : '');
+    btn.textContent = keyLabel(key);
+    btn.onclick = ()=>{ state.currentKey = key; save(); render(); renderSidebar(); };
+    cont.appendChild(btn);
+  });
+}
+function abrirNuevoMes(){
+  const hoy = new Date();
+  document.getElementById('nm_mes').value = String(hoy.getMonth()+1);
+  document.getElementById('nm_anio').value = hoy.getFullYear();
+  document.getElementById('nuevo_mes_panel').classList.add('show');
+}
+function cerrarNuevoMes(){
+  document.getElementById('nuevo_mes_panel').classList.remove('show');
+}
+function crearNuevoMes(){
+  const mes = parseInt(document.getElementById('nm_mes').value, 10);
+  const anio = parseInt(document.getElementById('nm_anio').value, 10);
+  if(!anio || anio < 2020 || anio > 2100){ alert('Poné un año válido.'); return; }
+  const key = `${anio}-${String(mes).padStart(2,'0')}`;
+  if(!state.periodos[key]){
+    state.periodos[key] = defaultPeriodData();
+  }
+  state.currentKey = key;
+  save();
+  cerrarNuevoMes();
+  render();
+  renderSidebar();
+}
 
 /* ---------- generar reporte imprimible ---------- */
 function repRowFecha(fecha, concepto, monto){
@@ -690,7 +935,7 @@ function repTotalFecha(label, monto){
   return `<tr class="rep-total"><td colspan="2">${label}</td><td class="num">${money(monto)}</td></tr>`;
 }
 function buildRepTableFecha(kind, elId, totalLabel, colLabel){
-  const rows = [...state[kind]].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''));
+  const rows = [...getArr(kind)].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''));
   let html = `<tr><th>Fecha</th><th>${colLabel}</th><th style="text-align:right;">Monto</th></tr>`;
   if(rows.length===0){
     html += `<tr><td colspan="3" style="text-align:center;color:#888;">Sin datos cargados</td></tr>`;
@@ -709,7 +954,7 @@ function repTotal(label, monto){
   return `<tr class="rep-total"><td>${label}</td><td class="num">${money(monto)}</td></tr>`;
 }
 function buildRepTableSimple(kind, elId, totalLabel){
-  const rows = state[kind];
+  const rows = getArr(kind);
   let html = `<tr><th>Concepto</th><th style="text-align:right;">Monto</th></tr>`;
   if(rows.length===0){
     html += `<tr><td colspan="2" style="text-align:center;color:#888;">Sin datos cargados</td></tr>`;
@@ -725,7 +970,7 @@ function buildRepTableSimple(kind, elId, totalLabel){
 function generarPDF(){
   document.getElementById('rep_titulo').textContent = 'Reporte de Costos y Ganancias';
   document.getElementById('rep_negocio').textContent = 'Emprendimiento: ' + (state.negocio || '—');
-  document.getElementById('rep_periodo').textContent = 'Período: ' + (state.periodo || '—');
+  document.getElementById('rep_periodo').textContent = 'Período: ' + keyLabel(state.currentKey);
   const hoy = new Date();
   document.getElementById('rep_fecha').textContent = 'Generado: ' + hoy.toLocaleDateString('es-AR');
 
@@ -760,8 +1005,104 @@ function generarPDF(){
   window.print();
 }
 
-load();
-render();
+/* ---------- autenticación (Firebase) ---------- */
+const firebaseConfig = {
+  apiKey: "PEGA_TU_API_KEY",
+  authDomain: "PEGA_TU_AUTH_DOMAIN",
+  projectId: "PEGA_TU_PROJECT_ID",
+  storageBucket: "PEGA_TU_STORAGE_BUCKET",
+  messagingSenderId: "PEGA_TU_SENDER_ID",
+  appId: "PEGA_TU_APP_ID"
+};
+let firebaseReady = false;
+let auth = null, db = null;
+try{
+  if(firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PEGA_') !== 0){
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    firebaseReady = true;
+  }
+}catch(e){ console.error('Firebase no se pudo inicializar', e); }
+
+function updateAuthUI(){
+  const loggedIn = !!currentUser;
+  document.body.classList.toggle('logged-in', loggedIn);
+  if(loggedIn){
+    document.getElementById('auth_email').textContent = currentUser.email;
+    document.getElementById('hint_save').textContent = 'Tu información se guarda automáticamente en la nube — podés entrar desde cualquier dispositivo con tu mail.';
+  } else {
+    document.getElementById('hint_save').textContent = 'Tus datos se guardan automáticamente en este navegador (no se suben a ningún servidor). Registrate para guardarlos en la nube y acceder a meses anteriores.';
+  }
+}
+
+function openAuthModal(mode){
+  authMode = mode || 'login';
+  document.getElementById('auth_modal').classList.add('show');
+  document.getElementById('auth_title').textContent = authMode==='signup' ? 'Creá tu cuenta' : 'Iniciá sesión';
+  document.getElementById('auth_submit').textContent = authMode==='signup' ? 'Registrarme' : 'Ingresar';
+  document.getElementById('auth_toggle').textContent = authMode==='signup' ? '¿Ya tenés cuenta? Ingresá' : '¿No tenés cuenta? Registrate';
+  document.getElementById('auth_error').textContent = '';
+  document.getElementById('auth_email_input').value = '';
+  document.getElementById('auth_pass_input').value = '';
+}
+function closeAuthModal(){
+  document.getElementById('auth_modal').classList.remove('show');
+}
+function toggleAuthMode(){
+  openAuthModal(authMode==='signup' ? 'login' : 'signup');
+}
+
+function traducirErrorFirebase(err){
+  const map = {
+    'auth/email-already-in-use': 'Ese mail ya tiene una cuenta — probá iniciar sesión.',
+    'auth/invalid-email': 'El mail no es válido.',
+    'auth/weak-password': 'La contraseña necesita al menos 6 caracteres.',
+    'auth/wrong-password': 'Contraseña incorrecta.',
+    'auth/user-not-found': 'No existe una cuenta con ese mail.',
+    'auth/invalid-credential': 'Mail o contraseña incorrectos.'
+  };
+  return map[err.code] || ('No se pudo completar: ' + err.message);
+}
+
+function submitAuth(){
+  if(!firebaseReady){
+    document.getElementById('auth_error').textContent = 'El login todavía no está configurado — avisale a quien administra el sitio.';
+    return;
+  }
+  const email = document.getElementById('auth_email_input').value.trim();
+  const pass = document.getElementById('auth_pass_input').value;
+  const errEl = document.getElementById('auth_error');
+  errEl.textContent = '';
+  if(!email || !pass){ errEl.textContent = 'Completá email y contraseña.'; return; }
+  const accion = authMode==='signup'
+    ? auth.createUserWithEmailAndPassword(email, pass)
+    : auth.signInWithEmailAndPassword(email, pass);
+  accion.then(()=> closeAuthModal())
+    .catch(err=> { errEl.textContent = traducirErrorFirebase(err); });
+}
+function logout(){
+  if(auth) auth.signOut();
+}
+
+if(firebaseReady){
+  auth.onAuthStateChanged(user=>{
+    currentUser = user;
+    updateAuthUI();
+    if(user){
+      loadFromCloud(user.uid);
+    } else {
+      loadLocal();
+      render();
+      renderSidebar();
+    }
+  });
+} else {
+  updateAuthUI();
+  loadLocal();
+  render();
+}
+
 
 /* ---------- recorrido guiado (primera visita) ---------- */
 const TOUR_KEY = "rindex_costos_tour_v1";
