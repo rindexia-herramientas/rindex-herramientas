@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{
   --navy:#1B1740; --navy2:#241E52; --violet:#7C3AED; --violet-soft:#A78BFA;
@@ -1075,14 +1076,40 @@ function submitAuth(){
   const errEl = document.getElementById('auth_error');
   errEl.textContent = '';
   if(!email || !pass){ errEl.textContent = 'Completá email y contraseña.'; return; }
+  const modoAlRegistrar = authMode;
   const accion = authMode==='signup'
     ? auth.createUserWithEmailAndPassword(email, pass)
     : auth.signInWithEmailAndPassword(email, pass);
-  accion.then(()=> closeAuthModal())
+  accion.then(()=> {
+    if(modoAlRegistrar === 'signup'){ notificarNuevoRegistro(email); }
+    closeAuthModal();
+  })
     .catch(err=> { errEl.textContent = traducirErrorFirebase(err); });
 }
 function logout(){
   if(auth) auth.signOut();
+}
+
+/* ---------- notificación por mail de nuevos registros (EmailJS) ---------- */
+const emailjsConfig = {
+  publicKey: "PEGA_TU_PUBLIC_KEY",
+  serviceId: "PEGA_TU_SERVICE_ID",
+  templateId: "PEGA_TU_TEMPLATE_ID"
+};
+let emailjsReady = false;
+try{
+  if(window.emailjs && emailjsConfig.publicKey.indexOf('PEGA_') !== 0){
+    emailjs.init({publicKey: emailjsConfig.publicKey});
+    emailjsReady = true;
+  }
+}catch(e){ console.error('EmailJS no se pudo inicializar', e); }
+
+function notificarNuevoRegistro(emailNuevoUsuario){
+  if(!emailjsReady) return;
+  emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+    nuevo_usuario: emailNuevoUsuario,
+    fecha: new Date().toLocaleString('es-AR')
+  }).catch(err=> console.error('No se pudo enviar la notificación de registro:', err));
 }
 
 if(firebaseReady){
