@@ -87,12 +87,10 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
 .tour-overlay{display:none;position:fixed;inset:0;background:rgba(10,8,30,.68);z-index:9990;}
 .section{position:relative;}
 .section.tour-active-section{z-index:9995;box-shadow:0 0 0 4px var(--violet), 0 0 46px rgba(124,58,237,.55);}
-.tour-tip{display:none;position:absolute;top:-14px;right:18px;transform:translateY(-100%);
+.tour-tip{display:none;position:absolute;top:50px;right:18px;
   background:var(--grad);color:#fff;border-radius:14px;padding:14px 18px;max-width:300px;
   box-shadow:0 10px 26px rgba(124,58,237,.4);z-index:9999;}
 .tour-tip.active{display:block;}
-.tour-tip::after{content:"";position:absolute;bottom:-8px;right:26px;width:16px;height:16px;
-  background:inherit;transform:rotate(45deg);border-radius:3px;}
 .tour-tip p{margin:0;font-size:13px;line-height:1.4;padding-right:16px;}
 .tour-close{position:absolute;top:8px;right:10px;background:rgba(255,255,255,.25);border:none;color:#fff;
   width:22px;height:22px;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;font-weight:700;}
@@ -299,8 +297,12 @@ tr.total-row td{font-weight:800;color:var(--navy);border-bottom:none;padding-top
   </div>
 
   <!-- PRODUCTOS Y MARGENES -->
-  <div class="section productos-section">
+  <div class="section productos-section" id="sec_productos">
     <h2><span class="dot dot-productos"></span>¿A qué precio vender cada producto?</h2>
+    <div class="tour-tip" id="tip_productos">
+      <button type="button" class="tour-close" onclick="tourNext()">×</button>
+      <p>Calculá el precio de tus productos, con el margen de ganancias pretendido. ¡Ojo! Si el cálculo del margen aparece en <b>ROJO</b>, ese precio no te alcanza para cubrir lo que gastaste; si lo ves en <b>AMARILLO</b>, está demasiado al límite teniendo en cuenta la inflación.</p>
+    </div>
     <p class="sub">Desglosá el costo, poné el precio que pensás cobrar y mirá el semáforo: rojo si perdés, amarillo si el margen no le gana a la inflación, verde si vale la pena. Confirmá para agregarlo a tu listado.</p>
 
     <div class="prod-form">
@@ -763,7 +765,7 @@ render();
 
 /* ---------- recorrido guiado (primera visita) ---------- */
 const TOUR_KEY = "rindex_costos_tour_v1";
-const tourSectionIds = ['sec_ingresos','sec_fijos','sec_variables'];
+const tourSectionIds = ['sec_ingresos','sec_fijos','sec_variables','sec_productos'];
 let tourStep = 0;
 
 function showTourStep(){
@@ -773,7 +775,7 @@ function showTourStep(){
   target.classList.add('tour-active-section');
   const tip = target.querySelector('.tour-tip');
   if(tip) tip.classList.add('active');
-  target.scrollIntoView({behavior:'smooth', block:'center'});
+  target.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function tourNext(){
