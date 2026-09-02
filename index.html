@@ -15,7 +15,7 @@
   --bg:#F5F3FC; --line:#E4DEF7; --text-soft:#6B6484; --ok-bg:#F1EBFF;
 }
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-body{font-family:"Poppins","Segoe UI",Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--negro);}
+body{font-family:"Poppins","Segoe UI",Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--negro);;padding-bottom:48px;}
 
 header.top{background:var(--navy);
   background-image:radial-gradient(circle at 15% 20%, rgba(124,58,237,.35), transparent 45%),
@@ -622,5 +622,14 @@ document.addEventListener('change', render);
 renderExtraLists();
 render();
 </script>
+<style>
+.rindex-watermark{position:fixed;bottom:0;left:0;width:100%;background:#1B1740;color:#fff;text-align:center;
+  font-size:12px;padding:9px 14px;z-index:99999;box-shadow:0 -2px 10px rgba(0,0,0,.18);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;}
+.rindex-watermark a{color:#fff;font-weight:700;text-decoration:underline;}
+.rindex-watermark img{width:16px;height:16px;border-radius:50%;vertical-align:-3px;margin-right:6px;}
+@media print{.rindex-watermark{display:none !important;}}
+</style>
+<div class="rindex-watermark no-print"><img src="assets/logo-rindex.png" alt="">Sos parte de Rindex — Leé las reviews y sumate en <a href="https://rindex4.wordpress.com/" target="_blank" rel="noreferrer noopener">rindex4.wordpress.com</a></div>
 </body>
 </html>
