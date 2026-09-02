@@ -2,38 +2,58 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Liquidador de Recibos — CCT 130/75 Comercio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquidador de Sueldos — Rindex</title>
+<link rel="icon" href="assets/logo-rindex.png">
 <style>
 :root{
   --azul-oscuro:#1B3A6B; --azul-medio:#2E5A9C; --azul-claro:#6E96C4;
   --celeste-bg:#EAF1FA; --celeste-bg2:#D9E6F5; --gris-linea:#9AAEC7;
   --negro:#1A1A1A; --nota-bg:#FBF3E3; --nota-border:#D9B36C; --nota-texto:#8A2E2E;
+  --navy:#1B1740; --violet:#7C3AED; --violet-soft:#A78BFA; --pink:#EC4899;
+  --grad: linear-gradient(120deg,#7C3AED 0%,#C026D3 55%,#EC4899 100%);
+  --bg:#F5F3FC; --line:#E4DEF7; --text-soft:#6B6484; --ok-bg:#F1EBFF;
 }
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-body{font-family:Helvetica,Arial,sans-serif;margin:0;background:#eef1f6;color:var(--negro);}
-.app{display:flex;gap:16px;padding:16px;max-width:1500px;margin:0 auto;align-items:flex-start;}
+body{font-family:"Poppins","Segoe UI",Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--negro);}
+
+header.top{background:var(--navy);
+  background-image:radial-gradient(circle at 15% 20%, rgba(124,58,237,.35), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(236,72,153,.30), transparent 50%);
+  color:#fff;padding:22px 20px 26px;}
+.top-inner{max-width:1500px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+.top-inner img{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+.top-title{display:flex;flex-direction:column;}
+.top-title .brand{font-size:20px;font-weight:700;letter-spacing:.3px;}
+.top-title .tag{font-size:12.5px;color:#CBB9FF;margin-top:1px;}
+.top-desc{max-width:1500px;margin:14px auto 0;font-size:13px;color:#D9CFFB;line-height:1.5;}
+
+.app{display:flex;gap:16px;padding:20px 16px;max-width:1500px;margin:0 auto;align-items:flex-start;}
 
 /* ---------- FORMULARIO ---------- */
-.panel-form{flex:0 0 420px;background:#fff;border-radius:10px;padding:16px;
-  box-shadow:0 1px 6px rgba(0,0,0,.12);max-height:96vh;overflow-y:auto;position:sticky;top:16px;}
-.panel-form h2{font-size:16px;color:var(--azul-oscuro);margin:0 0 4px;}
-.panel-form p.sub{font-size:11px;color:#666;margin:0 0 10px;}
-fieldset{border:1px solid #dfe4ee;border-radius:8px;margin-bottom:10px;padding:10px 10px 12px;}
-legend{font-weight:bold;color:var(--azul-oscuro);font-size:12px;padding:0 5px;}
+.panel-form{flex:0 0 420px;background:#fff;border-radius:14px;padding:18px;
+  box-shadow:0 4px 18px rgba(76,29,149,.08);max-height:96vh;overflow-y:auto;position:sticky;top:16px;border:1px solid var(--line);}
+.panel-form h2{font-size:16px;color:var(--navy);margin:0 0 4px;}
+.panel-form p.sub{font-size:11px;color:var(--text-soft);margin:0 0 10px;}
+fieldset{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:10px 10px 12px;}
+legend{font-weight:700;color:var(--violet);font-size:11.5px;padding:0 6px;text-transform:uppercase;letter-spacing:.3px;}
 label{display:block;font-size:10.5px;margin-top:7px;color:#333;font-weight:600;}
 label.inline{display:inline-flex;align-items:center;gap:5px;font-weight:600;margin-top:8px;}
 input[type=text],input[type=number],input[type=date],select{
-  width:100%;padding:5px 6px;font-size:12px;border:1px solid #ccd3e0;border-radius:5px;margin-top:2px;font-family:inherit;}
-input[type=checkbox]{width:14px;height:14px;}
+  width:100%;padding:6px 7px;font-size:12px;border:1px solid var(--line);border-radius:7px;margin-top:2px;
+  font-family:inherit;background:#FBFAFF;}
+input:focus,select:focus{outline:none;border-color:var(--violet-soft);background:#fff;}
+input[type=checkbox]{width:14px;height:14px;accent-color:var(--violet);}
 .row2{display:flex;gap:8px;}
 .row2>div{flex:1;min-width:0;}
-.hint{font-size:9.5px;color:#777;margin-top:2px;line-height:1.3;}
-.btn-add{background:var(--celeste-bg2);border:1px solid var(--azul-claro);color:var(--azul-oscuro);
-  border-radius:5px;padding:5px 9px;font-size:10.5px;margin-top:7px;cursor:pointer;font-weight:600;}
-.btn-add:hover{background:#c9dcf2;}
-.btn-primary{background:var(--azul-oscuro);color:#fff;border:none;border-radius:7px;
-  padding:11px 16px;font-size:14px;width:100%;margin-top:6px;cursor:pointer;font-weight:bold;}
-.btn-primary:hover{background:#152f57;}
+.hint{font-size:9.5px;color:var(--text-soft);margin-top:2px;line-height:1.3;}
+.btn-add{background:var(--ok-bg);border:1px solid var(--violet-soft);color:var(--violet);
+  border-radius:7px;padding:5px 9px;font-size:10.5px;margin-top:7px;cursor:pointer;font-weight:700;}
+.btn-add:hover{background:#e7ddff;}
+.btn-primary{background:var(--navy);color:#fff;border:none;border-radius:9px;
+  padding:12px 16px;font-size:14px;width:100%;margin-top:6px;cursor:pointer;font-weight:700;
+  box-shadow:0 4px 14px rgba(27,23,64,.25);}
+.btn-primary:hover{background:#120e30;}
 .dyn-row{display:flex;gap:6px;align-items:center;margin-top:5px;}
 .dyn-row input{flex:1;min-width:0;}
 .dyn-row .amt{width:100px;flex:none;}
@@ -43,7 +63,7 @@ input[type=checkbox]{width:14px;height:14px;}
 .pct-row{display:flex;gap:8px;align-items:center;}
 .pct-row label{margin-top:0;flex:1;font-weight:500;}
 .pct-row input{width:70px;flex:none;}
-details summary{cursor:pointer;font-size:11.5px;color:var(--azul-medio);font-weight:bold;margin-top:2px;}
+details summary{cursor:pointer;font-size:11.5px;color:var(--violet);font-weight:700;margin-top:2px;}
 .sac-box{background:#FFF7E6;border:1px solid #E4C57A;border-radius:6px;padding:8px;margin-top:6px;}
 .sac-box .hint{color:#7a5b17;}
 
@@ -104,14 +124,22 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
 </style>
 </head>
 <body>
+
+<header class="top no-print">
+  <div class="top-inner">
+    <img src="assets/logo-rindex.png" alt="Rindex">
+    <div class="top-title">
+      <span class="brand">Rindex · Liquidador de Sueldos</span>
+      <span class="tag">La IA que te paga en horas</span>
+    </div>
+  </div>
+  <p class="top-desc">Armá el recibo de sueldo de un empleado de Comercio (CCT 130/75) con la estructura exacta que exige la ley — cargás los datos y descargás el PDF listo para entregar.</p>
+</header>
+
 <div class="app">
 
   <!-- ============ FORMULARIO ============ -->
   <div class="panel-form no-print">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-      <img src="assets/logo-rindex.png" alt="Rindex" style="width:34px;height:34px;border-radius:50%;">
-      <span style="font-size:11px;font-weight:700;color:var(--azul-oscuro);">RINDEX</span>
-    </div>
     <h2>Liquidador — Empleados de Comercio</h2>
     <p class="sub">CCT 130/75 (FAECYS) · recibo según Art. 140 LCT (Ley 27.802) y Decreto 407/2026</p>
 
@@ -260,7 +288,8 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
 
     <button class="btn-primary" onclick="window.print()">🖨️ Descargar / Imprimir PDF</button>
     <p class="hint" style="margin-top:8px;">Usá "Guardar como PDF" en el diálogo de impresión. Si el recibo sale sin colores, tildá la opción "Gráficos de fondo" en las opciones del navegador.</p>
-    <p class="hint" style="margin-top:6px;">¿Solo necesitás el cálculo, sin armar el recibo? <a href="calculadora-sueldo/" style="color:var(--azul-medio);font-weight:600;">Probá la Calculadora de Sueldo →</a></p>
+    <p class="hint" style="margin-top:6px;">¿Solo necesitás el cálculo, sin armar el recibo? <a href="calculadora-sueldo/" style="color:var(--violet);font-weight:700;">Probá la Calculadora de Sueldo →</a></p>
+    <p class="hint" style="margin-top:4px;">Otras herramientas: <a href="control-costos/" style="color:var(--violet);font-weight:700;">Control de Costos</a> · <a href="convertidor/" style="color:var(--violet);font-weight:700;">Conversor de archivos</a></p>
   </div>
 
   <!-- ============ VISTA PREVIA / RECIBO ============ -->
