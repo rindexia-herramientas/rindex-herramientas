@@ -188,6 +188,8 @@ footer a{color:var(--violet);text-decoration:none;font-weight:600;}
       <button class="subtool-btn" data-sub="comprimir">Comprimir PDF</button>
       <button class="subtool-btn" data-sub="img2pdf">Imágenes → PDF</button>
       <button class="subtool-btn" data-sub="pdf2img">PDF → Imágenes</button>
+      <button class="subtool-btn" data-sub="pdf2word">PDF → Word</button>
+      <button class="subtool-btn" data-sub="pdf2excel">PDF → Excel</button>
     </div>
 
     <!-- Unir -->
@@ -297,6 +299,38 @@ footer a{color:var(--violet);text-decoration:none;font-weight:600;}
       <div class="progress" id="prog-pdf2img"><div></div></div>
       <div class="status" id="status-pdf2img"></div>
       <div class="results" id="results-pdf2img"></div>
+    </div>
+
+    <!-- PDF a Word -->
+    <div class="subpanel" id="sub-pdf2word">
+      <div class="drop" id="drop-pdf2word">
+        <div class="dico">📄➡️📝</div>
+        <div class="dtitle">Arrastrá un PDF para pasarlo a Word editable</div>
+        <div class="dsub">Un solo archivo</div>
+        <input type="file" id="input-pdf2word" accept="application/pdf">
+      </div>
+      <div class="filelist" id="list-pdf2word"></div>
+      <div class="hint" style="margin-top:10px;">Extrae el texto del PDF y arma un .docx que se abre y edita en Word o Google Docs. Funciona mejor con PDFs que tienen texto real (no PDFs escaneados como foto). No conserva el diseño exacto del original, solo el texto.</div>
+      <button class="btn-main" id="btn-pdf2word" disabled>Convertir a Word</button>
+      <div class="progress" id="prog-pdf2word"><div></div></div>
+      <div class="status" id="status-pdf2word"></div>
+      <div class="results" id="results-pdf2word"></div>
+    </div>
+
+    <!-- PDF a Excel -->
+    <div class="subpanel" id="sub-pdf2excel">
+      <div class="drop" id="drop-pdf2excel">
+        <div class="dico">📄➡️📊</div>
+        <div class="dtitle">Arrastrá un PDF para pasarlo a Excel</div>
+        <div class="dsub">Un solo archivo</div>
+        <input type="file" id="input-pdf2excel" accept="application/pdf">
+      </div>
+      <div class="filelist" id="list-pdf2excel"></div>
+      <div class="hint" style="margin-top:10px;">Detecta filas y columnas del texto del PDF y arma un .xlsx editable — ideal para listados y tablas simples. Cada página del PDF se convierte en una hoja del Excel.</div>
+      <button class="btn-main" id="btn-pdf2excel" disabled>Convertir a Excel</button>
+      <div class="progress" id="prog-pdf2excel"><div></div></div>
+      <div class="status" id="status-pdf2excel"></div>
+      <div class="results" id="results-pdf2excel"></div>
     </div>
   </div>
 
@@ -856,6 +890,174 @@ async function fileToPdfDoc(file){
       setStatus('status-pdf2img','ok', pdf.numPages + ' página/s convertidas ✔');
     }catch(err){
       setStatus('status-pdf2img','err','Error: ' + err.message);
+    }
+  });
+})();
+
+/* ============================================================
+   HELPERS: extraer texto/lineas de un PDF con posiciones
+   ============================================================ */
+async function extractPdfPageLines(page){
+  const content = await page.getTextContent();
+  const items = content.items.filter(it => it.str && it.str.trim().length);
+  const lines = [];
+  let currentY = null, currentLine = [];
+  const Y_TOL = 3; // tolerancia en puntos para considerar "misma linea"
+  for(const it of items){
+    const y = it.transform[5];
+    if(currentY === null || Math.abs(y - currentY) > Y_TOL){
+      if(currentLine.length) lines.push(currentLine);
+      currentLine = [it];
+      currentY = y;
+    } else {
+      currentLine.push(it);
+    }
+  }
+  if(currentLine.length) lines.push(currentLine);
+  // cada item ya viene mas o menos en orden de aparicion; ordenamos por X dentro de la linea
+  lines.forEach(line => line.sort((a,b)=> a.transform[4]-b.transform[4]));
+  return lines;
+}
+function lineToText(line){
+  return line.map(it=>it.str).join(' ').replace(/\s+/g,' ').trim();
+}
+function lineToCells(line){
+  const COL_GAP = 9; // separacion en puntos PDF para asumir "nueva columna"
+  const cells = [];
+  let current = '';
+  let lastEndX = null;
+  for(const it of line){
+    const x = it.transform[4];
+    if(lastEndX !== null && (x - lastEndX) > COL_GAP){
+      cells.push(current.trim());
+      current = '';
+    } else if(current){
+      current += ' ';
+    }
+    current += it.str;
+    lastEndX = x + (it.width || (it.str.length*4));
+  }
+  if(current.trim()) cells.push(current.trim());
+  return cells;
+}
+function xmlEscape(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+/* Arma un .docx minimo (valido) a partir de paginas de lineas de texto, usando JSZip */
+async function buildDocxFromPages(pagesOfLines){
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
+    '</Types>');
+  zip.folder('_rels').file('.rels',
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'+
+    '</Relationships>');
+
+  let bodyXml = '';
+  pagesOfLines.forEach((lines, pageIdx)=>{
+    if(pageIdx > 0){
+      bodyXml += '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+    }
+    if(!lines.length){
+      bodyXml += '<w:p/>';
+    }
+    for(const line of lines){
+      const text = xmlEscape(line);
+      bodyXml += '<w:p><w:r><w:t xml:space="preserve">' + text + '</w:t></w:r></w:p>';
+    }
+  });
+  const documentXml =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'+
+    '<w:body>' + bodyXml + '<w:sectPr/></w:body>'+
+    '</w:document>';
+  zip.folder('word').file('document.xml', documentXml);
+
+  return await zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+
+/* --- PDF a Word --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-pdf2word', inputId:'input-pdf2word', listId:'list-pdf2word', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-pdf2word').disabled = files.length===0; }
+  });
+  document.getElementById('btn-pdf2word').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    if(!pdfjsReady){ setStatus('status-pdf2word','err','Todavía está cargando el motor de PDF, esperá unos segundos y probá de nuevo.'); return; }
+    clearStatus('status-pdf2word'); clearResults('results-pdf2word');
+    setStatus('status-pdf2word','info','Extrayendo texto y armando el Word...');
+    try{
+      const bytes = await files[0].arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({data: bytes}).promise;
+      const baseName = files[0].name.replace(/\.pdf$/i,'');
+      const pagesOfLines = [];
+      let totalChars = 0;
+      for(let i=1;i<=pdf.numPages;i++){
+        const page = await pdf.getPage(i);
+        const lines = await extractPdfPageLines(page);
+        const textLines = lines.map(lineToText).filter(t=>t.length);
+        totalChars += textLines.join('').length;
+        pagesOfLines.push(textLines);
+        setProgress('prog-pdf2word', Math.round((i/pdf.numPages)*100));
+      }
+      if(totalChars === 0){
+        setStatus('status-pdf2word','err','No se encontró texto en este PDF — probablemente es un PDF escaneado (imagen), no se puede convertir a Word editable.');
+        return;
+      }
+      const blob = await buildDocxFromPages(pagesOfLines);
+      addResult('results-pdf2word', baseName + '.docx', blob);
+      setStatus('status-pdf2word','ok', pdf.numPages + ' página/s convertidas ✔');
+    }catch(err){
+      setStatus('status-pdf2word','err','Error: ' + err.message);
+    }
+  });
+})();
+
+/* --- PDF a Excel --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-pdf2excel', inputId:'input-pdf2excel', listId:'list-pdf2excel', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-pdf2excel').disabled = files.length===0; }
+  });
+  document.getElementById('btn-pdf2excel').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    if(!pdfjsReady){ setStatus('status-pdf2excel','err','Todavía está cargando el motor de PDF, esperá unos segundos y probá de nuevo.'); return; }
+    clearStatus('status-pdf2excel'); clearResults('results-pdf2excel');
+    setStatus('status-pdf2excel','info','Extrayendo tablas y armando el Excel...');
+    try{
+      const bytes = await files[0].arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({data: bytes}).promise;
+      const baseName = files[0].name.replace(/\.pdf$/i,'');
+      const wb = XLSX.utils.book_new();
+      let totalChars = 0;
+      for(let i=1;i<=pdf.numPages;i++){
+        const page = await pdf.getPage(i);
+        const lines = await extractPdfPageLines(page);
+        const rows = lines.map(lineToCells).filter(r=>r.length);
+        totalChars += rows.reduce((n,r)=>n + r.join('').length, 0);
+        const ws = XLSX.utils.aoa_to_sheet(rows.length ? rows : [['']]);
+        const sheetName = pdf.numPages > 1 ? ('Pagina ' + i) : 'Hoja1';
+        XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0,31));
+        setProgress('prog-pdf2excel', Math.round((i/pdf.numPages)*100));
+      }
+      if(totalChars === 0){
+        setStatus('status-pdf2excel','err','No se encontró texto en este PDF — probablemente es un PDF escaneado (imagen), no se puede convertir a Excel.');
+        return;
+      }
+      const out = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+      addResult('results-pdf2excel', baseName + '.xlsx', new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+      setStatus('status-pdf2excel','ok', pdf.numPages + ' página/s convertidas ✔');
+    }catch(err){
+      setStatus('status-pdf2excel','err','Error: ' + err.message);
     }
   });
 })();
