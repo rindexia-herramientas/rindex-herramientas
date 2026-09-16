@@ -1,0 +1,35 @@
+name: Chequear vencimientos impositivos (fuente)
+
+on:
+  schedule:
+    # Todos los lunes a las 10:00 UTC (07:00 hora Argentina)
+    - cron: "0 10 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  chequear:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Chequear fuentes y actualizar data.json si corresponde
+        run: python scripts/update_vencimientos.py
+
+      - name: Commitear cambios (si los hay)
+        run: |
+          git config user.name "rindex-bot"
+          git config user.email "actions@github.com"
+          if ! git diff --quiet -- vencimientos/data.json; then
+            git add vencimientos/data.json
+            git commit -m "Chequeo automático: vencimientos impositivos"
+            git push
+          else
+            echo "Sin cambios para commitear."
+          fi
