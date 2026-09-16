@@ -1,1 +1,23 @@
-
+{
+  "oficial": {
+    "vigente_desde": "2026-08-01",
+    "proxima_actualizacion_estimada": "2027-02-01",
+    "fuente": "https://www.afip.gob.ar/monotributo/categorias.asp",
+    "ultima_verificacion": "2026-09-16",
+    "precio_unitario_max_bienes": 716840.77,
+    "categorias": [
+      { "letra": "A", "tope_facturacion": 12009410.45, "cuota_servicios": 49527.18, "cuota_bienes": 49527.18, "impuesto_servicios": 5585.77, "impuesto_bienes": 5585.77, "sipa": 18246.86, "obra_social": 25694.55, "superficie_max": 30, "energia_max": 3330, "alquiler_max": 2792886.15 },
+      { "letra": "B", "tope_facturacion": 17595182.74, "cuota_servicios": 56379.08, "cuota_bienes": 56379.08, "impuesto_servicios": 10612.98, "impuesto_bienes": 10612.98, "sipa": 20071.55, "obra_social": 25694.55, "superficie_max": 45, "energia_max": 5000, "alquiler_max": 2792886.15 },
+      { "letra": "C", "tope_facturacion": 24670494.31, "cuota_servicios": 66020.12, "cuota_bienes": 64530.58, "impuesto_servicios": 18246.86, "impuesto_bienes": 16757.32, "sipa": 22078.71, "obra_social": 25694.55, "superficie_max": 60, "energia_max": 6700, "alquiler_max": 3816944.41 },
+      { "letra": "D", "tope_facturacion": 30628651.43, "cuota_servicios": 84612.93, "cuota_bienes": 82564.81, "impuesto_servicios": 29790.79, "impuesto_bienes": 27742.67, "sipa": 24286.58, "obra_social": 30535.56, "superficie_max": 85, "energia_max": 10000, "alquiler_max": 3816944.41 },
+      { "letra": "E", "tope_facturacion": 36028231.33, "cuota_servicios": 119811.45, "cuota_bienes": 108267.51, "impuesto_servicios": 55857.73, "impuesto_bienes": 44313.79, "sipa": 26715.24, "obra_social": 37238.48, "superficie_max": 110, "energia_max": 13000, "alquiler_max": 4841002.66 },
+      { "letra": "F", "tope_facturacion": 45151659.41, "cuota_servicios": 150784.21, "cuota_bienes": 129930.65, "impuesto_servicios": 78573.20, "impuesto_bienes": 57719.64, "sipa": 29386.76, "obra_social": 42824.25, "superficie_max": 150, "energia_max": 16500, "alquiler_max": 4841002.66 },
+      { "letra": "G", "tope_facturacion": 53995798.87, "cuota_servicios": 230312.94, "cuota_bienes": 158815.05, "impuesto_servicios": 142995.76, "impuesto_bienes": 71497.87, "sipa": 41141.46, "obra_social": 46175.72, "superficie_max": 200, "energia_max": 20000, "alquiler_max": 5771964.69 },
+      { "letra": "H", "tope_facturacion": 81924660.37, "cuota_servicios": 522706.68, "cuota_bienes": 317895.01, "impuesto_servicios": 409623.31, "impuesto_bienes": 204811.64, "sipa": 57598.04, "obra_social": 55485.33, "superficie_max": 200, "energia_max": 20000, "alquiler_max": 8378658.45 },
+      { "letra": "I", "tope_facturacion": 91699761.90, "cuota_servicios": 963747.86, "cuota_bienes": 474992.78, "impuesto_servicios": 814591.79, "impuesto_bienes": 325836.71, "sipa": 80637.26, "obra_social": 68518.81, "superficie_max": 200, "energia_max": 20000, "alquiler_max": 8378658.45 },
+      { "letra": "J", "tope_facturacion": 105012519.20, "cuota_servicios": 1167299.76, "cuota_bienes": 580793.69, "impuesto_servicios": 977510.14, "impuesto_bienes": 391004.07, "sipa": 112892.16, "obra_social": 76897.46, "superficie_max": 200, "energia_max": 20000, "alquiler_max": 8378658.45 },
+      { "letra": "K", "tope_facturacion": 126610838.75, "cuota_servicios": 1614446.04, "cuota_bienes": 702103.24, "impuesto_servicios": 1368514.20, "impuesto_bienes": 456171.40, "sipa": 158049.02, "obra_social": 87882.82, "superficie_max": 200, "energia_max": 20000, "alquiler_max": 8378658.45 }
+    ]
+  },
+  "estimado": null
+}
