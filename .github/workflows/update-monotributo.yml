@@ -1,1 +1,35 @@
+name: Chequear tabla de Monotributo (ARCA)
 
+on:
+  schedule:
+    # Todos los lunes a las 09:00 UTC (06:00 hora Argentina)
+    - cron: "0 9 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  chequear:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Chequear ARCA y actualizar data.json si corresponde
+        run: python scripts/update_monotributo.py
+
+      - name: Commitear cambios (si los hay)
+        run: |
+          git config user.name "rindex-bot"
+          git config user.email "actions@github.com"
+          if ! git diff --quiet -- monotributo/data.json; then
+            git add monotributo/data.json
+            git commit -m "Aviso automático: ARCA publicó una tabla de Monotributo nueva"
+            git push
+          else
+            echo "Sin cambios para commitear."
+          fi
