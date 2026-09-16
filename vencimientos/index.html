@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendario de Vencimientos Impositivos — Rindex</title>
+<link rel="icon" href="../assets/logo-rindex.png">
+<style>
+:root{
+  --navy:#1B1740; --navy2:#241E52; --violet:#7C3AED; --violet-soft:#A78BFA;
+  --pink:#EC4899; --grad: linear-gradient(120deg,#7C3AED 0%,#C026D3 55%,#EC4899 100%);
+  --bg:#F5F3FC; --card-bg:#FFFFFF; --line:#E4DEF7; --text:#241E3D; --text-soft:#6B6484;
+  --ok-bg:#F1EBFF;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;padding-bottom:48px;}
+h1,h2,h3{font-family:"Poppins","Segoe UI",Arial,sans-serif;}
+
+/* ---------- HEADER ---------- */
+header.top{
+  background:var(--navy);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(124,58,237,.35), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(236,72,153,.30), transparent 50%);
+  color:#fff; padding:22px 20px 26px;
+}
+.top-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+.top-inner img{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+.top-title{display:flex;flex-direction:column;}
+.top-title .brand{font-size:20px;font-weight:700;letter-spacing:.3px;}
+.top-title .tag{font-size:12.5px;color:#CBB9FF;margin-top:1px;}
+.top-desc{max-width:1100px;margin:14px auto 0;font-size:13px;color:#D9CFFB;line-height:1.5;}
+
+/* ---------- CUIT SELECTOR ---------- */
+.cuit-bar{max-width:1100px;margin:16px auto 0;padding:0 18px;}
+.aviso-pendiente{background:#FFF7DA;border:1px solid #F3DE9E;border-radius:12px;padding:12px 16px;font-size:11.5px;color:#946200;line-height:1.5;margin-bottom:12px;}
+.aviso-pendiente b{color:#7A4E00;}
+.cuit-card{background:var(--card-bg);border:1px solid var(--line);border-radius:14px;padding:14px 18px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 4px 18px rgba(76,29,149,.06);}
+.cuit-card label{font-size:12.5px;font-weight:700;color:var(--navy);}
+.cuit-card select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12.5px;background:#FBFAFF;color:var(--text);}
+.cuit-card .hint{font-size:11px;color:var(--text-soft);}
+
+/* ---------- PROXIMOS ---------- */
+.wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px;}
+.proximos{margin-bottom:26px;}
+.proximos h2{font-size:15px;color:var(--navy);margin:0 0 12px;}
+.timeline{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;}
+.tl-item{flex:0 0 auto;min-width:160px;background:var(--grad);border-radius:14px;padding:14px 16px;color:#fff;box-shadow:0 8px 20px rgba(124,58,237,.22);}
+.tl-item .cat{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;opacity:.9;}
+.tl-item .fecha{font-size:19px;font-weight:800;margin-top:4px;}
+.tl-item .faltan{font-size:11px;margin-top:4px;opacity:.9;}
+
+/* ---------- CATEGORIAS ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(320px,1fr));gap:16px;}
+.cat-card{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(76,29,149,.06);}
+.cat-card h3{font-size:14.5px;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:7px;}
+.cat-card .sub{font-size:11px;color:var(--text-soft);margin:0 0 10px;}
+.cat-card .next-lbl{font-size:10.5px;color:var(--text-soft);font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.cat-card .next-val{font-size:22px;font-weight:800;color:var(--violet);margin-top:2px;}
+.cat-card .next-faltan{font-size:11.5px;color:var(--text-soft);margin-top:2px;}
+.cat-card details{margin-top:12px;}
+.cat-card summary{cursor:pointer;font-size:11.5px;color:var(--violet);font-weight:700;list-style:none;}
+.cat-card summary::-webkit-details-marker{display:none;}
+.cat-card summary::before{content:"▸ Ver todo el año ";}
+.cat-card details[open] summary::before{content:"▾ Ocultar ";}
+table.dtable{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:10px;}
+table.dtable td{padding:5px 4px;border-bottom:1px solid var(--line);}
+table.dtable td.num{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap;}
+table.dtable tr.pasado td{opacity:.4;}
+.badge-hoy{background:#FFF3F9;color:var(--pink);font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px;}
+
+.footnote{font-size:10.5px;color:var(--text-soft);text-align:center;margin-top:26px;line-height:1.5;}
+.footnote a{color:var(--violet);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <img src="../assets/logo-rindex.png" alt="Rindex">
+    <div class="top-title">
+      <span class="brand">Rindex · Calendario de Vencimientos Impositivos</span>
+      <span class="tag">La IA que te paga en horas</span>
+    </div>
+  </div>
+  <p class="top-desc">Monotributo, Autónomos, IVA, Ganancias, Bienes Personales y SICORE — todos los vencimientos de ARCA en un solo lugar. Elegí la terminación de tu CUIT para ver tus fechas exactas, o mirá el calendario general.</p>
+</header>
+
+<div class="cuit-bar">
+  <div id="avisoPendiente"></div>
+  <div class="cuit-card">
+    <label>Terminación de tu CUIT/CUIL:</label>
+    <select id="cuit_digito">
+      <option value="">General (sin filtrar)</option>
+      <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+      <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+      <option value="9">9</option>
+    </select>
+    <span class="hint">Es el último número antes del dígito verificador.</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="proximos">
+    <h2>🔔 Tus próximos vencimientos</h2>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="grid" id="categorias"></div>
+
+  <p class="footnote">Fechas 2026 según fuente contable especializada, con los traslados por fin de semana/feriado ya aplicados. Pueden sufrir modificaciones por resolución de ARCA — ante un pago importante, confirmá en <a href="https://www.arca.gob.ar" target="_blank" rel="noopener">arca.gob.ar</a>. Última verificación: <span id="ultima_verif"></span>.</p>
+</div>
+
+<script>
+let DATA = null;
+const HOY = new Date(); HOY.setHours(0,0,0,0);
+
+function fmt(iso){
+  const [y,m,d] = iso.split('-');
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return d + ' ' + meses[parseInt(m)-1] + ' ' + y;
+}
+function esFuturo(iso){
+  return new Date(iso+'T00:00:00') >= HOY;
+}
+function diasFaltan(iso){
+  const d = new Date(iso+'T00:00:00');
+  return Math.round((d - HOY) / (1000*60*60*24));
+}
+function grupoIndexAutonomos(digito){
+  const d = parseInt(digito);
+  if(d<=3) return 0;
+  if(d<=6) return 1;
+  return 2;
+}
+function grupoIndexIva(digito){
+  const d = parseInt(digito);
+  return Math.floor(d/2); // 0-1=>0, 2-3=>1, 4-5=>2, 6-7=>3, 8-9=>4
+}
+
+async function cargar(){
+  try{
+    const res = await fetch('./data.json', {cache:'no-store'});
+    DATA = await res.json();
+  }catch(e){
+    document.getElementById('categorias').innerHTML = '<p>No se pudo cargar el calendario. Probá recargar la página.</p>';
+    return;
+  }
+  document.getElementById('ultima_verif').textContent = fmt(DATA._meta.ultima_verificacion);
+  if(DATA._meta.pendiente_revision){
+    const p = DATA._meta.pendiente_revision;
+    document.getElementById('avisoPendiente').innerHTML =
+      '<div class="aviso-pendiente">⚠️ <b>Hay una actualización pendiente de revisar.</b> El chequeo automático detectó cambios en '+p.cambios.length+' fuente(s) el '+fmt(p.detectado)+'. Mientras tanto, seguís viendo las últimas fechas confirmadas.</div>';
+  }
+  render();
+}
+
+function render(){
+  const digito = document.getElementById('cuit_digito').value;
+  const proximos = [];
+
+  let html = '';
+
+  // ---------- MONOTRIBUTO ----------
+  {
+    const filas = DATA.monotributo.vencimientos.map(v => ({label: v.mes, fecha: v.fecha}));
+    const recats = DATA.monotributo.recategorizacion.map(r => ({label: 'Recategorización — '+r.periodo, fecha: r.fecha}));
+    const todas = filas.concat(recats).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const prox = todas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'Monotributo', fecha: prox.fecha});
+    html += catCard('💳 Monotributo', 'Cuota mensual (día 20, salvo traslado) + recategorización semestral', prox, todas);
+  }
+
+  // ---------- AUTONOMOS ----------
+  {
+    const gi = digito ? grupoIndexAutonomos(digito) : 0;
+    const filas = DATA.autonomos.vencimientos.map(v => ({label: v.mes_devengado, fecha: v.fechas[gi]}));
+    const prox = filas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'Autónomos', fecha: prox.fecha});
+    const sub = digito ? 'Grupo: terminación '+DATA.autonomos.grupos[gi] : 'Mostrando grupo 0-1-2-3 — elegí tu CUIT para ver el tuyo';
+    html += catCard('🧑\u200d💼 Autónomos', sub, prox, filas, DATA.autonomos.recategorizacion);
+  }
+
+  // ---------- IVA ----------
+  {
+    const gi = digito ? grupoIndexIva(digito) : 0;
+    const filas = DATA.iva.vencimientos.map(v => ({label: v.mes_devengado, fecha: v.fechas[gi]}));
+    const prox = filas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'IVA', fecha: prox.fecha});
+    const sub = digito ? 'Grupo: terminación '+DATA.iva.grupos[gi] : 'Mostrando grupo 0 y 1 — elegí tu CUIT para ver el tuyo';
+    html += catCard('🧾 IVA (DDJJ + Libro IVA Digital)', sub, prox, filas, DATA.iva.nota);
+  }
+
+  // ---------- GANANCIAS PH ----------
+  {
+    const gi = digito ? grupoIndexAutonomos(digito) : 0;
+    const anticipos = DATA.ganancias_ph.anticipos.map(a => ({label: 'Anticipo '+a.anticipo, fecha: a.fechas[gi]}));
+    const ddjj = [
+      {label:'DDJJ 2025 — Pago', fecha: DATA.ganancias_ph.ddjj_2025.pago[gi]},
+      {label:'DDJJ 2025 — Presentación', fecha: DATA.ganancias_ph.ddjj_2025.presentacion[gi]},
+    ];
+    const todas = anticipos.concat(ddjj).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const prox = todas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'Ganancias (PH)', fecha: prox.fecha});
+    const sub = digito ? 'Grupo: terminación '+DATA.ganancias_ph.grupos[gi] : 'Personas humanas — elegí tu CUIT para ver tu grupo';
+    html += catCard('📈 Ganancias — Personas Humanas', sub, prox, todas, DATA.ganancias_ph.nota);
+  }
+
+  // ---------- BIENES PERSONALES ----------
+  {
+    const gi = digito ? grupoIndexAutonomos(digito) : 0;
+    const anticipos = DATA.bienes_personales.anticipos.map(a => ({label: 'Anticipo '+a.anticipo, fecha: a.fechas[gi]}));
+    const ddjj = [
+      {label:'DDJJ 2025 — Pago', fecha: DATA.bienes_personales.ddjj_2025.pago[gi]},
+      {label:'DDJJ 2025 — Presentación', fecha: DATA.bienes_personales.ddjj_2025.presentacion[gi]},
+      {label:'Acciones y participaciones — Presentación', fecha: DATA.bienes_personales.acciones_participaciones_2025.presentacion[gi]},
+      {label:'Acciones y participaciones — Pago', fecha: DATA.bienes_personales.acciones_participaciones_2025.pago[gi]},
+    ];
+    const todas = anticipos.concat(ddjj).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const prox = todas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'Bienes Personales', fecha: prox.fecha});
+    const sub = digito ? 'Grupo: terminación '+DATA.bienes_personales.grupos[gi] : 'Elegí tu CUIT para ver tu grupo';
+    html += catCard('🏠 Bienes Personales', sub, prox, todas);
+  }
+
+  // ---------- SICORE ----------
+  {
+    const gi = digito ? grupoIndexAutonomos(digito) : 0;
+    const filas = DATA.sicore.vencimientos.map(v => ({label: v.periodo, fecha: v.fechas[gi]}));
+    const prox = filas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'SICORE', fecha: prox.fecha});
+    const sub = digito ? 'Grupo: terminación '+DATA.sicore.grupos[gi] : 'Retenciones — elegí tu CUIT para ver tu grupo';
+    html += catCard('🔁 Retenciones (SICORE)', sub, prox, filas);
+  }
+
+  document.getElementById('categorias').innerHTML = html;
+
+  // ---------- TIMELINE DE PROXIMOS ----------
+  proximos.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  let tlHtml = '';
+  proximos.forEach(p => {
+    tlHtml += '<div class="tl-item"><div class="cat">'+p.cat+'</div><div class="fecha">'+fmt(p.fecha)+'</div><div class="faltan">'+faltanTexto(p.fecha)+'</div></div>';
+  });
+  document.getElementById('timeline').innerHTML = tlHtml || '<p style="font-size:12px;color:var(--text-soft)">No hay vencimientos próximos cargados.</p>';
+}
+
+function faltanTexto(fecha){
+  const d = diasFaltan(fecha);
+  if(d === 0) return 'Es hoy';
+  if(d === 1) return 'Es mañana';
+  return 'Faltan '+d+' días';
+}
+
+function catCard(titulo, sub, prox, todasFilas, notaExtra){
+  let html = '<div class="cat-card">';
+  html += '<h3>'+titulo+'</h3>';
+  html += '<p class="sub">'+sub+'</p>';
+  if(prox){
+    html += '<div class="next-lbl">Próximo vencimiento</div>';
+    html += '<div class="next-val">'+fmt(prox.fecha)+'</div>';
+    html += '<div class="next-faltan">'+faltanTexto(prox.fecha)+'</div>';
+  } else {
+    html += '<div class="next-faltan">Sin fechas futuras cargadas para 2026.</div>';
+  }
+  html += '<details><summary></summary><table class="dtable">';
+  todasFilas.forEach(f => {
+    const pasado = !esFuturo(f.fecha) ? ' class="pasado"' : '';
+    const hoyBadge = diasFaltan(f.fecha)===0 ? '<span class="badge-hoy">HOY</span>' : '';
+    html += '<tr'+pasado+'><td>'+f.label+hoyBadge+'</td><td class="num">'+fmt(f.fecha)+'</td></tr>';
+  });
+  html += '</table>';
+  if(notaExtra) html += '<p class="sub" style="margin-top:8px;">'+notaExtra+'</p>';
+  html += '</details></div>';
+  return html;
+}
+
+document.getElementById('cuit_digito').addEventListener('change', render);
+cargar();
+</script>
+
+<style>
+.rindex-watermark{position:fixed;bottom:0;left:0;width:100%;background:#1B1740;color:#fff;text-align:center;
+  font-size:12px;padding:9px 14px;z-index:99999;box-shadow:0 -2px 10px rgba(0,0,0,.18);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;}
+.rindex-watermark a{color:#fff;font-weight:700;text-decoration:underline;}
+.rindex-watermark img{width:16px;height:16px;border-radius:50%;vertical-align:-3px;margin-right:6px;}
+@media print{.rindex-watermark{display:none !important;}}
+</style>
+<div class="rindex-watermark no-print"><img src="../assets/logo-rindex.png" alt="">Sos parte de Rindex — Leé las reviews y sumate en <a href="https://rindexia.com/" target="_blank" rel="noreferrer noopener">rindexia.com</a></div>
+</body>
+</html>
