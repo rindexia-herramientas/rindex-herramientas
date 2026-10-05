@@ -1,0 +1,35 @@
+name: Chequear escalas de Empleados de Comercio (FAECYS)
+
+on:
+  schedule:
+    # Todos los días a las 11:00 UTC (08:00 hora Argentina)
+    - cron: "0 11 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  chequear:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pypdf
+
+      - name: Buscar planillas nuevas y actualizar escalas
+        run: python scripts/update_escalas_comercio.py
+
+      - name: Commitear cambios (si los hay)
+        run: |
+          git config user.name "rindex-bot"
+          git config user.email "actions@github.com"
+          if ! git diff --quiet -- assets/escalas-comercio.json; then
+            git add assets/escalas-comercio.json
+            git commit -m "Chequeo automático: escalas Empleados de Comercio"
+            git push
+          else
+            echo "Sin cambios para commitear."
+          fi
