@@ -147,9 +147,6 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
         <option>Vendedor C</option>
         <option>Vendedor D</option>
       </select>
-      <label>Básico de la categoría vigente ese período ($)</label>
-      <input type="number" id="basico" placeholder="0.00" step="0.01">
-      <p class="hint">La escala de FAECYS cambia varias veces al año: cargá el básico oficial vigente (no se calcula solo).</p>
       <div class="row2">
         <div><label>Mes</label>
           <select id="per_mes">
@@ -161,13 +158,23 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
         </div>
         <div><label>Año</label><input type="number" id="per_anio" value="2026" min="2020" max="2100"></div>
       </div>
+      <label>Jornada</label>
+      <select id="jornada">
+        <option value="8">Jornada completa (8 h)</option>
+        <option value="4">Media jornada (4 h)</option>
+        <option value="otra">Otra cantidad de horas</option>
+      </select>
+      <div id="horasBox" style="display:none;"><label>Horas diarias</label><input type="number" id="horas" min="1" max="8" step="0.5" placeholder="Ej. 6"></div>
+      <label>Básico de convenio, jornada completa ($)</label>
+      <input type="number" id="basico" placeholder="0.00" step="0.01">
+      <p class="hint" id="esc_estado">Cargando la escala oficial…</p>
       <label>Fecha de ingreso (para antigüedad)</label>
       <input type="date" id="trab_ingreso">
     </fieldset>
 
     <fieldset>
       <legend>Días del mes</legend>
-      <p class="hint">Valor día = básico ÷ 25. Feriado trabajado paga doble.</p>
+      <p class="hint">Feriado no trabajado y vacaciones: se suma el plus (total ÷ 25 − total ÷ 30) por día. Feriado trabajado: se suma total ÷ 25 por día. "Total" = básico + antigüedad + presentismo.</p>
       <div class="row2">
         <div><label>Feriados NO trabajados</label><input type="number" id="fer_no" value="0" min="0"></div>
         <div><label>Feriados SÍ trabajados</label><input type="number" id="fer_si" value="0" min="0"></div>
@@ -189,6 +196,9 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
 
     <fieldset>
       <legend>Conceptos no remunerativos</legend>
+      <label class="inline"><input type="checkbox" id="chk_nr_acuerdo" checked> Sumas no remunerativas del acuerdo vigente (se cargan solas, con antigüedad y presentismo)</label>
+      <label class="inline"><input type="checkbox" id="chk_fer_nr" checked> Feriado trabajado: incluir la parte no remunerativa</label>
+      <p class="hint" id="nr_estado"></p>
       <button type="button" class="btn-add" onclick="addNoRemu('Suma no remunerativa (paritaria)', 0)">+ Agregar concepto</button>
       <div id="noRemuList"></div>
     </fieldset>
@@ -209,7 +219,9 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
         <div class="pct-row"><label>Jubilación (%) empleado</label><input type="number" id="pct_jub" value="11" step="0.01"></div>
         <div class="pct-row"><label>Ley 19.032 / INSSJP (%)</label><input type="number" id="pct_ley19032" value="3" step="0.01"></div>
         <div class="pct-row"><label>Obra Social (%) s/bruto</label><input type="number" id="pct_os" value="3" step="0.01"></div>
-        <label class="inline"><input type="checkbox" id="chk_afiliado" checked> Afiliado al sindicato</label>
+        <label class="inline"><input type="checkbox" id="chk_osred" checked> Diferencia obra social por jornada reducida</label>
+        <label class="inline"><input type="checkbox" id="chk_afiliado" checked> Aportes sindicales (art. 100 y FAECYS art. 101)</label>
+        <p class="hint">Vigentes para todos los trabajadores mientras rija la cautelar (Disp. 839/2026).</p>
         <div class="pct-row"><label>Sindicato Art. 100 (%)</label><input type="number" id="pct_sind" value="2" step="0.01"></div>
         <div class="pct-row"><label>Faecys (%)</label><input type="number" id="pct_faecys" value="0.5" step="0.01"></div>
         <label class="inline"><input type="checkbox" id="chk_osecac" checked> OSECAC voluntario (fijo)</label>
@@ -335,36 +347,55 @@ function num(id){ const v = parseFloat(document.getElementById(id).value); retur
 function chk(id){ return document.getElementById(id).checked; }
 
 /* ---------- calculo principal (mismo motor que el liquidador completo) ---------- */
+function factorJornada(){
+  const j = val('jornada');
+  if(j === 'otra'){ const h = num('horas'); return h>0 ? Math.min(h,8)/8 : 1; }
+  return parseFloat(j)/8;
+}
 function calcular(){
-  const basico = num('basico');
+  const f = factorJornada();
+  const basicoFull = num('basico');
+  const basico = basicoFull * f;
   const mes = parseInt(val('per_mes'));
   const anio = val('per_anio');
+  const esc = escalaDelPeriodo();
 
   let anios = 0;
   const ingresoStr = val('trab_ingreso');
   if(ingresoStr && chk('chk_antiguedad')){
-    const ing = new Date(ingresoStr);
-    const periodoRef = new Date(parseInt(anio), mes-1, 1);
+    const ing = new Date(ingresoStr + 'T00:00:00');
+    const periodoRef = new Date(parseInt(anio), mes, 0); // último día del mes
     anios = periodoRef.getFullYear() - ing.getFullYear();
     const beforeAnniv = (periodoRef.getMonth() < ing.getMonth()) ||
       (periodoRef.getMonth() === ing.getMonth() && periodoRef.getDate() < ing.getDate());
     if(beforeAnniv) anios -= 1;
     if(anios < 0) anios = 0;
   }
-  const antiguedadMonto = chk('chk_antiguedad') ? basico * 0.01 * anios : 0;
+  const antiguedadMonto = basico * 0.01 * anios;
 
-  const valorDia = basico/25;
+  // Sumas no remunerativas del acuerdo (proporcionales a la jornada)
+  const usaNR = chk('chk_nr_acuerdo') && esc;
+  const nrAcuerdo = usaNR ? esc.nr * f : 0;
+  const extAcuerdo = usaNR ? esc.ext * f : 0;   // sin antigüedad ni presentismo
+  const antigNR = nrAcuerdo * 0.01 * anios;
+
+  const pres = chk('chk_presentismo');
+  const presentismoMonto = pres ? (basico + antiguedadMonto) / 12 : 0;
+  const presentismoNR = pres ? (nrAcuerdo + antigNR) / 12 : 0;
+
+  const R = basico + antiguedadMonto + presentismoMonto;   // base remunerativa de feriados/vacaciones
+  const RN = nrAcuerdo + antigNR + presentismoNR;           // base no remunerativa
   const ferNo = num('fer_no'), ferSi = num('fer_si'), vac = num('vacaciones');
-  const ferNoMonto = valorDia * ferNo;
-  const ferSiMonto = 2 * valorDia * ferSi;
-  const vacMonto = valorDia * vac;
-
-  const presentBase = basico + antiguedadMonto;
-  const presentismoMonto = chk('chk_presentismo') ? presentBase * (100/12) / 100 : 0;
+  const plusDia = R/25 - R/30, plusDiaNR = RN/25 - RN/30;
+  const ferNoMonto = plusDia * ferNo;
+  const ferSiMonto = R/25 * ferSi;
+  const ferSiNR = chk('chk_fer_nr') ? RN/25 * ferSi : 0;
+  const vacMonto = plusDia * vac;
+  const vacNR = plusDiaNR * vac;
+  const valorDia = R/25;
 
   const remuExtraSum = remuExtra.reduce((a,r)=>a+(r.m||0), 0);
-
-  let totalRemuAntesSac = basico + antiguedadMonto + presentismoMonto + ferNoMonto + ferSiMonto + vacMonto + remuExtraSum;
+  let totalRemuAntesSac = R + ferNoMonto + ferSiMonto + vacMonto + remuExtraSum;
 
   const esMesSac = (mes === 6 || mes === 12);
   let sacMonto = 0;
@@ -375,37 +406,85 @@ function calcular(){
   }
   const totalRemunerativo = totalRemuAntesSac + sacMonto;
 
-  const noRemuSum = noRemu.reduce((a,r)=>a+(r.m||0), 0);
+  const noRemuManual = noRemu.reduce((a,r)=>a+(r.m||0), 0);
+  const noRemuSum = RN + extAcuerdo + ferSiNR + vacNR + noRemuManual;
   const totalBruto = totalRemunerativo + noRemuSum;
 
   const jub = totalRemunerativo * num('pct_jub')/100;
   const ley19032 = totalRemunerativo * num('pct_ley19032')/100;
   const os = totalBruto * num('pct_os')/100;
+  const osRed = (chk('chk_osred') && f < 1) ? (totalRemunerativo/f - totalRemunerativo) * num('pct_os')/100 : 0;
   const afiliado = chk('chk_afiliado');
   const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
   const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
   const osecac = chk('chk_osecac') ? num('monto_osecac') : 0;
   const deducExtraSum = deducExtra.reduce((a,r)=>a+(r.m||0), 0);
-  const totalDeducciones = jub+ley19032+os+sind+faecys+osecac+deducExtraSum;
+  const totalDeducciones = jub+ley19032+os+osRed+sind+faecys+osecac+deducExtraSum;
 
   const neto = totalBruto - totalDeducciones;
 
+  // Contribuciones: solo si hay sueldo (los montos fijos no se cobran con remuneración en cero)
+  const hay = totalRemunerativo > 0;
   const jubFne = totalRemunerativo * num('pct_jubfne')/100;
   const osPatr = totalRemunerativo * num('pct_ospatr')/100;
-  const art = num('art_fijo') + totalRemunerativo * num('art_pct')/100;
-  const seguroVida = num('seguro_vida');
+  const art = hay ? num('art_fijo') + totalRemunerativo * num('art_pct')/100 : 0;
+  const seguroVida = hay ? num('seguro_vida') : 0;
   const totalContrib = jubFne + osPatr + art + seguroVida;
 
   return {
-    basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
-    ferNoMonto, ferSiMonto, vacMonto, presentismoMonto,
+    f, basicoFull, basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
+    ferNoMonto, ferSiMonto, ferSiNR, vacMonto, vacNR, presentismoMonto, presentismoNR,
+    nrAcuerdo, antigNR, extAcuerdo,
     remuExtraSum, totalRemuAntesSac, esMesSac, sacMonto, totalRemunerativo,
     noRemuSum, totalBruto,
-    jub, ley19032, os, sind, faecys, osecac, deducExtraSum, totalDeducciones,
+    jub, ley19032, os, osRed, sind, faecys, osecac, deducExtraSum, totalDeducciones,
     neto, jubFne, osPatr, art, seguroVida, totalContrib,
     mes, anio, afiliado
   };
 }
+
+/* ---------- escalas FAECYS (assets/escalas-comercio.json, se actualiza sola) ---------- */
+let ESCALAS = null;
+let basicoManual = false;
+const MESES_TXT = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function claveActual(){ return `${val('per_anio')}-${String(val('per_mes')).padStart(2,'0')}`; }
+function fechaCorta(iso){ const [y,m,d] = iso.split('-'); return `${d}/${m}/${y.slice(2)}`; }
+function escalaDelPeriodo(){
+  if(!ESCALAS) return null;
+  const k = claveActual(), P = ESCALAS.periodos;
+  if(P[k]) return Object.assign({clave:k, repetida:false}, P[k]);
+  const claves = Object.keys(P).sort();
+  const anteriores = claves.filter(c => c < k);
+  if(!anteriores.length) return null;
+  const ult = anteriores[anteriores.length-1];
+  return Object.assign({clave:ult, repetida:true}, P[ult]);
+}
+function aplicarEscala(){
+  const el = document.getElementById('esc_estado');
+  const nrEl = document.getElementById('nr_estado');
+  if(!ESCALAS){ el.textContent = 'No se pudo cargar la escala oficial: cargá el básico a mano.'; return; }
+  const esc = escalaDelPeriodo();
+  const cat = val('trab_categoria');
+  if(!esc || !esc.basicos[cat]){
+    el.textContent = 'No hay escala cargada para este período: cargá el básico a mano.';
+    nrEl.textContent = '';
+    return;
+  }
+  if(!basicoManual) document.getElementById('basico').value = esc.basicos[cat];
+  const [y,m] = esc.clave.split('-');
+  let txt = esc.estado === 'proyeccion' ? '⚠️ Proyección, verificá la escala oficial. ' : '✓ Escala oficial FAECYS. ';
+  if(esc.repetida) txt = (esc.estado === 'proyeccion' ? '⚠️ ' : '') + `Se repite la última escala publicada (${MESES_TXT[+m-1]} ${y}) hasta que salga el nuevo acuerdo. `;
+  txt += esc.nota ? esc.nota + ' ' : '';
+  txt += `Actualizada al ${fechaCorta(ESCALAS.actualizado)}.`;
+  if(basicoManual) txt = 'Básico cargado a mano. ' + txt;
+  if(ESCALAS.pendiente_actualizacion) txt += ' Hay una planilla nueva en revisión.';
+  el.textContent = txt;
+  nrEl.textContent = `Este período: $ ${fmt(esc.nr)} no remunerativo` + (esc.ext ? ` + $ ${fmt(esc.ext)} asignación extraordinaria` : '') + ' (jornada completa).';
+}
+fetch('../assets/escalas-comercio.json', {cache:'no-store'})
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { ESCALAS = d; aplicarEscala(); render(); })
+  .catch(() => { aplicarEscala(); });
 
 /* ---------- render de resultados ---------- */
 function row(concepto, monto, small){
@@ -426,14 +505,22 @@ function render(){
   document.getElementById('out_contrib').textContent = money(r.totalContrib);
 
   let remuHtml = '';
-  remuHtml += row('Básico '+categoria, r.basico);
+  remuHtml += row('Básico '+categoria, r.basico, r.f<1 ? `${fmt(r.f*100)}% de jornada completa ($ ${fmt(r.basicoFull)})` : '');
   if(r.anios>0) remuHtml += row('Antigüedad', r.antiguedadMonto, r.anios+' año(s) — 1%/año');
   if(chk('chk_presentismo')) remuHtml += row('Presentismo', r.presentismoMonto, '8,33%');
-  if(r.ferNo>0) remuHtml += row('Feriados no trabajados', r.ferNoMonto, r.ferNo+' día(s)');
-  if(r.ferSi>0) remuHtml += row('Feriados trabajados (doble)', r.ferSiMonto, r.ferSi+' día(s) x2');
-  if(r.vac>0) remuHtml += row('Vacaciones', r.vacMonto, r.vac+' día(s)');
+  if(r.ferNo>0) remuHtml += row('Plus feriado no trabajado', r.ferNoMonto, r.ferNo+' día(s) — total ÷25 − ÷30');
+  if(r.ferSi>0) remuHtml += row('Feriado trabajado', r.ferSiMonto, r.ferSi+' día(s) — total ÷25');
+  if(r.vac>0) remuHtml += row('Plus vacaciones', r.vacMonto, r.vac+' día(s) — total ÷25 − ÷30');
   remuExtra.forEach(x => remuHtml += row(x.c || '[concepto]', x.m));
   if(r.esMesSac && chk('chk_sac')) remuHtml += row('SAC ('+(r.mes===6?'1er':'2do')+' semestre)', r.sacMonto, '50% de la base');
+  if(r.nrAcuerdo>0){
+    remuHtml += row('No remunerativo del acuerdo', r.nrAcuerdo, 'no remunerativo');
+    if(r.antigNR>0) remuHtml += row('Antigüedad s/ no remunerativo', r.antigNR, 'no remunerativo — '+r.anios+' año(s)');
+    if(r.presentismoNR>0) remuHtml += row('Presentismo s/ no remunerativo', r.presentismoNR, 'no remunerativo — 8,33%');
+  }
+  if(r.extAcuerdo>0) remuHtml += row('Asignación extraordinaria única', r.extAcuerdo, 'no remunerativo — sin antigüedad ni presentismo');
+  if(r.ferSiNR>0) remuHtml += row('Feriado trabajado (no rem.)', r.ferSiNR, 'no remunerativo — ÷25');
+  if(r.vacNR>0) remuHtml += row('Plus vacaciones (no rem.)', r.vacNR, 'no remunerativo');
   noRemu.forEach(x => remuHtml += row(x.c || '[concepto]', x.m, 'no remunerativo'));
   remuHtml += totalRow('Total bruto', r.totalBruto);
   document.getElementById('tbl_remu').innerHTML = remuHtml;
@@ -441,7 +528,8 @@ function render(){
   let deducHtml = '';
   deducHtml += row('Jubilación', r.jub, num('pct_jub')+'%');
   deducHtml += row('Ley 19.032 (INSSJP)', r.ley19032, num('pct_ley19032')+'%');
-  deducHtml += row('Obra Social', r.os, num('pct_os')+'%');
+  deducHtml += row('Obra Social', r.os, num('pct_os')+'% s/ remunerativo + no remunerativo');
+  if(r.osRed>0) deducHtml += row('Obra Social dif. jornada reducida', r.osRed, num('pct_os')+'% s/ diferencia a jornada completa');
   if(chk('chk_osecac')) deducHtml += row('OSECAC voluntario', r.osecac);
   if(r.afiliado) deducHtml += row('Sindicato Art. 100', r.sind, num('pct_sind')+'%');
   if(r.afiliado) deducHtml += row('Faecys', r.faecys, num('pct_faecys')+'%');
@@ -469,9 +557,17 @@ function render(){
 /* ---------- listeners ---------- */
 document.addEventListener('input', (e)=>{
   if(e.target.id === 'sac_base') e.target.dataset.touched = '1';
+  if(e.target.id === 'basico'){ basicoManual = true; aplicarEscala(); }
+  if(e.target.id === 'jornada') document.getElementById('horasBox').style.display = val('jornada')==='otra' ? 'block' : 'none';
   render();
 });
-document.addEventListener('change', render);
+document.addEventListener('change', (e)=>{
+  if(['trab_categoria','per_mes','per_anio'].includes(e.target.id)){ basicoManual = false; aplicarEscala(); }
+  if(e.target.id === 'jornada') document.getElementById('horasBox').style.display = val('jornada')==='otra' ? 'block' : 'none';
+  render();
+});
+// Período por defecto: el mes actual
+(function(){ const h = new Date(); document.getElementById('per_mes').value = String(h.getMonth()+1); document.getElementById('per_anio').value = h.getFullYear(); })();
 
 /* ---------- inicio ---------- */
 renderExtraLists();
