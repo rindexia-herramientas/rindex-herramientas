@@ -674,11 +674,38 @@
     "nota": "Fechas sujetas a traslado si caen fin de semana o feriado (ya contempladas por la fuente). Ante cualquier duda, consultá el sitio oficial de ARCA (arca.gob.ar).",
     "modified_conocidos": {
       "monotributo": "2026-04-17",
-      "autonomos": "2026-04-17",
-      "iva": "2026-05-03",
+      "autonomos": "2026-10-05",
+      "iva": "2026-10-06",
       "ganancias_bienes_personales": "2026-07-20",
-      "sicore": "2026-07-08"
+      "sicore": "2026-10-06"
     },
-    "ultimo_chequeo_automatico": "2026-10-05"
+    "ultimo_chequeo_automatico": "2026-10-12",
+    "pendiente_revision": {
+      "detectado": "2026-10-12",
+      "cambios": [
+        {
+          "pagina": "autonomos",
+          "url": "https://estudiodelamo.com/vencimientos-autonomos/",
+          "modified_anterior": "2026-04-17",
+          "modified_nuevo": "2026-10-05",
+          "tiene_anio_siguiente": false
+        },
+        {
+          "pagina": "iva",
+          "url": "https://estudiodelamo.com/vencimientos-iva/",
+          "modified_anterior": "2026-05-03",
+          "modified_nuevo": "2026-10-06",
+          "tiene_anio_siguiente": false
+        },
+        {
+          "pagina": "sicore",
+          "url": "https://estudiodelamo.com/vencimientos-retenciones-sicore/",
+          "modified_anterior": "2026-07-08",
+          "modified_nuevo": "2026-10-06",
+          "tiene_anio_siguiente": false
+        }
+      ],
+      "nota": "Una o más páginas de referencia cambiaron. Revisar y cargar las fechas nuevas a mano en data.json."
+    }
   }
 }
