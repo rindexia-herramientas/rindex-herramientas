@@ -667,6 +667,113 @@
       }
     ]
   },
+  "cargas_sociales": {
+    "grupos": [
+      "0, 1, 2 y 3",
+      "4, 5 y 6",
+      "7, 8 y 9"
+    ],
+    "nota": "F.931: declaración jurada y pago de aportes y contribuciones de empleados en relación de dependencia. Antes de presentarlo hay que generar el Libro de Sueldos Digital.",
+    "vencimientos": [
+      {
+        "mes_devengado": "2025-12",
+        "fechas": [
+          "2026-01-09",
+          "2026-01-12",
+          "2026-01-13"
+        ]
+      },
+      {
+        "mes_devengado": "2026-01",
+        "fechas": [
+          "2026-02-09",
+          "2026-02-10",
+          "2026-02-11"
+        ]
+      },
+      {
+        "mes_devengado": "2026-02",
+        "fechas": [
+          "2026-03-09",
+          "2026-03-10",
+          "2026-03-11"
+        ]
+      },
+      {
+        "mes_devengado": "2026-03",
+        "fechas": [
+          "2026-04-09",
+          "2026-04-10",
+          "2026-04-13"
+        ]
+      },
+      {
+        "mes_devengado": "2026-04",
+        "fechas": [
+          "2026-05-11",
+          "2026-05-12",
+          "2026-05-13"
+        ]
+      },
+      {
+        "mes_devengado": "2026-05",
+        "fechas": [
+          "2026-06-09",
+          "2026-06-10",
+          "2026-06-11"
+        ]
+      },
+      {
+        "mes_devengado": "2026-06",
+        "fechas": [
+          "2026-07-13",
+          "2026-07-14",
+          "2026-07-15"
+        ]
+      },
+      {
+        "mes_devengado": "2026-07",
+        "fechas": [
+          "2026-08-10",
+          "2026-08-11",
+          "2026-08-12"
+        ]
+      },
+      {
+        "mes_devengado": "2026-08",
+        "fechas": [
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11"
+        ]
+      },
+      {
+        "mes_devengado": "2026-09",
+        "fechas": [
+          "2026-10-09",
+          "2026-10-13",
+          "2026-10-14"
+        ]
+      },
+      {
+        "mes_devengado": "2026-10",
+        "fechas": [
+          "2026-11-11",
+          "2026-11-11",
+          "2026-11-12"
+        ],
+        "estimado": true
+      },
+      {
+        "mes_devengado": "2026-11",
+        "fechas": [
+          "2026-12-09",
+          "2026-12-10",
+          "2026-12-11"
+        ]
+      }
+    ]
+  },
   "_meta": {
     "anio": 2026,
     "fuente": "https://estudiodelamo.com/",
@@ -677,7 +784,8 @@
       "autonomos": "2026-10-05",
       "iva": "2026-10-06",
       "ganancias_bienes_personales": "2026-07-20",
-      "sicore": "2026-10-06"
+      "sicore": "2026-10-06",
+      "cargas_sociales": "2026-10-06"
     },
     "ultimo_chequeo_automatico": "2026-10-12",
     "pendiente_revision": {

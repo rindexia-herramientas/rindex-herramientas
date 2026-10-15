@@ -21,6 +21,7 @@ FUENTES = {
     "iva": "https://estudiodelamo.com/vencimientos-iva/",
     "ganancias_bienes_personales": "https://estudiodelamo.com/vencimientos-impuesto-ganancias-personas-fisicas-bienes-personales-anticipos/",
     "sicore": "https://estudiodelamo.com/vencimientos-retenciones-sicore/",
+    "cargas_sociales": "https://estudiodelamo.com/vencimientos-cargas-sociales-relacion-de-dependencia/",
 }
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "vencimientos" / "data.json"

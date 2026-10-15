@@ -86,7 +86,7 @@ table.dtable tr.pasado td{opacity:.4;}
       <span class="tag">La IA que te paga en horas</span>
     </div>
   </div>
-  <p class="top-desc">Monotributo, Autónomos, IVA, Ganancias, Bienes Personales y SICORE — todos los vencimientos de ARCA en un solo lugar. Elegí la terminación de tu CUIT para ver tus fechas exactas, o mirá el calendario general.</p>
+  <p class="top-desc">Monotributo, Autónomos, IVA, Ganancias, Bienes Personales, SICORE y Cargas Sociales (F.931) — todos los vencimientos de ARCA en un solo lugar. Elegí la terminación de tu CUIT para ver tus fechas exactas, o mirá el calendario general.</p>
 </header>
 
 <div class="cuit-bar">
@@ -236,6 +236,16 @@ function render(){
     if(prox) proximos.push({cat:'SICORE', fecha: prox.fecha});
     const sub = digito ? 'Grupo: terminación '+DATA.sicore.grupos[gi] : 'Retenciones — elegí tu CUIT para ver tu grupo';
     html += catCard('🔁 Retenciones (SICORE)', sub, prox, filas);
+  }
+
+  // ---------- CARGAS SOCIALES (F.931) ----------
+  if(DATA.cargas_sociales){
+    const gi = digito ? grupoIndexAutonomos(digito) : 0;
+    const filas = DATA.cargas_sociales.vencimientos.map(v => ({label: v.mes_devengado + (v.estimado ? ' (estimado)' : ''), fecha: v.fechas[gi]}));
+    const prox = filas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'Cargas sociales (F.931)', fecha: prox.fecha});
+    const sub = digito ? 'Grupo: terminación '+DATA.cargas_sociales.grupos[gi] : 'Empleadores — elegí tu CUIT para ver tu grupo';
+    html += catCard('👥 Cargas Sociales (F.931)', sub, prox, filas, DATA.cargas_sociales.nota);
   }
 
   document.getElementById('categorias').innerHTML = html;
