@@ -413,7 +413,7 @@ function calcular(){
   const jub = totalRemunerativo * num('pct_jub')/100;
   const ley19032 = totalRemunerativo * num('pct_ley19032')/100;
   const os = totalBruto * num('pct_os')/100;
-  const osRed = (chk('chk_osred') && f < 1) ? (totalRemunerativo/f - totalRemunerativo) * num('pct_os')/100 : 0;
+  const osRed = (chk('chk_osred') && f < 1) ? (totalBruto/f - totalBruto) * num('pct_os')/100 : 0;
   const afiliado = chk('chk_afiliado');
   const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
   const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
@@ -529,7 +529,7 @@ function render(){
   deducHtml += row('Jubilación', r.jub, num('pct_jub')+'%');
   deducHtml += row('Ley 19.032 (INSSJP)', r.ley19032, num('pct_ley19032')+'%');
   deducHtml += row('Obra Social', r.os, num('pct_os')+'% s/ remunerativo + no remunerativo');
-  if(r.osRed>0) deducHtml += row('Obra Social dif. jornada reducida', r.osRed, num('pct_os')+'% s/ diferencia a jornada completa');
+  if(r.osRed>0) deducHtml += row('Obra Social dif. jornada reducida', r.osRed, num('pct_os')+'% s/ diferencia a jornada completa (remunerativo + no remunerativo)');
   if(chk('chk_osecac')) deducHtml += row('OSECAC voluntario', r.osecac);
   if(r.afiliado) deducHtml += row('Sindicato Art. 100', r.sind, num('pct_sind')+'%');
   if(r.afiliado) deducHtml += row('Faecys', r.faecys, num('pct_faecys')+'%');

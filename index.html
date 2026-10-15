@@ -467,7 +467,7 @@ function calcular(){
   const jub = totalRemunerativo * num('pct_jub')/100;
   const ley19032 = totalRemunerativo * num('pct_ley19032')/100;
   const os = totalBruto * num('pct_os')/100;
-  const osRed = (chk('chk_osred') && f < 1) ? (totalRemunerativo/f - totalRemunerativo) * num('pct_os')/100 : 0;
+  const osRed = (chk('chk_osred') && f < 1) ? (totalBruto/f - totalBruto) * num('pct_os')/100 : 0;
   const afiliado = chk('chk_afiliado');
   const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
   const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
@@ -663,7 +663,7 @@ function render(){
       ${trow('Jubilación', money(r.totalRemunerativo), num('pct_jub')+'%', r.jub)}
       ${trow('Ley 19.032 (INSSJP)', money(r.totalRemunerativo), num('pct_ley19032')+'%', r.ley19032)}
       ${trow('Obra Social', money(r.totalBruto), num('pct_os')+'%', r.os)}
-      ${r.osRed>0 ? trow('Obra Social dif. jornada reducida', money(r.totalRemunerativo/r.f - r.totalRemunerativo), num('pct_os')+'%', r.osRed) : ''}
+      ${r.osRed>0 ? trow('Obra Social dif. jornada reducida', money(r.totalBruto/r.f - r.totalBruto), num('pct_os')+'%', r.osRed) : ''}
       ${chk('chk_osecac') ? trow('OSECAC Aporte Voluntario', '—', '$ fijo', r.osecac) : ''}
       ${r.afiliado ? trow('Sindicato Art. 100', money(r.totalBruto), num('pct_sind')+'%', r.sind) : ''}
       ${r.afiliado ? trow('Faecys', money(r.totalBruto), num('pct_faecys')+'%', r.faecys) : ''}
