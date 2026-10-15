@@ -72,6 +72,17 @@ table.dtable td.num{text-align:right;font-weight:700;color:var(--navy);white-spa
 table.dtable tr.pasado td{opacity:.4;}
 .badge-hoy{background:#FFF3F9;color:var(--pink);font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:6px;margin-left:6px;}
 
+.cat-card.wide{grid-column:1/-1;}
+.ag-row{border-top:1px solid var(--line);padding:12px 0 4px;}
+.ag-row:first-of-type{border-top:none;}
+.ag-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+.ag-name{font-size:13px;font-weight:700;color:var(--navy);}
+.ag-prov{font-size:10.5px;color:var(--text-soft);margin-top:2px;line-height:1.4;max-width:640px;}
+.ag-next{text-align:right;}
+.ag-next .next-val{font-size:18px;}
+.ag-row details{margin-top:4px;}
+.ag-row .nota{font-size:10.5px;color:var(--text-soft);margin:8px 0 0;line-height:1.4;}
+.ag-row .nota a{color:var(--violet);font-weight:600;}
 .footnote{font-size:10.5px;color:var(--text-soft);text-align:center;margin-top:26px;line-height:1.5;}
 .footnote a{color:var(--violet);text-decoration:none;font-weight:600;}
 </style>
@@ -86,7 +97,7 @@ table.dtable tr.pasado td{opacity:.4;}
       <span class="tag">La IA que te paga en horas</span>
     </div>
   </div>
-  <p class="top-desc">Monotributo, Autónomos, IVA, Ganancias, Bienes Personales, SICORE y Cargas Sociales (F.931) — todos los vencimientos de ARCA en un solo lugar. Elegí la terminación de tu CUIT para ver tus fechas exactas, o mirá el calendario general.</p>
+  <p class="top-desc">Monotributo, Autónomos, IVA, Ganancias, Bienes Personales, SICORE, Cargas Sociales (F.931) e Ingresos Brutos (Convenio Multilateral y agentes de retención y percepción) — todos tus vencimientos en un solo lugar. Elegí la terminación de tu CUIT para ver tus fechas exactas, o mirá el calendario general.</p>
 </header>
 
 <div class="cuit-bar">
@@ -100,7 +111,7 @@ table.dtable tr.pasado td{opacity:.4;}
       <option value="6">6</option><option value="7">7</option><option value="8">8</option>
       <option value="9">9</option>
     </select>
-    <span class="hint">Es el último número antes del dígito verificador.</span>
+    <span class="hint">Es el último número de tu CUIT.</span>
   </div>
 </div>
 
@@ -113,7 +124,7 @@ table.dtable tr.pasado td{opacity:.4;}
 
   <div class="grid" id="categorias"></div>
 
-  <p class="footnote">Fechas 2026 según fuente contable especializada, con los traslados por fin de semana/feriado ya aplicados. Pueden sufrir modificaciones por resolución de ARCA — ante un pago importante, confirmá en <a href="https://www.arca.gob.ar" target="_blank" rel="noopener">arca.gob.ar</a>. Última verificación: <span id="ultima_verif"></span>.</p>
+  <p class="footnote">Fechas 2026 según fuente contable especializada, con los traslados por fin de semana/feriado ya aplicados. Pueden sufrir modificaciones por resolución de ARCA, la Comisión Arbitral o cada provincia — ante un pago importante, confirmá en <a href="https://www.arca.gob.ar" target="_blank" rel="noopener">arca.gob.ar</a>. Última verificación: <span id="ultima_verif"></span>.</p>
 </div>
 
 <script>
@@ -138,6 +149,11 @@ function grupoIndexAutonomos(digito){
   if(d<=6) return 1;
   return 2;
 }
+function grupoIndexCM(digito){
+  const d = parseInt(digito);
+  if(d<=2) return 0; if(d<=5) return 1; if(d<=7) return 2; return 3;
+}
+function grupoIndexSircar(digito){ return parseInt(digito) <= 4 ? 0 : 1; }
 function grupoIndexIva(digito){
   const d = parseInt(digito);
   return Math.floor(d/2); // 0-1=>0, 2-3=>1, 4-5=>2, 6-7=>3, 8-9=>4
@@ -248,6 +264,44 @@ function render(){
     html += catCard('👥 Cargas Sociales (F.931)', sub, prox, filas, DATA.cargas_sociales.nota);
   }
 
+  // ---------- IIBB CONVENIO MULTILATERAL ----------
+  if(DATA.iibb_cm){
+    const gi = digito ? grupoIndexCM(digito) : 0;
+    const filas = DATA.iibb_cm.vencimientos.map(v => ({label: v.mes_devengado, fecha: v.fechas[gi]}));
+    filas.push({label: DATA.iibb_cm.ddjj_anual.label, fecha: DATA.iibb_cm.ddjj_anual.fecha});
+    filas.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const prox = filas.find(f => esFuturo(f.fecha));
+    if(prox) proximos.push({cat:'IIBB Convenio', fecha: prox.fecha});
+    const sub = digito ? 'Contribuyentes — terminación '+DATA.iibb_cm.grupos[gi]+' · todas las provincias' : 'Contribuyentes — mostrando terminación 0, 1 y 2 · elegí tu CUIT para ver el tuyo';
+    html += catCard('🗺️ IIBB Convenio Multilateral — Contribuyentes', sub, prox, filas, DATA.iibb_cm.nota);
+  }
+
+  // ---------- IIBB AGENTES DE RETENCION Y PERCEPCION ----------
+  if(DATA.iibb_agentes){
+    const A = DATA.iibb_agentes;
+    let ag = '<div class="cat-card wide"><h3>🏦 IIBB Agentes de retención y percepción</h3>';
+    ag += '<p class="sub">'+(digito ? 'Terminación de CUIT '+digito : 'Mostrando terminación 0 · elegí tu CUIT para ver tus fechas')+'. Fijate en qué sistema actuás como agente: SIRCAR o la provincia con sistema propio.</p>';
+    // SIRCAR
+    {
+      const gi = digito ? grupoIndexSircar(digito) : 0;
+      const filas = A.sircar.vencimientos.map(v => ({label: v.periodo, fecha: v.fechas[gi]}));
+      const prox = filas.find(f => esFuturo(f.fecha));
+      if(prox) proximos.push({cat:'IIBB Agentes SIRCAR', fecha: prox.fecha});
+      ag += agRow('SIRCAR', '('+A.sircar.provincias.join(', ')+') · terminación '+A.sircar.grupos[gi], prox, filas, A.sircar.nota);
+    }
+    // Provincias con sistema propio
+    A.propias.forEach(pv => {
+      let gi = 0, extra = 'Todas las terminaciones de CUIT';
+      if(pv.grupos){ gi = digito ? Math.floor(parseInt(digito)/2) : 0; extra = 'Terminación '+pv.grupos[gi]; }
+      const filas = pv.vencimientos.map(v => ({label: v.periodo, fecha: pv.grupos ? v.fechas[gi] : v.fecha})).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+      const prox = filas.find(f => esFuturo(f.fecha));
+      const nota = pv.nota + (pv.link ? ' <a href="'+pv.link+'" target="_blank" rel="noopener">Ver calendario del mes</a>.' : '');
+      ag += agRow(pv.provincia, 'Sistema propio · '+extra, prox, filas, nota);
+    });
+    ag += '</div>';
+    html += ag;
+  }
+
   document.getElementById('categorias').innerHTML = html;
 
   // ---------- TIMELINE DE PROXIMOS ----------
@@ -264,6 +318,23 @@ function faltanTexto(fecha){
   if(d === 0) return 'Es hoy';
   if(d === 1) return 'Es mañana';
   return 'Faltan '+d+' días';
+}
+
+function agRow(nombre, detalle, prox, filas, nota){
+  let h = '<div class="ag-row"><div class="ag-head"><div><div class="ag-name">'+nombre+'</div><div class="ag-prov">'+detalle+'</div></div>';
+  if(prox){
+    h += '<div class="ag-next"><div class="next-lbl">Próximo vencimiento</div><div class="next-val">'+fmt(prox.fecha)+'</div><div class="next-faltan">'+prox.label+' · '+faltanTexto(prox.fecha)+'</div></div>';
+  } else {
+    h += '<div class="ag-next"><div class="next-faltan">Sin fechas futuras cargadas.</div></div>';
+  }
+  h += '</div><details><summary></summary><table class="dtable">';
+  filas.forEach(f => {
+    const pasado = !esFuturo(f.fecha) ? ' class="pasado"' : '';
+    const hoyBadge = diasFaltan(f.fecha)===0 ? '<span class="badge-hoy">HOY</span>' : '';
+    h += '<tr'+pasado+'><td>'+f.label+hoyBadge+'</td><td class="num">'+fmt(f.fecha)+'</td></tr>';
+  });
+  h += '</table><p class="nota">'+nota+'</p></details></div>';
+  return h;
 }
 
 function catCard(titulo, sub, prox, todasFilas, notaExtra){

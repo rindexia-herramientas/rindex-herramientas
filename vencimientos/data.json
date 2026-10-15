@@ -774,6 +774,532 @@
       }
     ]
   },
+  "iibb_cm": {
+    "grupos": [
+      "0, 1 y 2",
+      "3, 4 y 5",
+      "6 y 7",
+      "8 y 9"
+    ],
+    "nota": "Formularios CM03 / CM04 por SIFERE Web, presentación y pago el mismo día. Las fechas son las mismas para todas las provincias (RG CA 20/2025).",
+    "vencimientos": [
+      {
+        "mes_devengado": "2025-12",
+        "fechas": [
+          "2026-01-15",
+          "2026-01-16",
+          "2026-01-19",
+          "2026-01-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-01",
+        "fechas": [
+          "2026-02-13",
+          "2026-02-18",
+          "2026-02-19",
+          "2026-02-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-02",
+        "fechas": [
+          "2026-03-13",
+          "2026-03-16",
+          "2026-03-17",
+          "2026-03-18"
+        ]
+      },
+      {
+        "mes_devengado": "2026-03",
+        "fechas": [
+          "2026-04-15",
+          "2026-04-16",
+          "2026-04-17",
+          "2026-04-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-04",
+        "fechas": [
+          "2026-05-15",
+          "2026-05-18",
+          "2026-05-19",
+          "2026-05-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-05",
+        "fechas": [
+          "2026-06-16",
+          "2026-06-17",
+          "2026-06-18",
+          "2026-06-19"
+        ]
+      },
+      {
+        "mes_devengado": "2026-06",
+        "fechas": [
+          "2026-07-15",
+          "2026-07-16",
+          "2026-07-17",
+          "2026-07-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-07",
+        "fechas": [
+          "2026-08-14",
+          "2026-08-18",
+          "2026-08-19",
+          "2026-08-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-08",
+        "fechas": [
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18"
+        ]
+      },
+      {
+        "mes_devengado": "2026-09",
+        "fechas": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20"
+        ]
+      },
+      {
+        "mes_devengado": "2026-10",
+        "fechas": [
+          "2026-11-13",
+          "2026-11-16",
+          "2026-11-17",
+          "2026-11-18"
+        ]
+      },
+      {
+        "mes_devengado": "2026-11",
+        "fechas": [
+          "2026-12-15",
+          "2026-12-16",
+          "2026-12-17",
+          "2026-12-18"
+        ]
+      },
+      {
+        "mes_devengado": "2026-12",
+        "fechas": [
+          "2027-01-15",
+          "2027-01-18",
+          "2027-01-19",
+          "2027-01-20"
+        ]
+      }
+    ],
+    "ddjj_anual": {
+      "label": "DDJJ anual CM05 (período 2025)",
+      "fecha": "2026-06-30"
+    }
+  },
+  "iibb_agentes": {
+    "sircar": {
+      "provincias": [
+        "Catamarca",
+        "Chaco",
+        "Chubut",
+        "Córdoba",
+        "Corrientes",
+        "Entre Ríos",
+        "Formosa",
+        "Jujuy",
+        "La Pampa",
+        "La Rioja",
+        "Mendoza",
+        "Misiones",
+        "Neuquén",
+        "Río Negro",
+        "Salta",
+        "San Juan",
+        "San Luis",
+        "Santa Cruz",
+        "Santa Fe",
+        "Santiago del Estero",
+        "Tierra del Fuego"
+      ],
+      "grupos": [
+        "0 a 4",
+        "5 a 9"
+      ],
+      "nota": "Presentación de la DDJJ y pago el mismo día. Quincenal en Córdoba, Chubut y Santa Fe; mensual en el resto (el mensual vence con la 2ª quincena). RG CA 21/2025 con los cambios de la Disposición CA 1/2026.",
+      "vencimientos": [
+        {
+          "periodo": "Enero 2026 — 1ª quincena",
+          "fechas": [
+            "2026-01-22",
+            "2026-01-23"
+          ]
+        },
+        {
+          "periodo": "Enero 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-02-06",
+            "2026-02-09"
+          ]
+        },
+        {
+          "periodo": "Febrero 2026 — 1ª quincena",
+          "fechas": [
+            "2026-02-24",
+            "2026-02-25"
+          ]
+        },
+        {
+          "periodo": "Febrero 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-03-06",
+            "2026-03-09"
+          ]
+        },
+        {
+          "periodo": "Marzo 2026 — 1ª quincena",
+          "fechas": [
+            "2026-03-19",
+            "2026-03-20"
+          ]
+        },
+        {
+          "periodo": "Marzo 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-04-09",
+            "2026-04-10"
+          ]
+        },
+        {
+          "periodo": "Abril 2026 — 1ª quincena",
+          "fechas": [
+            "2026-04-23",
+            "2026-04-24"
+          ]
+        },
+        {
+          "periodo": "Abril 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-05-08",
+            "2026-05-11"
+          ]
+        },
+        {
+          "periodo": "Mayo 2026 — 1ª quincena",
+          "fechas": [
+            "2026-05-21",
+            "2026-05-22"
+          ]
+        },
+        {
+          "periodo": "Mayo 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-06-05",
+            "2026-06-08"
+          ]
+        },
+        {
+          "periodo": "Junio 2026 — 1ª quincena",
+          "fechas": [
+            "2026-06-25",
+            "2026-06-26"
+          ]
+        },
+        {
+          "periodo": "Junio 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-07-07",
+            "2026-07-08"
+          ]
+        },
+        {
+          "periodo": "Julio 2026 — 1ª quincena",
+          "fechas": [
+            "2026-07-23",
+            "2026-07-24"
+          ]
+        },
+        {
+          "periodo": "Julio 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-08-07",
+            "2026-08-10"
+          ]
+        },
+        {
+          "periodo": "Agosto 2026 — 1ª quincena",
+          "fechas": [
+            "2026-08-27",
+            "2026-08-28"
+          ]
+        },
+        {
+          "periodo": "Agosto 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-09-07",
+            "2026-09-08"
+          ]
+        },
+        {
+          "periodo": "Septiembre 2026 — 1ª quincena",
+          "fechas": [
+            "2026-09-24",
+            "2026-09-25"
+          ]
+        },
+        {
+          "periodo": "Septiembre 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-10-08",
+            "2026-10-09"
+          ]
+        },
+        {
+          "periodo": "Octubre 2026 — 1ª quincena",
+          "fechas": [
+            "2026-10-22",
+            "2026-10-23"
+          ]
+        },
+        {
+          "periodo": "Octubre 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-11-09",
+            "2026-11-10"
+          ]
+        },
+        {
+          "periodo": "Noviembre 2026 — 1ª quincena",
+          "fechas": [
+            "2026-11-19",
+            "2026-11-24"
+          ]
+        },
+        {
+          "periodo": "Noviembre 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2026-12-09",
+            "2026-12-10"
+          ]
+        },
+        {
+          "periodo": "Diciembre 2026 — 1ª quincena",
+          "fechas": [
+            "2026-12-22",
+            "2026-12-23"
+          ]
+        },
+        {
+          "periodo": "Diciembre 2026 — 2ª quincena y mensual",
+          "fechas": [
+            "2027-01-08",
+            "2027-01-11"
+          ]
+        }
+      ]
+    },
+    "propias": [
+      {
+        "provincia": "Buenos Aires (ARBA)",
+        "nota": "Misma fecha para todas las terminaciones de CUIT. Retenciones: quincenal. Percepciones: mensual (vence junto con la 2ª quincena de retenciones).",
+        "vencimientos": [
+          {
+            "periodo": "Retenciones Enero 2026 — 2ª quincena · Percepciones Enero 2026 (mensual)",
+            "fecha": "2026-02-10"
+          },
+          {
+            "periodo": "Retenciones Febrero 2026 — 1ª quincena",
+            "fecha": "2026-02-24"
+          },
+          {
+            "periodo": "Retenciones Febrero 2026 — 2ª quincena · Percepciones Febrero 2026 (mensual)",
+            "fecha": "2026-03-10"
+          },
+          {
+            "periodo": "Retenciones Marzo 2026 — 1ª quincena",
+            "fecha": "2026-03-25"
+          },
+          {
+            "periodo": "Retenciones Marzo 2026 — 2ª quincena · Percepciones Marzo 2026 (mensual)",
+            "fecha": "2026-04-10"
+          },
+          {
+            "periodo": "Retenciones Abril 2026 — 1ª quincena",
+            "fecha": "2026-04-24"
+          },
+          {
+            "periodo": "Retenciones Abril 2026 — 2ª quincena · Percepciones Abril 2026 (mensual)",
+            "fecha": "2026-05-11"
+          },
+          {
+            "periodo": "Retenciones Mayo 2026 — 1ª quincena",
+            "fecha": "2026-05-26"
+          },
+          {
+            "periodo": "Retenciones Mayo 2026 — 2ª quincena · Percepciones Mayo 2026 (mensual)",
+            "fecha": "2026-06-10"
+          },
+          {
+            "periodo": "Retenciones Junio 2026 — 1ª quincena",
+            "fecha": "2026-06-24"
+          },
+          {
+            "periodo": "Retenciones Junio 2026 — 2ª quincena · Percepciones Junio 2026 (mensual)",
+            "fecha": "2026-07-13"
+          },
+          {
+            "periodo": "Retenciones Julio 2026 — 1ª quincena",
+            "fecha": "2026-07-24"
+          },
+          {
+            "periodo": "Retenciones Julio 2026 — 2ª quincena · Percepciones Julio 2026 (mensual)",
+            "fecha": "2026-08-10"
+          },
+          {
+            "periodo": "Retenciones Agosto 2026 — 1ª quincena",
+            "fecha": "2026-08-24"
+          },
+          {
+            "periodo": "Retenciones Agosto 2026 — 2ª quincena · Percepciones Agosto 2026 (mensual)",
+            "fecha": "2026-09-10"
+          },
+          {
+            "periodo": "Retenciones Septiembre 2026 — 1ª quincena",
+            "fecha": "2026-09-24"
+          },
+          {
+            "periodo": "Retenciones Septiembre 2026 — 2ª quincena · Percepciones Septiembre 2026 (mensual)",
+            "fecha": "2026-10-13"
+          },
+          {
+            "periodo": "Retenciones Octubre 2026 — 1ª quincena",
+            "fecha": "2026-10-26"
+          },
+          {
+            "periodo": "Retenciones Octubre 2026 — 2ª quincena · Percepciones Octubre 2026 (mensual)",
+            "fecha": "2026-11-10"
+          },
+          {
+            "periodo": "Retenciones Noviembre 2026 — 1ª quincena",
+            "fecha": "2026-11-24"
+          },
+          {
+            "periodo": "Retenciones Noviembre 2026 — 2ª quincena · Percepciones Noviembre 2026 (mensual)",
+            "fecha": "2026-12-10"
+          },
+          {
+            "periodo": "Retenciones Diciembre 2026 — 1ª quincena",
+            "fecha": "2026-12-28"
+          },
+          {
+            "periodo": "Retenciones Diciembre 2026 — 2ª quincena · Percepciones Diciembre 2026 (mensual)",
+            "fecha": "2027-01-11"
+          }
+        ]
+      },
+      {
+        "provincia": "Ciudad de Buenos Aires (AGIP)",
+        "nota": "e-ARCIBA, mensual: el día 7 del mes siguiente o el hábil posterior, para todas las terminaciones. Marzo prorrogado al 10/04/26. Fechas calculadas: confirmá en agip.gob.ar.",
+        "vencimientos": [
+          {
+            "periodo": "Diciembre 2025",
+            "fecha": "2026-01-07"
+          },
+          {
+            "periodo": "Enero 2026",
+            "fecha": "2026-02-09"
+          },
+          {
+            "periodo": "Febrero 2026",
+            "fecha": "2026-03-09"
+          },
+          {
+            "periodo": "Marzo 2026",
+            "fecha": "2026-04-10"
+          },
+          {
+            "periodo": "Abril 2026",
+            "fecha": "2026-05-07"
+          },
+          {
+            "periodo": "Mayo 2026",
+            "fecha": "2026-06-08"
+          },
+          {
+            "periodo": "Junio 2026",
+            "fecha": "2026-07-07"
+          },
+          {
+            "periodo": "Julio 2026",
+            "fecha": "2026-08-07"
+          },
+          {
+            "periodo": "Agosto 2026",
+            "fecha": "2026-09-07"
+          },
+          {
+            "periodo": "Septiembre 2026",
+            "fecha": "2026-10-07"
+          },
+          {
+            "periodo": "Octubre 2026",
+            "fecha": "2026-11-09"
+          },
+          {
+            "periodo": "Noviembre 2026",
+            "fecha": "2026-12-09"
+          },
+          {
+            "periodo": "Diciembre 2026",
+            "fecha": "2027-01-07"
+          }
+        ]
+      },
+      {
+        "provincia": "Tucumán (DGR)",
+        "grupos": [
+          "0-1",
+          "2-3",
+          "4-5",
+          "6-7",
+          "8-9"
+        ],
+        "nota": "Mensual por terminación de CUIT. Rentas Tucumán publica las fechas mes a mes: por ahora está cargado el último calendario publicado.",
+        "link": "https://www.rentastucuman.gob.ar/nomina/rentastuc2/nwx1ut2pa3lo/vencimientomensual.pdf",
+        "vencimientos": [
+          {
+            "periodo": "Retenciones Septiembre 2026 (RG 23/02)",
+            "fechas": [
+              "2026-10-13",
+              "2026-10-13",
+              "2026-10-13",
+              "2026-10-14",
+              "2026-10-15"
+            ]
+          },
+          {
+            "periodo": "Percepciones Septiembre 2026 (RG 86/00)",
+            "fechas": [
+              "2026-10-15",
+              "2026-10-16",
+              "2026-10-19",
+              "2026-10-19",
+              "2026-10-19"
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "_meta": {
     "anio": 2026,
     "fuente": "https://estudiodelamo.com/",
