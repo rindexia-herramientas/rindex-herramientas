@@ -180,13 +180,15 @@ footer a{color:var(--violet);text-decoration:none;font-weight:600;}
   <!-- ===================== PDF ===================== -->
   <div class="panel" id="panel-pdf">
     <h2>Herramientas de PDF</h2>
-    <p class="desc">Uní varios PDF en uno, separá páginas, bajale el peso o convertí entre imágenes y PDF.</p>
+    <p class="desc">Uní varios PDF en uno, separá páginas, bajale el peso o convertí imágenes, Word y Excel a PDF (y al revés).</p>
 
     <div class="subtools" id="pdf-subtools">
       <button class="subtool-btn active" data-sub="unir">Unir PDFs</button>
       <button class="subtool-btn" data-sub="dividir">Dividir PDF</button>
       <button class="subtool-btn" data-sub="comprimir">Comprimir PDF</button>
       <button class="subtool-btn" data-sub="img2pdf">Imágenes → PDF</button>
+      <button class="subtool-btn" data-sub="word2pdf">Word → PDF</button>
+      <button class="subtool-btn" data-sub="excel2pdf">Excel → PDF</button>
       <button class="subtool-btn" data-sub="pdf2img">PDF → Imágenes</button>
       <button class="subtool-btn" data-sub="pdf2word">PDF → Word</button>
       <button class="subtool-btn" data-sub="pdf2excel">PDF → Excel</button>
@@ -267,6 +269,55 @@ footer a{color:var(--violet);text-decoration:none;font-weight:600;}
       <div class="progress" id="prog-img2pdf"><div></div></div>
       <div class="status" id="status-img2pdf"></div>
       <div class="results" id="results-img2pdf"></div>
+    </div>
+
+    <!-- Word a PDF -->
+    <div class="subpanel" id="sub-word2pdf">
+      <div class="drop" id="drop-word2pdf">
+        <div class="dico">📝➡️📄</div>
+        <div class="dtitle">Arrastrá un documento de Word (.docx)</div>
+        <div class="dsub">Un solo archivo</div>
+        <input type="file" id="input-word2pdf" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+      </div>
+      <div class="filelist" id="list-word2pdf"></div>
+      <div class="hint" style="margin-top:10px;">Pasa a PDF el texto, títulos, negritas, listas, tablas e imágenes del documento. Con diseños complejos (columnas, cuadros de texto, encabezados elaborados) el resultado puede verse distinto al original. Los .doc viejos primero guardalos como .docx desde Word.</div>
+      <button class="btn-main" id="btn-word2pdf" disabled>Convertir a PDF</button>
+      <div class="progress" id="prog-word2pdf"><div></div></div>
+      <div class="status" id="status-word2pdf"></div>
+      <div class="results" id="results-word2pdf"></div>
+    </div>
+
+    <!-- Excel a PDF -->
+    <div class="subpanel" id="sub-excel2pdf">
+      <div class="drop" id="drop-excel2pdf">
+        <div class="dico">📊➡️📄</div>
+        <div class="dtitle">Arrastrá una planilla de Excel</div>
+        <div class="dsub">.xlsx, .xls o .csv — un solo archivo</div>
+        <input type="file" id="input-excel2pdf" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="filelist" id="list-excel2pdf"></div>
+      <div class="row">
+        <div class="field">
+          <label>Orientación</label>
+          <select id="excel2pdf-orient">
+            <option value="auto">Automática</option>
+            <option value="p">Vertical</option>
+            <option value="l">Horizontal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Primera fila como encabezado</label>
+          <select id="excel2pdf-head">
+            <option value="1">Sí (se repite en cada página)</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px;">Cada hoja de la planilla se pasa a una tabla prolija en el PDF, con los valores tal como se ven en Excel. No conserva colores, gráficos ni el formato exacto de las celdas.</div>
+      <button class="btn-main" id="btn-excel2pdf" disabled>Convertir a PDF</button>
+      <div class="progress" id="prog-excel2pdf"><div></div></div>
+      <div class="status" id="status-excel2pdf"></div>
+      <div class="results" id="results-excel2pdf"></div>
     </div>
 
     <!-- PDF a imagenes -->
@@ -851,6 +902,123 @@ async function fileToPdfDoc(file){
       setStatus('status-img2pdf','ok','PDF creado ✔ (' + files.length + ' página/s)');
     }catch(err){
       setStatus('status-img2pdf','err','Error: ' + err.message);
+    }
+  });
+})();
+
+/* --- carga de librerías bajo demanda (solo cuando se usan) --- */
+const _libs = {};
+function loadScript(src){
+  if(!_libs[src]) _libs[src] = new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src=src; sc.onload=res; sc.onerror=()=>rej(new Error('No se pudo cargar '+src)); document.head.appendChild(sc); });
+  return _libs[src];
+}
+
+/* --- Word a PDF --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-word2pdf', inputId:'input-word2pdf', listId:'list-word2pdf', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-word2pdf').disabled = files.length===0; }
+  });
+  document.getElementById('btn-word2pdf').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-word2pdf'); clearResults('results-word2pdf');
+    if(!/\.docx$/i.test(files[0].name)){ setStatus('status-word2pdf','err','Solo se aceptan archivos .docx. Si es un .doc viejo, abrilo en Word y guardalo como .docx.'); return; }
+    setStatus('status-word2pdf','info','Leyendo el documento...');
+    setProgress('prog-word2pdf', 10);
+    let holder;
+    try{
+      await Promise.all([loadScript('libs/mammoth.browser.min.js'), loadScript('libs/html2pdf.bundle.min.js')]);
+      setProgress('prog-word2pdf', 35);
+      const result = await mammoth.convertToHtml({arrayBuffer: await files[0].arrayBuffer()}, {styleMap:["p[style-name='Title'] => h1:fresh", "p[style-name='Subtitle'] => h2:fresh"]});
+      if(!result.value.trim()){ setStatus('status-word2pdf','err','El documento parece estar vacío.'); return; }
+      holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
+      holder.innerHTML = `<div id="w2p-doc" style="width:180mm;font-family:Calibri,Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.45;color:#000;background:#fff;">
+        <style>
+          #w2p-doc p{margin:0 0 8px;} #w2p-doc h1{font-size:20pt;margin:14px 0 8px;} #w2p-doc h2{font-size:16pt;margin:12px 0 6px;}
+          #w2p-doc h3{font-size:13pt;margin:10px 0 6px;} #w2p-doc ul,#w2p-doc ol{margin:0 0 8px 22px;padding:0;}
+          #w2p-doc table{border-collapse:collapse;width:100%;margin:6px 0 10px;} #w2p-doc td,#w2p-doc th{border:1px solid #999;padding:4px 6px;vertical-align:top;}
+          #w2p-doc img{max-width:100%;height:auto;}
+        </style>${result.value}</div>`;
+      document.body.appendChild(holder);
+      setStatus('status-word2pdf','info','Armando el PDF...');
+      setProgress('prog-word2pdf', 60);
+      const name = files[0].name.replace(/\.[^.]+$/, '') + '.pdf';
+      const blob = await html2pdf().set({
+        margin:[15,15,15,15], filename:name,
+        image:{type:'jpeg', quality:0.95},
+        html2canvas:{scale:2, useCORS:true, backgroundColor:'#ffffff'},
+        jsPDF:{unit:'mm', format:'a4', orientation:'portrait'},
+        pagebreak:{mode:['avoid-all','css']}
+      }).from(holder.firstElementChild).outputPdf('blob');
+      setProgress('prog-word2pdf', 100);
+      addResult('results-word2pdf', name, blob);
+      setStatus('status-word2pdf','ok','PDF creado ✔');
+    }catch(err){
+      setStatus('status-word2pdf','err','No se pudo convertir: ' + err.message);
+    }finally{
+      if(holder) holder.remove();
+    }
+  });
+})();
+
+/* --- Excel a PDF --- */
+(function(){
+  const dz = setupDropzone({
+    dropId:'drop-excel2pdf', inputId:'input-excel2pdf', listId:'list-excel2pdf', multiple:false,
+    onChange:(files)=>{ document.getElementById('btn-excel2pdf').disabled = files.length===0; }
+  });
+  document.getElementById('btn-excel2pdf').addEventListener('click', async ()=>{
+    const files = dz.getFiles();
+    if(!files.length) return;
+    clearStatus('status-excel2pdf'); clearResults('results-excel2pdf');
+    setStatus('status-excel2pdf','info','Leyendo la planilla...');
+    setProgress('prog-excel2pdf', 10);
+    try{
+      await loadScript('libs/jspdf.umd.min.js');
+      await loadScript('libs/jspdf.plugin.autotable.min.js');
+      const wb = XLSX.read(await files[0].arrayBuffer(), {type:'array'});
+      const orientSel = document.getElementById('excel2pdf-orient').value;
+      const useHead = document.getElementById('excel2pdf-head').value === '1';
+      let doc = null, hojas = 0;
+      wb.SheetNames.forEach((sn, idx)=>{
+        let rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1, raw:false, defval:'', blankrows:false});
+        rows = rows.map(r => r.map(c => String(c ?? '').trim()));
+        rows = rows.filter(r => r.some(c => c !== ''));
+        if(!rows.length) return;
+        // sacar columnas vacías al final
+        let ncol = 0; rows.forEach(r => { for(let i=r.length-1;i>=0;i--){ if(r[i]!==''){ ncol=Math.max(ncol,i+1); break; } } });
+        rows = rows.map(r => { const x = r.slice(0,ncol); while(x.length<ncol) x.push(''); return x; });
+        const orient = orientSel==='auto' ? (ncol > 6 ? 'l' : 'p') : orientSel;
+        if(!doc) doc = new window.jspdf.jsPDF({orientation:orient, unit:'mm', format:'a4'});
+        else doc.addPage('a4', orient);
+        hojas++;
+        const fs = ncol > 14 ? 6 : ncol > 10 ? 7 : ncol > 6 ? 8 : 9;
+        doc.setFontSize(12); doc.setTextColor(27,23,64);
+        if(wb.SheetNames.length > 1) doc.text(sn, 12, 12);
+        const head = useHead && rows.length > 1 ? [rows[0]] : undefined;
+        const body = head ? rows.slice(1) : rows;
+        doc.autoTable({
+          head, body, startY: wb.SheetNames.length > 1 ? 16 : 10,
+          margin:{left:10, right:10, top:10, bottom:12},
+          styles:{fontSize:fs, cellPadding:1.5, overflow:'linebreak', lineColor:[200,200,200], lineWidth:0.1, textColor:[20,20,20]},
+          headStyles:{fillColor:[124,58,237], textColor:255, fontStyle:'bold'},
+          alternateRowStyles:{fillColor:[245,243,252]},
+          horizontalPageBreak:true, horizontalPageBreakRepeat:0,
+          didParseCell:(d)=>{ if(/^[-$\s]*[\d.,]+%?$/.test(d.cell.raw || '')) d.cell.styles.halign = 'right'; }
+        });
+        setProgress('prog-excel2pdf', 10 + Math.round(80*(idx+1)/wb.SheetNames.length));
+      });
+      if(!doc){ setStatus('status-excel2pdf','err','La planilla no tiene datos para convertir.'); return; }
+      const total = doc.getNumberOfPages();
+      for(let i=1;i<=total;i++){ doc.setPage(i); doc.setFontSize(7); doc.setTextColor(140); doc.text('Página '+i+' de '+total, doc.internal.pageSize.getWidth()-10, doc.internal.pageSize.getHeight()-5, {align:'right'}); }
+      const name = files[0].name.replace(/\.[^.]+$/, '') + '.pdf';
+      addResult('results-excel2pdf', name, doc.output('blob'));
+      setProgress('prog-excel2pdf', 100);
+      setStatus('status-excel2pdf','ok','PDF creado ✔ (' + hojas + ' hoja/s, ' + total + ' página/s)');
+    }catch(err){
+      setStatus('status-excel2pdf','err','No se pudo convertir: ' + err.message);
     }
   });
 })();
