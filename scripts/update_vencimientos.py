@@ -7,6 +7,7 @@ aviso en data.json para que se revise y cargue a mano. No reescribe las
 tablas de fechas solo: son demasiados numeros como para confiar eso a un
 scraper sin supervision.
 """
+import hashlib
 import json
 import re
 import sys
@@ -22,6 +23,12 @@ FUENTES = {
     "ganancias_bienes_personales": "https://estudiodelamo.com/vencimientos-impuesto-ganancias-personas-fisicas-bienes-personales-anticipos/",
     "sicore": "https://estudiodelamo.com/vencimientos-retenciones-sicore/",
     "cargas_sociales": "https://estudiodelamo.com/vencimientos-cargas-sociales-relacion-de-dependencia/",
+}
+
+# Fuentes sin fecha de "modified": se detecta el cambio por el contenido del archivo.
+# Rentas Tucuman publica un PDF con los vencimientos de cada mes (agentes de IIBB incluidos).
+FUENTES_HASH = {
+    "iibb_tucuman": "https://www.rentastucuman.gob.ar/nomina/rentastuc2/nwx1ut2pa3lo/vencimientomensual.pdf",
 }
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "vencimientos" / "data.json"
@@ -73,6 +80,25 @@ def main():
                 "modified_nuevo": fecha_mod,
                 "tiene_anio_siguiente": True,
             })
+
+    hashes = meta.setdefault("hash_conocidos", {})
+    for nombre, url in FUENTES_HASH.items():
+        try:
+            r = requests.get(url, timeout=30, headers={"User-Agent": "Mozilla/5.0 (RindexBot)"})
+            r.raise_for_status()
+            h = hashlib.sha256(r.content).hexdigest()
+        except Exception as e:
+            print(f"[{nombre}] no se pudo chequear ({e}), se omite esta vez.")
+            continue
+        if hashes.get(nombre) and h != hashes[nombre]:
+            cambios.append({
+                "pagina": nombre,
+                "url": url,
+                "modified_anterior": None,
+                "modified_nuevo": date.today().isoformat(),
+                "tiene_anio_siguiente": False,
+            })
+        hashes[nombre] = h
 
     if not cambios:
         print("Sin cambios detectados en ninguna fuente.")
