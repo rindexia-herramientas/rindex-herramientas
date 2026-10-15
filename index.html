@@ -230,7 +230,7 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
     </fieldset>
 
     <fieldset>
-      <legend>Días del mes (feriados / vacaciones)</legend>
+      <legend>Días del mes y horas extras</legend>
       <p class="hint">Feriado no trabajado y vacaciones: se suma el plus (total ÷ 25 − total ÷ 30) por día. Feriado trabajado: se suma total ÷ 25 por día. "Total" = básico + antigüedad + presentismo.</p>
       <div class="row2">
         <div><label>Feriados NO trabajados (cant.)</label><input type="number" id="fer_no" value="0" min="0"></div>
@@ -238,6 +238,11 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
       </div>
       <label>Días de vacaciones tomados</label>
       <input type="number" id="vacaciones" value="0" min="0">
+      <div class="row2">
+        <div><label>Horas extras al 50%</label><input type="number" id="he50" value="0" min="0" step="0.5"></div>
+        <div><label>Horas extras al 100%</label><input type="number" id="he100" value="0" min="0" step="0.5"></div>
+      </div>
+      <p class="hint">Hora extra: total ÷ horas del mes (200 en jornada completa, proporcional en jornada reducida) × 1,5 o × 2. Se paga también sobre la parte no remunerativa.</p>
       <label class="inline"><input type="checkbox" id="chk_presentismo" checked> Cobra presentismo (Art. 40, 8,33%)</label>
       <label class="inline"><input type="checkbox" id="chk_antiguedad" checked> Aplica antigüedad (1% por año, Art. 24)</label>
     </fieldset>
@@ -281,7 +286,9 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
       <p class="hint">Vigentes para todos los trabajadores mientras rija la cautelar (Disp. 839/2026).</p>
       <div class="pct-row"><label>Sindicato Art. 100 (%) s/bruto</label><input type="number" id="pct_sind" value="2" step="0.01"></div>
       <div class="pct-row"><label>Faecys (%) s/bruto</label><input type="number" id="pct_faecys" value="0.5" step="0.01"></div>
-      <label class="inline"><input type="checkbox" id="chk_osecac" checked> OSECAC Aporte Voluntario (fijo)</label>
+      <label class="inline"><input type="checkbox" id="chk_art101"> Afiliado al sindicato (cuota Art. 101)</label>
+      <div class="pct-row"><label>Cuota afiliado Art. 101 (%) s/bruto a jornada completa</label><input type="number" id="pct_art101" value="2" step="0.01"></div>
+      <label class="inline"><input type="checkbox" id="chk_osecac"> OSECAC Aporte Voluntario (fijo)</label>
       <div class="pct-row"><label>Monto OSECAC voluntario ($)</label><input type="number" id="monto_osecac" value="100" step="0.01"></div>
       <button type="button" class="btn-add" onclick="addDeducExtra('', 0)">+ Otra deducción</button>
       <div id="deducExtraList"></div>
@@ -292,9 +299,12 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
       <fieldset style="margin-top:8px;">
         <div class="pct-row"><label>Jubilación + F.N. Empleo + Asig. Fam. (%)</label><input type="number" id="pct_jubfne" value="18" step="0.01"></div>
         <div class="pct-row"><label>Obra Social patronal (%)</label><input type="number" id="pct_ospatr" value="6" step="0.01"></div>
-        <div class="pct-row"><label>ART fijo ($)</label><input type="number" id="art_fijo" value="1765" step="0.01"></div>
+        <div class="pct-row"><label>ART fijo ($)</label><input type="number" id="art_fijo" value="1971" step="0.01"></div>
         <div class="pct-row"><label>ART variable (%)</label><input type="number" id="art_pct" value="3" step="0.01"></div>
         <div class="pct-row"><label>Seguro de vida (Dto. 1567/74) ($)</label><input type="number" id="seguro_vida" value="424.62" step="0.01"></div>
+        <div class="pct-row"><label>INACAP + Seg. Vida + OSECAC + La Estrella (%) s/remunerativo</label><input type="number" id="inacap_pct" value="1.6" step="0.01"></div>
+        <div class="pct-row"><label>INACAP + Seg. Vida + OSECAC + La Estrella fijo ($)</label><input type="number" id="inacap_fijo" value="35203.81" step="0.01"></div>
+        <div class="pct-row"><label>Detracción Ley 27.430 ($, jornada completa)</label><input type="number" id="detraccion" value="7003.68" step="0.01"></div>
       </fieldset>
     </details>
 
@@ -448,8 +458,15 @@ function calcular(){
   const vacNR = plusDiaNR * vac;
   const valorDia = R/25;
 
+  // Horas extras: valor hora = total ÷ horas mensuales de la jornada (200 en completa, proporcional en reducida)
+  const horasMes = 200 * f;
+  const he50 = num('he50'), he100 = num('he100');
+  const valorHora = R / horasMes, valorHoraNR = RN / horasMes;
+  const he50Monto = valorHora*1.5*he50, he100Monto = valorHora*2*he100;
+  const he50NR = valorHoraNR*1.5*he50, he100NR = valorHoraNR*2*he100;
+
   const remuExtraSum = remuExtra.reduce((a,r)=>a+(r.m||0), 0);
-  let totalRemuAntesSac = R + ferNoMonto + ferSiMonto + vacMonto + remuExtraSum;
+  let totalRemuAntesSac = R + ferNoMonto + ferSiMonto + vacMonto + he50Monto + he100Monto + remuExtraSum;
 
   const esMesSac = (mes === 6 || mes === 12);
   let sacMonto = 0;
@@ -461,7 +478,7 @@ function calcular(){
   const totalRemunerativo = totalRemuAntesSac + sacMonto;
 
   const noRemuManual = noRemu.reduce((a,r)=>a+(r.m||0), 0);
-  const noRemuSum = RN + extAcuerdo + ferSiNR + vacNR + noRemuManual;
+  const noRemuSum = RN + extAcuerdo + ferSiNR + vacNR + he50NR + he100NR + noRemuManual;
   const totalBruto = totalRemunerativo + noRemuSum;
 
   const jub = totalRemunerativo * num('pct_jub')/100;
@@ -471,25 +488,29 @@ function calcular(){
   const afiliado = chk('chk_afiliado');
   const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
   const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
+  const art101 = chk('chk_art101') ? (totalBruto/f) * num('pct_art101')/100 : 0;   // cuota afiliado, s/ bruto a jornada completa
   const osecac = chk('chk_osecac') ? num('monto_osecac') : 0;
   const deducExtraSum = deducExtra.reduce((a,r)=>a+(r.m||0), 0);
-  const totalDeducciones = jub+ley19032+os+osRed+sind+faecys+osecac+deducExtraSum;
+  const totalDeducciones = jub+ley19032+os+osRed+sind+faecys+art101+osecac+deducExtraSum;
 
   const neto = totalBruto - totalDeducciones;
 
   // Contribuciones: solo si hay sueldo (los montos fijos no se cobran con remuneración en cero)
   const hay = totalRemunerativo > 0;
-  const jubFne = totalRemunerativo * num('pct_jubfne')/100;
-  const osPatr = totalRemunerativo * num('pct_ospatr')/100;
-  const art = hay ? num('art_fijo') + totalRemunerativo * num('art_pct')/100 : 0;
+  const detraccion = hay ? Math.min(num('detraccion') * f, totalRemunerativo) : 0;   // Ley 27.430, proporcional a la jornada
+  const jubFne = (totalRemunerativo - detraccion) * num('pct_jubfne')/100;
+  const osPatr = (totalBruto/f) * num('pct_ospatr')/100;   // s/ bruto (rem. + no rem.) a jornada completa
+  const art = hay ? num('art_fijo') + totalBruto * num('art_pct')/100 : 0;
   const seguroVida = hay ? num('seguro_vida') : 0;
-  const totalContrib = jubFne + osPatr + art + seguroVida;
+  const inacap = hay ? num('inacap_fijo') + totalRemunerativo * num('inacap_pct')/100 : 0;
+  const totalContrib = jubFne + osPatr + art + seguroVida + inacap;
   const costoLaboral = totalBruto + totalContrib;
 
   return {
     f, basicoFull, basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
     ferNoMonto, ferSiMonto, ferSiNR, vacMonto, vacNR, presentismoMonto, presentismoNR,
     nrAcuerdo, antigNR, extAcuerdo,
+    horasMes, he50, he100, valorHora, valorHoraNR, he50Monto, he100Monto, he50NR, he100NR, art101, detraccion, inacap,
     remuExtraSum, totalRemuAntesSac, esMesSac, sacMonto, totalRemunerativo,
     noRemuSum, totalBruto,
     jub, ley19032, os, osRed, sind, faecys, osecac, deducExtraSum, totalDeducciones,
@@ -600,10 +621,11 @@ function render(){
     <div class="section-title"><div>2. CONTRIBUCIONES A CARGO DEL EMPLEADOR</div><div class="cita">Art. 140 inc. j LCT — se expone ANTES del bruto</div></div>
     <table class="rtable">
       <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
-      ${trow('Jubilación + F.N. Empleo + Asig.Fam. (contrib. unificada Dto. 814/2001)', money(r.totalRemunerativo), num('pct_jubfne')+'%', r.jubFne)}
-      ${trow('Obra Social patronal', money(r.totalRemunerativo), num('pct_ospatr')+'%', r.osPatr)}
-      ${trow('A.R.T.', money(r.totalRemunerativo), 'fijo+'+num('art_pct')+'%', r.art)}
+      ${trow('Jubilación + F.N. Empleo + Asig.Fam. (Dto. 814/2001) — rem. menos detracción '+money(r.detraccion), money(r.totalRemunerativo - r.detraccion), num('pct_jubfne')+'%', r.jubFne)}
+      ${trow('Obra Social patronal (bruto a jornada completa)', money(r.totalBruto/(r.f||1)), num('pct_ospatr')+'%', r.osPatr)}
+      ${trow('A.R.T. + FFEP', money(r.totalBruto), 'fijo+'+num('art_pct')+'%', r.art)}
       ${trow('Seguro de vida (Dto. 1567/74)', '—', '$ fijo', r.seguroVida)}
+      ${trow('INACAP + Seg. Vida + OSECAC + La Estrella', money(r.totalRemunerativo), num('inacap_pct')+'% + fijo', r.inacap)}
       ${totalRow('TOTAL CONTRIBUCIONES DEL EMPLEADOR', r.totalContrib)}
     </table>
 
@@ -619,7 +641,7 @@ function render(){
       <div class="cell pct">0,0%</div>
       <div class="cell pct">${(r.art/(r.totalContrib||1)*100).toFixed(1)}%</div>
       <div class="cell pct">0,0%</div>
-      <div class="cell pct">${(r.seguroVida/(r.totalContrib||1)*100).toFixed(1)}%</div>
+      <div class="cell pct">${((r.seguroVida+r.inacap)/(r.totalContrib||1)*100).toFixed(1)}%</div>
     </div>
     <div class="pie-wrap">
       ${pieSVG(r.neto, r.totalDeducciones, r.totalContrib)}
@@ -641,6 +663,8 @@ function render(){
       ${r.ferNo>0 ? trow('Plus feriado no trabajado', 'Total ÷25 − ÷30', r.ferNo+' día(s)', r.ferNoMonto) : ''}
       ${r.ferSi>0 ? trow('Feriado trabajado', money(r.valorDia)+' /día (total ÷25)', r.ferSi+' día(s)', r.ferSiMonto) : ''}
       ${r.vac>0 ? trow('Plus vacaciones', 'Total ÷25 − ÷30', r.vac+' día(s)', r.vacMonto) : ''}
+      ${r.he50>0 ? trow('Horas extras al 50%', money(r.valorHora)+' /hora', r.he50+' h × 1,5', r.he50Monto) : ''}
+      ${r.he100>0 ? trow('Horas extras al 100%', money(r.valorHora)+' /hora', r.he100+' h × 2', r.he100Monto) : ''}
       ${remuExtra.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('')}
       ${r.esMesSac && chk('chk_sac') ? trow('SAC ('+(r.mes===6?'1er':'2do')+' semestre)', money(num('sac_base')||r.totalRemuAntesSac), '50%', r.sacMonto) : ''}
     </table>
@@ -653,6 +677,8 @@ function render(){
       ${r.extAcuerdo>0 ? trow('Asignación extraordinaria única', '—', 'sin antig. ni present.', r.extAcuerdo) : ''}
       ${r.ferSiNR>0 ? trow('Feriado trabajado (no rem.)', 'Base no rem. ÷25', r.ferSi+' día(s)', r.ferSiNR) : ''}
       ${r.vacNR>0 ? trow('Plus vacaciones (no rem.)', 'Base no rem. ÷25 − ÷30', r.vac+' día(s)', r.vacNR) : ''}
+      ${r.he50NR>0 ? trow('Horas extras al 50% (no rem.)', money(r.valorHoraNR)+' /hora', r.he50+' h × 1,5', r.he50NR) : ''}
+      ${r.he100NR>0 ? trow('Horas extras al 100% (no rem.)', money(r.valorHoraNR)+' /hora', r.he100+' h × 2', r.he100NR) : ''}
       ${noRemu.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('')}
       ${(r.noRemuSum===0) ? '<tr><td colspan="4" style="text-align:center;color:#888;">Sin conceptos no remunerativos</td></tr>' : ''}
       ${totalRow('TOTAL REMUNERACIÓN BRUTA', r.totalBruto)}
@@ -667,6 +693,7 @@ function render(){
       ${chk('chk_osecac') ? trow('OSECAC Aporte Voluntario', '—', '$ fijo', r.osecac) : ''}
       ${r.afiliado ? trow('Sindicato Art. 100', money(r.totalBruto), num('pct_sind')+'%', r.sind) : ''}
       ${r.afiliado ? trow('Faecys', money(r.totalBruto), num('pct_faecys')+'%', r.faecys) : ''}
+      ${r.art101>0 ? trow('Cuota afiliado Art. 101', money(r.totalBruto/r.f), num('pct_art101')+'%', r.art101) : ''}
       ${deducExtra.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('')}
       ${totalRow('TOTAL DEDUCCIONES', r.totalDeducciones)}
     </table>
