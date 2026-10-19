@@ -111,6 +111,9 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
 .an-wrap{max-width:1100px;margin:0 auto;padding:0 18px;}
 .an-card{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:20px 20px 22px;box-shadow:0 4px 18px rgba(76,29,149,.06);}
 .an-card h2{font-size:16px;color:var(--navy);margin:0 0 4px;}
+.an-card h2.an-titulo{font-size:26px;line-height:1.2;font-weight:800;margin:2px 0 18px;letter-spacing:-.3px;}
+.an-card h2.an-titulo span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+@media (max-width:560px){ .an-card h2.an-titulo{font-size:21px;} }
 .an-card p.sub{font-size:12px;color:var(--text-soft);margin:0 0 16px;line-height:1.5;}
 .drops{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media (max-width:700px){ .drops{grid-template-columns:1fr;} }
@@ -173,7 +176,7 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
       </div>
       <label>Facturación anual ($)</label>
       <input type="number" id="facturacion" placeholder="0.00" step="0.01">
-      <p class="hint">Si recién empezás, poné lo que estimás facturar en un año. No se descuentan gastos: es el total de ingresos. ¿No lo tenés sumado? <a href="#anPeriodo" style="color:var(--violet);font-weight:700;">Subí el archivo de Mis Comprobantes y lo calculo sola ↓</a></p>
+      <p class="hint">Si recién empezás, poné lo que estimás facturar en un año. No se descuentan gastos: es el total de ingresos. ¿No lo tenés sumado? <a href="#anPeriodo" style="color:var(--violet);font-weight:700;">Cargá tus archivos de ARCA y te lo sumamos ↓</a></p>
     </fieldset>
 
     <fieldset>
@@ -259,8 +262,7 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
 <!-- ============ ANALIZADOR DE COMPROBANTES ============ -->
 <div class="an-wrap">
   <div class="an-card">
-    <h2>¿No tenés el total? Subí tus comprobantes y lo calculo</h2>
-    <p class="sub">Subí el archivo de tus ventas y, si vendés cereal, los PDF de tus liquidaciones primarias de granos (LPG). Suma facturas y notas de débito, resta notas de crédito, y pasa el total arriba para ver la categoría. Los archivos se leen en tu navegador: no se suben a ningún lado.</p>
+    <h2 class="an-titulo">Te sumamos tus ingresos por vos: <span>cargá tus archivos de ARCA</span></h2>
 
     <fieldset style="margin-bottom:14px;">
       <legend>1. Elegí la recategorización</legend>
@@ -751,7 +753,7 @@ function renderPeriodo(){
   document.getElementById('anPeriodoTxt').innerHTML =
     'Período que se mira: <b>del '+fmtFecha(p.ini)+' al '+fmtFecha(p.fin)+'</b>.<br>' +
     'En ARCA → <b>Mis Comprobantes → Emitidos</b>, poné <b>Fecha desde '+fmtFecha(p.ini)+'</b> y <b>Fecha hasta '+fmtFecha(hasta)+'</b>' +
-    (p.fin > hoy ? ' (hoy; el período todavía no terminó, así que te muestro también la proyección al cierre)' : '') + '.';
+    (p.fin > hoy ? ' (hoy; el período todavía no terminó)' : '') + '.';
   document.getElementById('stVentasPer').textContent = 'Período: '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
   document.getElementById('stLpgPer').textContent = 'Liquidaciones del '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
 }
