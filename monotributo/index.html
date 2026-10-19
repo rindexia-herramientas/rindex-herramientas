@@ -154,7 +154,7 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
       <span class="tag">La IA que te paga en horas</span>
     </div>
   </div>
-  <p class="top-desc">Cargá tu facturación de los últimos 12 meses y mirá al toque en qué categoría de Monotributo caés, cuánto pagás por mes y cuánto te falta para el próximo tope.</p>
+  <p class="top-desc">Cargá tu facturación anual y mirá al toque en qué categoría de Monotributo caés, cuánto pagás por mes y cuánto te falta para el próximo tope.</p>
 </header>
 
 <div class="wrap">
@@ -171,7 +171,7 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
         <button type="button" id="btn_servicios" class="active" onclick="setTipo('servicios')">Servicios</button>
         <button type="button" id="btn_bienes" onclick="setTipo('bienes')">Venta de bienes</button>
       </div>
-      <label>Facturación de los últimos 12 meses ($)</label>
+      <label>Facturación anual ($)</label>
       <input type="number" id="facturacion" placeholder="0.00" step="0.01">
       <p class="hint">Si recién empezás, poné lo que estimás facturar en un año. No se descuentan gastos: es el total de ingresos. ¿No lo tenés sumado? <a href="#anPeriodo" style="color:var(--violet);font-weight:700;">Subí el archivo de Mis Comprobantes y lo calculo sola ↓</a></p>
     </fieldset>
@@ -245,8 +245,8 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
 <!-- ============ ANALIZADOR DE COMPROBANTES ============ -->
 <div class="an-wrap">
   <div class="an-card">
-    <h2>¿Preferís que lo calcule sola? Subí tus comprobantes</h2>
-    <p class="sub">Subí el archivo de tus ventas y, si vendés cereal, los PDF de tus liquidaciones primarias de granos (LPG). La herramienta suma las facturas y las notas de débito, resta las notas de crédito, y te dice en qué categoría estás y cuánto te falta para el próximo tope. Los archivos se leen en tu navegador: no se suben a ningún lado.</p>
+    <h2>¿No tenés el total? Subí tus comprobantes y lo calculo</h2>
+    <p class="sub">Subí el archivo de tus ventas y, si vendés cereal, los PDF de tus liquidaciones primarias de granos (LPG). Suma facturas y notas de débito, resta notas de crédito, y pasa el total arriba para ver la categoría. Los archivos se leen en tu navegador: no se suben a ningún lado.</p>
 
     <fieldset style="margin-bottom:14px;">
       <legend>1. Elegí la recategorización</legend>
@@ -274,27 +274,21 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
     <div id="anMsgs"></div>
 
     <div class="an-res" id="anRes" style="display:none;">
-      <div class="kpis" id="anKpis"></div>
+      <div class="kpi dest" style="max-width:420px;">
+        <div class="lbl">Total facturado</div>
+        <div class="val" id="anTotal" style="font-size:24px;">$ 0,00</div>
+        <div class="s" id="anTotalDet"></div>
+        <div class="s" style="margin-top:6px;">✓ Ya lo pasé arriba, a "Facturación anual", para ver la categoría.</div>
+      </div>
       <div id="anAvisos"></div>
 
-      <div class="detalle" id="anExclBox" style="display:none;">
-        <h3>Excluir comprobantes del total de Ingresos Brutos</h3>
-        <p class="hint" style="font-size:11px;margin:0 0 6px;">Estas ventas se hicieron a un CUIT o CUIL. Si alguna no va en Ingresos Brutos (por ejemplo, alquileres), destildala. Para el Monotributo se siguen contando igual: ARCA suma todos los ingresos.</p>
-        <div class="tscroll"><table class="mtable" id="anExcl"></table></div>
-      </div>
-
-      <div class="detalle">
-        <h3>Mes a mes</h3>
-        <div class="tscroll"><table class="mtable" id="anMeses"></table></div>
-      </div>
-
       <div class="detalle" id="anLpgBox" style="display:none;">
-        <h3>Liquidaciones de granos leídas</h3>
+        <h3>Liquidaciones para revisar</h3>
+        <p class="hint" style="font-size:11px;margin:0 0 6px;">Estas no se sumaron solas. Tildalas si corresponde sumarlas.</p>
         <div class="tscroll"><table class="mtable" id="anLpg"></table></div>
       </div>
 
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button type="button" class="btn" onclick="usarEnCalculadora()">Usar este total en la calculadora ↑</button>
+      <div style="margin-top:14px;">
         <button type="button" class="btn sec" onclick="limpiarAnalisis()">Empezar de nuevo</button>
       </div>
     </div>
@@ -676,7 +670,7 @@ async function cargarLpg(files){
     }catch(e){ anMsg('<b>'+f.name+':</b> no se pudo leer el PDF.', 'err'); }
   }
   const revisar = AN.lpg.filter(l => !l.incluir).length;
-  if(ok) anMsg(ok+' liquidación(es) leída(s).'+(revisar?' <b>'+revisar+' quedaron "a revisar"</b>: son ajustes o no se encontró el subtotal. Revisalas en la tabla de abajo y tildalas si corresponde.':''), revisar?'warn':'ok');
+  if(ok) anMsg(ok+' liquidación(es) leída(s).'+(revisar?' <b>'+revisar+' quedaron "a revisar"</b>: son ajustes o no se encontró el subtotal. Están abajo para que decidas si se suman.':''), revisar?'warn':'ok');
   document.getElementById('stLpg').textContent = AN.lpg.length ? AN.lpg.length+' liquidación(es) cargada(s) ✓' : 'Tocá o arrastrá los PDF acá';
   renderAnalisis();
 }
@@ -719,7 +713,7 @@ function renderPeriodo(){
   document.getElementById('anPeriodoTxt').innerHTML =
     'Período que se mira: <b>del '+fmtFecha(p.ini)+' al '+fmtFecha(p.fin)+'</b>.<br>' +
     'En ARCA → <b>Mis Comprobantes → Emitidos</b>, poné <b>Fecha desde '+fmtFecha(p.ini)+'</b> y <b>Fecha hasta '+fmtFecha(hasta)+'</b>' +
-    (p.fin > hoy ? ' (hoy; el período todavía no terminó, así que te muestro también la proyección al cierre)' : '') + '.';
+    (p.fin > hoy ? ' (hoy; el período todavía no terminó)' : '') + '.';
   document.getElementById('stVentasPer').textContent = 'Período: '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
   document.getElementById('stLpgPer').textContent = 'Liquidaciones del '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
 }
@@ -767,66 +761,40 @@ function renderAnalisis(){
   const box = document.getElementById('anRes');
   if(!r || !DATA){ box.style.display = 'none'; return; }
   box.style.display = 'block';
-  const base = r.total;
-  const cat = categoriaPara(base), catP = categoriaPara(r.proyeccion);
-  const margen = cat ? 'Te quedan '+moneyC(cat.tope_facturacion - base)+' hasta el tope de la '+cat.letra : 'Supera el tope de la K';
-  const hasta = r.ultima ? fmtFecha(r.ultima) : '—';
-  let k = kpi(r.abierto ? 'Facturado hasta hoy' : 'Facturado en el período', moneyC(base), 'del '+fmtFecha(r.P.ini)+' al '+hasta, true) +
-          kpi(r.abierto ? 'Categoría al día de hoy' : 'Categoría para '+r.P.nombre, cat ? cat.letra : 'Fuera del régimen', margen);
-  if(r.abierto){
-    k += kpi('Ritmo mensual', moneyC(r.ritmo), 'promedio de los últimos meses completos') +
-         kpi('Proyección al '+fmtFecha(r.P.fin), moneyC(r.proyeccion), catP ? 'Categoría '+catP.letra+' en la recategorización de '+r.P.nombre : 'Superaría el tope de la K');
-  }
-  if(r.excl) k += kpi('Para Ingresos Brutos', moneyC(base - r.excl), 'sin los '+moneyC(r.excl)+' excluidos');
-  document.getElementById('anKpis').innerHTML = k;
+  let fact = 0, gr = 0;
+  for(const k of r.ks){ fact += r.meses[k].fact; gr += r.meses[k].lpg; }
+  document.getElementById('anTotal').textContent = moneyC(r.total);
+  document.getElementById('anTotalDet').innerHTML =
+    'Del '+fmtFecha(r.P.ini)+' al '+(r.ultima ? fmtFecha(r.ultima) : '—') +
+    (gr ? ' · Facturas '+moneyC(fact)+' + Granos '+moneyC(gr) : '');
   let avisos = '';
-  if(r.fuera) avisos += '<div class="msg warn">'+r.fuera+' comprobante(s) quedan fuera del período '+fmtFecha(r.P.ini)+' al '+fmtFecha(r.P.fin)+' y no se suman. Si elegiste otra recategorización arriba, se recalcula solo.</div>';
-  if(r.faltaInicio) avisos += '<div class="msg warn">El primer comprobante cargado es del '+fmtFecha(r.primera)+'. Si facturaste antes dentro del período (desde el '+fmtFecha(r.P.ini)+'), subí también ese archivo.</div>';
+  if(r.fuera) avisos += '<div class="msg warn">'+r.fuera+' comprobante(s) son de fuera del período '+fmtFecha(r.P.ini)+' al '+fmtFecha(r.P.fin)+' y no se suman.</div>';
+  if(r.faltaInicio) avisos += '<div class="msg warn">El primer comprobante cargado es del '+fmtFecha(r.primera)+'. Si hay ventas desde el '+fmtFecha(r.P.ini)+', subí también ese archivo.</div>';
   document.getElementById('anAvisos').innerHTML = avisos;
-
-  // exclusiones por CUIT
-  const porCuit = {};
-  for(const v of AN.ventas){ if(!v.cuit) continue; porCuit[v.cuit] = porCuit[v.cuit] || { nombre:v.receptor, n:0, total:0 }; porCuit[v.cuit].n++; porCuit[v.cuit].total += v.total; }
-  const cuits = Object.keys(porCuit).sort((a,b)=>porCuit[b].total-porCuit[a].total);
-  document.getElementById('anExclBox').style.display = cuits.length ? 'block' : 'none';
-  document.getElementById('anExcl').innerHTML = '<tr><th>Incluir en IIBB</th><th style="text-align:left">CUIT / CUIL</th><th style="text-align:left">Receptor</th><th>Comprobantes</th><th>Total</th></tr>' +
-    cuits.map(c => '<tr><td><input type="checkbox" '+(AN.excluidos.has(c)?'':'checked')+' onchange="toggleExcl(\''+c+'\',this.checked)"></td><td style="text-align:left">'+c.slice(0,2)+'-'+c.slice(2,10)+'-'+c.slice(10)+'</td><td style="text-align:left">'+esc(porCuit[c].nombre||'—')+'</td><td>'+porCuit[c].n+'</td><td>'+moneyC(porCuit[c].total)+'</td></tr>').join('');
-
-  // tabla mensual
-  const hayLpg = r.lpgOk.length > 0, hayExcl = AN.excluidos.size > 0;
-  let h = '<tr><th>Mes</th><th>Facturas</th>'+(hayLpg?'<th>Granos (LPG)</th>':'')+'<th>Total Monotributo</th>'+(hayExcl?'<th>Total IIBB</th>':'')+'</tr>';
-  let tf=0, tl=0, te=0;
-  for(const k of r.ks){
-    const m = r.meses[k]; tf += m.fact; tl += m.lpg; te += m.excl;
-    h += '<tr><td>'+fmtMes(k)+(r.ultima && k===claveMes(r.ultima) && r.abierto?' <span class="hint">(hasta el '+fmtFecha(r.ultima)+')</span>':'')+'</td><td>'+moneyC(m.fact)+'</td>'+(hayLpg?'<td>'+moneyC(m.lpg)+'</td>':'')+'<td>'+moneyC(m.fact+m.lpg)+'</td>'+(hayExcl?'<td>'+moneyC(m.fact+m.lpg-m.excl)+'</td>':'')+'</tr>';
-  }
-  h += '<tr class="total"><td>Total cargado</td><td>'+moneyC(tf)+'</td>'+(hayLpg?'<td>'+moneyC(tl)+'</td>':'')+'<td>'+moneyC(tf+tl)+'</td>'+(hayExcl?'<td>'+moneyC(tf+tl-te)+'</td>':'')+'</tr>';
-  document.getElementById('anMeses').innerHTML = h;
-
-  // tabla LPG
-  document.getElementById('anLpgBox').style.display = AN.lpg.length ? 'block' : 'none';
-  document.getElementById('anLpg').innerHTML = '<tr><th>Sumar</th><th style="text-align:left">Archivo</th><th>COE</th><th>Fecha</th><th>Subtotal operación</th><th style="text-align:left">Estado</th></tr>' +
-    AN.lpg.map((l,i) => {
-      const est = l.total === null ? '<span class="warn">No encontré el subtotal</span>' : !l.fecha ? '<span class="warn">No encontré la fecha</span>' : l.ajuste ? 'Ajuste '+(l.credito?'(crédito, resta)':l.debito?'(débito, suma)':'— revisar si suma o resta') : 'OK';
+  // liquidaciones que no se pudieron sumar solas (ajustes o sin monto): se muestran para decidir
+  const rev = AN.lpg.map((l,i)=>({l,i})).filter(x => x.l.ajuste || x.l.total === null || !x.l.fecha);
+  document.getElementById('anLpgBox').style.display = rev.length ? 'block' : 'none';
+  document.getElementById('anLpg').innerHTML = '<tr><th>Sumar</th><th style="text-align:left">Archivo</th><th>COE</th><th>Fecha</th><th>Monto</th><th style="text-align:left">Motivo</th></tr>' +
+    rev.map(({l,i}) => {
+      const est = l.total === null ? 'No encontré el monto' : !l.fecha ? 'No encontré la fecha' : 'Es un ajuste'+(l.credito?' de crédito (resta)':l.debito?' de débito (suma)':'');
       return '<tr><td><input type="checkbox" '+(l.incluir?'checked':'')+' '+((l.total===null||!l.fecha)?'disabled':'')+' onchange="AN.lpg['+i+'].incluir=this.checked;renderAnalisis()"></td><td style="text-align:left">'+esc(l.archivo)+'</td><td>'+(l.coe||'—')+'</td><td>'+fmtFecha(l.fecha)+'</td><td>'+(l.total===null?'—':moneyC(l.total))+'</td><td style="text-align:left">'+est+'</td></tr>';
     }).join('');
+  // el total pasa solo al campo de facturación de arriba
+  document.getElementById('facturacion').value = r.total.toFixed(2);
+  render();
 }
 
 function kpi(lbl, val, s, dest){ return '<div class="kpi'+(dest?' dest':'')+'"><div class="lbl">'+lbl+'</div><div class="val">'+val+'</div><div class="s">'+(s||'')+'</div></div>'; }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function toggleExcl(c, incluir){ if(incluir) AN.excluidos.delete(c); else AN.excluidos.add(c); renderAnalisis(); }
-function usarEnCalculadora(){
-  const r = calcular(); if(!r) return;
-  document.getElementById('facturacion').value = r.total.toFixed(2);
-  render(); window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 function limpiarAnalisis(){
   AN.ventas = []; AN.lpg = []; AN.excluidos = new Set(); AN.archivosVentas = [];
   document.getElementById('anMsgs').innerHTML = '';
   document.getElementById('stVentas').textContent = 'Tocá o arrastrá el archivo acá';
   document.getElementById('stLpg').textContent = 'Tocá o arrastrá los PDF acá';
   document.getElementById('fileVentas').value = ''; document.getElementById('fileLpg').value = '';
-  renderAnalisis();
+  document.getElementById('facturacion').value = '';
+  renderAnalisis(); render();
 }
 function prepararDrop(dropId, inputId, fn){
   const d = document.getElementById(dropId), inp = document.getElementById(inputId);
