@@ -1313,6 +1313,9 @@
       "sicore": "2026-10-06",
       "cargas_sociales": "2026-10-06"
     },
-    "ultimo_chequeo_automatico": "2026-10-12"
+    "ultimo_chequeo_automatico": "2026-10-19",
+    "hash_conocidos": {
+      "iibb_tucuman": "9eb5bf4fcc151582e7424db9dd1980f2868d0d27c1dcc136bd88abe5cfc910a5"
+    }
   }
 }
