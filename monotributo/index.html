@@ -283,8 +283,8 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
       <div id="anAvisos"></div>
 
       <div class="detalle" id="anLpgBox" style="display:none;">
-        <h3>Liquidaciones para revisar</h3>
-        <p class="hint" style="font-size:11px;margin:0 0 6px;">Estas no se sumaron solas. Tildalas si corresponde sumarlas.</p>
+        <h3>Liquidaciones de granos cargadas</h3>
+        <p class="hint" style="font-size:11px;margin:0 0 6px;">Chequeá que estén todas las del período. Los ajustes no se suman solos: tildalos si corresponde.</p>
         <div class="tscroll"><table class="mtable" id="anLpg"></table></div>
       </div>
 
@@ -713,7 +713,7 @@ function renderPeriodo(){
   document.getElementById('anPeriodoTxt').innerHTML =
     'Período que se mira: <b>del '+fmtFecha(p.ini)+' al '+fmtFecha(p.fin)+'</b>.<br>' +
     'En ARCA → <b>Mis Comprobantes → Emitidos</b>, poné <b>Fecha desde '+fmtFecha(p.ini)+'</b> y <b>Fecha hasta '+fmtFecha(hasta)+'</b>' +
-    (p.fin > hoy ? ' (hoy; el período todavía no terminó)' : '') + '.';
+    (p.fin > hoy ? ' (hoy; el período todavía no terminó, así que te muestro también la proyección al cierre)' : '') + '.';
   document.getElementById('stVentasPer').textContent = 'Período: '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
   document.getElementById('stLpgPer').textContent = 'Liquidaciones del '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
 }
@@ -771,14 +771,23 @@ function renderAnalisis(){
   if(r.fuera) avisos += '<div class="msg warn">'+r.fuera+' comprobante(s) son de fuera del período '+fmtFecha(r.P.ini)+' al '+fmtFecha(r.P.fin)+' y no se suman.</div>';
   if(r.faltaInicio) avisos += '<div class="msg warn">El primer comprobante cargado es del '+fmtFecha(r.primera)+'. Si hay ventas desde el '+fmtFecha(r.P.ini)+', subí también ese archivo.</div>';
   document.getElementById('anAvisos').innerHTML = avisos;
-  // liquidaciones que no se pudieron sumar solas (ajustes o sin monto): se muestran para decidir
-  const rev = AN.lpg.map((l,i)=>({l,i})).filter(x => x.l.ajuste || x.l.total === null || !x.l.fecha);
-  document.getElementById('anLpgBox').style.display = rev.length ? 'block' : 'none';
-  document.getElementById('anLpg').innerHTML = '<tr><th>Sumar</th><th style="text-align:left">Archivo</th><th>COE</th><th>Fecha</th><th>Monto</th><th style="text-align:left">Motivo</th></tr>' +
-    rev.map(({l,i}) => {
-      const est = l.total === null ? 'No encontré el monto' : !l.fecha ? 'No encontré la fecha' : 'Es un ajuste'+(l.credito?' de crédito (resta)':l.debito?' de débito (suma)':'');
-      return '<tr><td><input type="checkbox" '+(l.incluir?'checked':'')+' '+((l.total===null||!l.fecha)?'disabled':'')+' onchange="AN.lpg['+i+'].incluir=this.checked;renderAnalisis()"></td><td style="text-align:left">'+esc(l.archivo)+'</td><td>'+(l.coe||'—')+'</td><td>'+fmtFecha(l.fecha)+'</td><td>'+(l.total===null?'—':moneyC(l.total))+'</td><td style="text-align:left">'+est+'</td></tr>';
-    }).join('');
+  // todas las liquidaciones leídas, para que se pueda chequear que estén todas
+  document.getElementById('anLpgBox').style.display = AN.lpg.length ? 'block' : 'none';
+  const lpgOrd = AN.lpg.map((l,i)=>({l,i})).sort((x,y)=>(x.l.fecha||0)-(y.l.fecha||0));
+  let sumaLpg = 0;
+  document.getElementById('anLpg').innerHTML = '<tr><th>Sumar</th><th>Fecha</th><th>COE</th><th style="text-align:left">Operación</th><th>Monto</th><th style="text-align:left">Estado</th></tr>' +
+    lpgOrd.map(({l,i}) => {
+      const fuera = l.fecha && (l.fecha < r.P.ini || l.fecha > r.P.fin);
+      const est = l.total === null ? '<span style="color:#B0263B;font-weight:700">No encontré el monto</span>'
+        : !l.fecha ? '<span style="color:#B0263B;font-weight:700">No encontré la fecha</span>'
+        : fuera ? '<span style="color:#946200;font-weight:700">Fuera del período</span>'
+        : l.ajuste ? '<span style="color:#946200;font-weight:700">Ajuste: revisá si va'+(l.credito?' (crédito, resta)':l.debito?' (débito, suma)':'')+'</span>'
+        : 'Sumada ✓';
+      if(l.incluir && !fuera && l.total !== null) sumaLpg += (l.credito ? -Math.abs(l.total) : l.total);
+      return '<tr><td><input type="checkbox" '+(l.incluir?'checked':'')+' '+((l.total===null||!l.fecha)?'disabled':'')+' onchange="AN.lpg['+i+'].incluir=this.checked;renderAnalisis()"></td><td>'+fmtFecha(l.fecha)+'</td><td>'+(l.coe||'—')+'</td><td style="text-align:left">'+esc(l.tipoOp||'—')+'</td><td>'+(l.total===null?'—':moneyC(l.total))+'</td><td style="text-align:left">'+est+'</td></tr>';
+    }).join('') +
+    '<tr class="total"><td colspan="4">'+AN.lpg.length+' liquidación(es) cargada(s)</td><td>'+moneyC(sumaLpg)+'</td><td></td></tr>';
+
   // el total pasa solo al campo de facturación de arriba
   document.getElementById('facturacion').value = r.total.toFixed(2);
   render();
