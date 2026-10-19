@@ -282,6 +282,11 @@ table.mtable td.warn{color:#B0263B;font-weight:700;}
       </div>
       <div id="anAvisos"></div>
 
+      <div class="detalle">
+        <h3>Facturación por mes</h3>
+        <div class="tscroll"><table class="mtable" id="anMeses"></table></div>
+      </div>
+
       <div class="detalle" id="anLpgBox" style="display:none;">
         <h3>Liquidaciones de granos cargadas</h3>
         <p class="hint" style="font-size:11px;margin:0 0 6px;">Chequeá que estén todas las del período. Los ajustes no se suman solos: tildalos si corresponde.</p>
@@ -771,6 +776,16 @@ function renderAnalisis(){
   if(r.fuera) avisos += '<div class="msg warn">'+r.fuera+' comprobante(s) son de fuera del período '+fmtFecha(r.P.ini)+' al '+fmtFecha(r.P.fin)+' y no se suman.</div>';
   if(r.faltaInicio) avisos += '<div class="msg warn">El primer comprobante cargado es del '+fmtFecha(r.primera)+'. Si hay ventas desde el '+fmtFecha(r.P.ini)+', subí también ese archivo.</div>';
   document.getElementById('anAvisos').innerHTML = avisos;
+  // facturación mes a mes
+  const hayGr = gr !== 0;
+  let hm = '<tr><th>Mes</th><th>Facturas</th>'+(hayGr?'<th>Granos (LPG)</th>':'')+'<th>Total</th></tr>';
+  for(const k of r.ks){
+    const m = r.meses[k];
+    hm += '<tr><td>'+fmtMes(k)+'</td><td>'+moneyC(m.fact)+'</td>'+(hayGr?'<td>'+moneyC(m.lpg)+'</td>':'')+'<td>'+moneyC(m.fact+m.lpg)+'</td></tr>';
+  }
+  hm += '<tr class="total"><td>Total</td><td>'+moneyC(fact)+'</td>'+(hayGr?'<td>'+moneyC(gr)+'</td>':'')+'<td>'+moneyC(r.total)+'</td></tr>';
+  document.getElementById('anMeses').innerHTML = hm;
+
   // todas las liquidaciones leídas, para que se pueda chequear que estén todas
   document.getElementById('anLpgBox').style.display = AN.lpg.length ? 'block' : 'none';
   const lpgOrd = AN.lpg.map((l,i)=>({l,i})).sort((x,y)=>(x.l.fecha||0)-(y.l.fecha||0));
