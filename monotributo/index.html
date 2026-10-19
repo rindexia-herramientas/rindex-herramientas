@@ -329,7 +329,7 @@ function toggleJubilado(){
   document.getElementById('jubFields').style.display = chk('chk_jubilado') ? 'block' : 'none';
   render();
 }
-// según ARCA: ningún jubilado paga obra social (ya tiene PAMI); los de la ley 24.241 sí pagan el aporte jubilatorio
+// jubilados: no pagan obra social (ya tienen PAMI); los de la ley 24.241 pagan el aporte jubilatorio de la categoría A, sin importar su categoría
 function componentesJubilado(){
   if(!chk('chk_jubilado')) return { sipa:true, os:true };
   const ley = document.getElementById('jub_ley').value;
@@ -432,19 +432,20 @@ function render(){
 
   const impuesto = tipo === 'servicios' ? cat.impuesto_servicios : cat.impuesto_bienes;
   const jc = componentesJubilado();
-  const sipa = jc.sipa ? cat.sipa : 0;
+  const sipaA = datasetActivo().categorias[0].sipa;
+  const sipa = !jc.sipa ? 0 : (chk('chk_jubilado') ? sipaA : cat.sipa);
   const os = jc.os ? cat.obra_social : 0;
   const cuota = impuesto + sipa + os;
   if(chk('chk_jubilado')){
     document.getElementById('jub_hint').textContent = jc.sipa
-      ? 'Pagás el impuesto integrado y el aporte jubilatorio de tu categoría. No pagás obra social porque ya tenés PAMI.'
+      ? 'Pagás el impuesto integrado de tu categoría y el aporte jubilatorio de la categoría A, sea cual sea tu categoría. No pagás obra social porque ya tenés PAMI.'
       : 'Pagás solo el impuesto integrado: no pagás aporte jubilatorio ni obra social.';
   }
 
   document.getElementById('out_letra').textContent = cat.letra;
   document.getElementById('out_cuota').textContent = money(cuota);
   document.getElementById('out_impuesto').textContent = money(impuesto);
-  document.getElementById('out_sipa').textContent = jc.sipa ? money(cat.sipa) : 'No paga';
+  document.getElementById('out_sipa').textContent = jc.sipa ? money(sipa) : 'No paga';
   document.getElementById('out_os').textContent = jc.os ? money(cat.obra_social) : 'No paga';
 
   const pct = facturacion > 0 ? Math.min(100, (facturacion / cat.tope_facturacion) * 100) : 0;
@@ -456,7 +457,7 @@ function render(){
 
   let html = '';
   html += fila('Impuesto integrado ('+ (tipo==='servicios'?'servicios':'venta de bienes') +')', impuesto);
-  html += fila('Aporte jubilatorio (SIPA)'+(jc.sipa?'':' — jubilado/a, no paga'), sipa);
+  html += fila('Aporte jubilatorio (SIPA)'+(!jc.sipa?' — jubilado/a, no paga':(chk('chk_jubilado')?' — jubilado/a, el de la categoría A':'')), sipa);
   html += fila('Obra social'+(jc.os?'':' — jubilado/a, no paga (tiene PAMI)'), os);
   html += filaTotal('Total cuota mensual', cuota);
   if(tipo === 'bienes'){
