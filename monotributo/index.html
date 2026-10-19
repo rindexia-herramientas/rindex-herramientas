@@ -559,18 +559,30 @@ function leerFilasVentas(rows, enPesos){
 /* --- LPG: lee el texto de un PDF oficial de ARCA --- */
 function leerTextoLpg(txt, nombre){
   const t = txt.replace(/\s+/g,' ');
-  const coe = (t.match(/\b(33\d{10})\b/) || [])[1] || '';
+  const coe = (t.match(/C\.?O\.?E\.?:?\s*(33\d{10})/i) || t.match(/\b(33[01]\d{9})\b/) || [])[1] || '';
+  // fecha de emisión: aparece arriba como "14/10/2026, FIRMAT"
   let fecha = null;
-  const mf = t.match(/fecha[^0-9]{0,40}(\d{1,2}\/\d{1,2}\/\d{2,4})/i) || t.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
-  if(mf) fecha = parseFecha(mf[1]);
-  const montoRe = '\\$?\\s?(-?[\\d][\\d.,]*\\d)';
-  let sub = null;
-  const ms = t.match(new RegExp('sub\\s?total(?: de la)?(?: operaci[oó]n)?[^0-9$\\-]{0,40}' + montoRe, 'i'));
-  if(ms) sub = parseMonto(ms[1]);
+  const me = t.match(/(\d{1,2}\/\d{1,2}\/\d{4}),\s*[A-ZÁÉÍÓÚÑ]/);
+  if(me) fecha = parseFecha(me[1]);
+  if(!fecha){ const mf = t.match(/(\d{1,2}\/\d{1,2}\/\d{4})/); if(mf) fecha = parseFecha(mf[1]); }
+  // filas de la operación: "6206 Kg $292.00 $1812152.00 10.5 ..." → el tercer número es el subtotal
+  let sub = null, filas = 0;
+  const re = /(\d[\d.,]*)\s*Kg\s+\$\s?(\d[\d.,]*)\s+\$\s?(-?\d[\d.,]*)/gi;
+  let m;
+  while((m = re.exec(t))){
+    const v = parseMonto(m[3]);
+    if(v !== null){ sub = (sub || 0) + v; filas++; }
+  }
+  if(sub === null){
+    // respaldo: "Total Operación" menos IVA no está disponible siempre; se deja para revisar
+    const mt = t.match(/sub\s?total(?: de la operaci[oó]n)?:?\s*\$\s?(-?\d[\d.,]*)/i);
+    if(mt) sub = parseMonto(mt[1]);
+  }
   const ajuste = /ajuste/i.test(t);
-  const debito = /d[eé]bito/i.test(t) && ajuste;
-  const credito = /cr[eé]dito/i.test(t) && ajuste;
-  return { origen:'lpg', archivo:nombre, coe, fecha, total: sub, ajuste, credito, debito,
+  const debito = ajuste && /d[eé]bito/i.test(t);
+  const credito = ajuste && /cr[eé]dito/i.test(t);
+  const tipoOp = (t.match(/Tipo de operaci[oó]n:\s*\d+\s*-\s*([A-Za-zÁÉÍÓÚáéíóúñÑ ]+?)(?:\s+Actividad|\s+C\.O\.E|$)/i) || [])[1] || '';
+  return { origen:'lpg', archivo:nombre, coe, fecha, total: sub, ajuste, credito, debito, tipoOp: tipoOp.trim(),
            incluir: !ajuste && sub !== null && !!fecha };
 }
 
