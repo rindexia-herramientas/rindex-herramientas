@@ -106,6 +106,42 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
 
 .footnote{font-size:10.5px;color:var(--text-soft);text-align:center;margin-top:22px;line-height:1.5;}
 .footnote a{color:var(--violet);text-decoration:none;font-weight:600;}
+
+/* ---------- ANALIZADOR DE COMPROBANTES ---------- */
+.an-wrap{max-width:1100px;margin:0 auto;padding:0 18px;}
+.an-card{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:20px 20px 22px;box-shadow:0 4px 18px rgba(76,29,149,.06);}
+.an-card h2{font-size:16px;color:var(--navy);margin:0 0 4px;}
+.an-card p.sub{font-size:12px;color:var(--text-soft);margin:0 0 16px;line-height:1.5;}
+.drops{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:700px){ .drops{grid-template-columns:1fr;} }
+.drop{border:2px dashed var(--violet-soft);border-radius:14px;padding:16px;text-align:center;background:#FBFAFF;cursor:pointer;transition:background .2s;}
+.drop:hover,.drop.over{background:var(--ok-bg);}
+.drop .t{font-weight:700;color:var(--navy);font-size:13px;}
+.drop .d{font-size:11px;color:var(--text-soft);margin-top:4px;line-height:1.4;}
+.drop .st{font-size:11.5px;color:var(--violet);font-weight:700;margin-top:8px;}
+.drop input{display:none;}
+.an-res{margin-top:18px;}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media (max-width:760px){ .kpis{grid-template-columns:1fr 1fr;} }
+.kpi{border:1px solid var(--line);border-radius:14px;padding:12px 14px;}
+.kpi .lbl{font-size:10px;color:var(--text-soft);font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.kpi .val{font-size:17px;font-weight:800;color:var(--navy);margin-top:3px;}
+.kpi .s{font-size:10.5px;color:var(--text-soft);margin-top:2px;}
+.kpi.dest{background:var(--grad);border:none;}
+.kpi.dest .lbl,.kpi.dest .val,.kpi.dest .s{color:#fff;}
+.tscroll{overflow-x:auto;}
+table.mtable{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+table.mtable th{font-size:10.5px;text-transform:uppercase;color:var(--text-soft);text-align:right;padding:6px;border-bottom:1.5px solid var(--violet-soft);white-space:nowrap;}
+table.mtable th:first-child,table.mtable td:first-child{text-align:left;}
+table.mtable td{padding:6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
+table.mtable tr.total td{font-weight:800;color:var(--violet);border-top:1.5px solid var(--violet-soft);}
+table.mtable td.warn{color:#B0263B;font-weight:700;}
+.btn{display:inline-block;background:var(--grad);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;}
+.btn.sec{background:#fff;color:var(--violet);border:1px solid var(--violet-soft);}
+.msg{font-size:11.5px;border-radius:10px;padding:9px 11px;margin-top:10px;line-height:1.45;}
+.msg.ok{background:#E9FBEF;color:#1D8A4C;border:1px solid #B7EDC7;}
+.msg.warn{background:#FFF7DA;color:#946200;border:1px solid #F3DE9E;}
+.msg.err{background:#FFEDEE;color:#B0263B;border:1px solid #F5B8BC;}
 </style>
 </head>
 <body>
@@ -137,7 +173,7 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
       </div>
       <label>Facturación de los últimos 12 meses ($)</label>
       <input type="number" id="facturacion" placeholder="0.00" step="0.01">
-      <p class="hint">Si recién empezás, poné lo que estimás facturar en un año. No se descuentan gastos: es el total de ingresos.</p>
+      <p class="hint">Si recién empezás, poné lo que estimás facturar en un año. No se descuentan gastos: es el total de ingresos. ¿No lo tenés sumado? <a href="#anPeriodo" style="color:var(--violet);font-weight:700;">Subí el archivo de Mis Comprobantes y lo calculo sola ↓</a></p>
     </fieldset>
 
     <fieldset>
@@ -205,6 +241,66 @@ table.dtable td.small{font-size:10px;color:var(--text-soft);}
 
 </div>
 
+
+<!-- ============ ANALIZADOR DE COMPROBANTES ============ -->
+<div class="an-wrap">
+  <div class="an-card">
+    <h2>¿Preferís que lo calcule sola? Subí tus comprobantes</h2>
+    <p class="sub">Subí el archivo de tus ventas y, si vendés cereal, los PDF de tus liquidaciones primarias de granos (LPG). La herramienta suma las facturas y las notas de débito, resta las notas de crédito, y te dice en qué categoría estás y cuánto te falta para el próximo tope. Los archivos se leen en tu navegador: no se suben a ningún lado.</p>
+
+    <fieldset style="margin-bottom:14px;">
+      <legend>1. Elegí la recategorización</legend>
+      <select id="anPeriodo"></select>
+      <p class="hint" id="anPeriodoTxt" style="font-size:11.5px;margin-top:8px;"></p>
+      <p class="hint" style="font-size:10.5px;">En enero se mira todo el año calendario anterior (enero a diciembre). En julio, de julio del año anterior a junio.</p>
+    </fieldset>
+
+    <div class="drops">
+      <label class="drop" id="dropVentas">
+        <div class="t">📊 2. Cargá acá el archivo de Mis Comprobantes Emitidos de ARCA</div>
+        <div class="d" id="stVentasPer"></div>
+        <div class="d">Sirve el ZIP tal cual lo descarga ARCA (CSV adentro), o un Excel. Podés subir varios archivos juntos.</div>
+        <div class="st" id="stVentas">Tocá o arrastrá el archivo acá</div>
+        <input type="file" id="fileVentas" accept=".zip,.csv,.xlsx,.xls" multiple>
+      </label>
+      <label class="drop" id="dropLpg">
+        <div class="t">🌾 3. Liquidaciones de granos (opcional)</div>
+        <div class="d" id="stLpgPer"></div>
+        <div class="d">ARCA → <b>Liquidación Primaria de Granos → Consulta de liquidaciones recibidas</b> → "Ver" en cada COE y descargar el PDF. Subilos todos juntos.</div>
+        <div class="st" id="stLpg">Tocá o arrastrá los PDF acá</div>
+        <input type="file" id="fileLpg" accept=".pdf" multiple>
+      </label>
+    </div>
+    <div id="anMsgs"></div>
+
+    <div class="an-res" id="anRes" style="display:none;">
+      <div class="kpis" id="anKpis"></div>
+      <div id="anAvisos"></div>
+
+      <div class="detalle" id="anExclBox" style="display:none;">
+        <h3>Excluir comprobantes del total de Ingresos Brutos</h3>
+        <p class="hint" style="font-size:11px;margin:0 0 6px;">Estas ventas se hicieron a un CUIT o CUIL. Si alguna no va en Ingresos Brutos (por ejemplo, alquileres), destildala. Para el Monotributo se siguen contando igual: ARCA suma todos los ingresos.</p>
+        <div class="tscroll"><table class="mtable" id="anExcl"></table></div>
+      </div>
+
+      <div class="detalle">
+        <h3>Mes a mes</h3>
+        <div class="tscroll"><table class="mtable" id="anMeses"></table></div>
+      </div>
+
+      <div class="detalle" id="anLpgBox" style="display:none;">
+        <h3>Liquidaciones de granos leídas</h3>
+        <div class="tscroll"><table class="mtable" id="anLpg"></table></div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btn" onclick="usarEnCalculadora()">Usar este total en la calculadora ↑</button>
+        <button type="button" class="btn sec" onclick="limpiarAnalisis()">Empezar de nuevo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 let DATA = null;
 let usarEstimado = false;
@@ -236,6 +332,7 @@ async function cargarDatos(){
   }
   decidirFuente();
   render();
+  renderAnalisis();
 }
 
 function decidirFuente(){
@@ -346,6 +443,392 @@ function filaTotal(label, monto){
 
 document.addEventListener('input', render);
 document.addEventListener('change', render);
+
+/* ================= ANALIZADOR DE COMPROBANTES ================= */
+const AN = { ventas: [], lpg: [], excluidos: new Set(), archivosVentas: [] };
+
+/* --- números: "1.234.567,89" | "868,394.42" | "785877.30" | "1792,49" | 1234.5 --- */
+function parseMonto(v){
+  if(v === null || v === undefined || v === '') return null;
+  if(typeof v === 'number') return isFinite(v) ? v : null;
+  let s = String(v).replace(/\$/g,'').replace(/\s/g,'').trim();
+  let neg = false;
+  if(/^\(.*\)$/.test(s)){ neg = true; s = s.slice(1,-1); }
+  if(s.startsWith('-')){ neg = true; s = s.slice(1); }
+  if(!/^[\d.,]+$/.test(s)) return null;
+  const lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
+  if(lc >= 0 && ld >= 0){
+    if(lc > ld) s = s.replace(/\./g,'').replace(',', '.');
+    else s = s.replace(/,/g,'');
+  } else if(lc >= 0){
+    const dec = s.length - lc - 1;
+    s = (s.split(',').length === 2 && dec !== 3) ? s.replace(',', '.') : s.replace(/,/g,'');
+  } else if(ld >= 0){
+    const dec = s.length - ld - 1;
+    if(!(s.split('.').length === 2 && dec !== 3)) s = s.replace(/\./g,'');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? null : (neg ? -n : n);
+}
+
+/* --- fechas: serial de Excel, Date, "dd/mm/aaaa", "aaaa-mm-dd" --- */
+function parseFecha(v){
+  if(v === null || v === undefined || v === '') return null;
+  if(v instanceof Date && !isNaN(v)) return new Date(v.getFullYear(), v.getMonth(), v.getDate());
+  if(typeof v === 'number' && v > 20000 && v < 80000){
+    const d = new Date(Math.round((v - 25569) * 86400000));
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){ let y = +m[3]; if(y < 100) y += 2000; return new Date(y, +m[2]-1, +m[1]); }
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  return null;
+}
+
+/* códigos de comprobante de ARCA */
+const COD_NC = new Set([3,8,13,21,53,110,112,113,114,119,203,208,213]);
+const COD_ND = new Set([2,7,12,20,52,115,116,120,202,207,212]);
+const COD_NOMBRE = {1:'Factura A',2:'Nota de Débito A',3:'Nota de Crédito A',4:'Recibo A',6:'Factura B',7:'Nota de Débito B',8:'Nota de Crédito B',9:'Recibo B',11:'Factura C',12:'Nota de Débito C',13:'Nota de Crédito C',15:'Recibo C',19:'Factura E',20:'Nota de Débito E',21:'Nota de Crédito E',51:'Factura M',52:'Nota de Débito M',53:'Nota de Crédito M',201:'Factura de Crédito Electrónica A',202:'ND Electrónica A',203:'NC Electrónica A',206:'Factura de Crédito Electrónica B',207:'ND Electrónica B',208:'NC Electrónica B',211:'Factura de Crédito Electrónica C',212:'ND Electrónica C',213:'NC Electrónica C'};
+function clasificarTipo(v){
+  const s = String(v||'').trim();
+  const m = s.match(/^(\d{1,3})(?:\s*-\s*(.*))?$/);
+  if(m){
+    const c = +m[1];
+    const signo = COD_NC.has(c) ? -1 : 1;
+    return { signo, nombre: m[2] || COD_NOMBRE[c] || ('Comprobante '+c), nd: COD_ND.has(c) };
+  }
+  const n = norm(s);
+  return { signo: n.includes('credito') ? -1 : 1, nombre: s, nd: n.includes('debito') };
+}
+
+function norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim(); }
+
+/* --- lee una hoja (array de filas) de Mis Comprobantes / Comprobantes en línea --- */
+function leerFilasVentas(rows, enPesos){
+  // encontrar la fila de encabezados
+  let h = -1;
+  for(let i=0;i<Math.min(rows.length,15);i++){
+    const r = (rows[i]||[]).map(norm);
+    if(r.some(c => c === 'fecha' || c.startsWith('fecha de emision') || c === 'fecha emision') && r.some(c => c.includes('tipo'))){ h = i; break; }
+  }
+  if(h < 0) return { error: 'No encontré la fila de títulos (Fecha, Tipo, Importe…). ¿Es el Excel de Mis Comprobantes → Emitidos?' };
+  const H = rows[h].map(norm);
+  const col = (...prueba) => { for(const p of prueba){ const i = H.findIndex(c => p(c)); if(i>=0) return i; } return -1; };
+  const cFecha = col(c => c === 'fecha', c => c.startsWith('fecha'));
+  const cTipo  = col(c => c === 'tipo', c => c.startsWith('tipo de comprobante'), c => c.startsWith('tipo') && !c.includes('doc') && !c.includes('cambio'));
+  const cPV    = col(c => c.includes('punto de venta'), c => c === 'pto. vta.' || c === 'pto vta');
+  const cNro   = col(c => c.includes('numero desde'), c => c.startsWith('numero'), c => c.startsWith('nro') && !c.includes('doc'));
+  const cDocT  = col(c => c.includes('tipo doc'));
+  const cDoc   = col(c => c.includes('nro. doc') || c.includes('nro doc') || c.includes('numero doc') || c.includes('nro. de doc') || c.includes('documento receptor'));
+  const cDen   = col(c => c.includes('denominacion'), c => c.includes('razon social'));
+  const cTC    = col(c => c.includes('tipo cambio') || c.includes('tipo de cambio'));
+  const cMon   = col(c => c === 'moneda');
+  const cTot   = col(c => c === 'imp. total' || c === 'importe total' || c === 'total', c => c.includes('total'), c => c.includes('importe'));
+  if(cFecha < 0 || cTot < 0) return { error: 'El archivo no tiene las columnas de fecha e importe total.' };
+
+  const out = []; let ignoradas = 0;
+  for(let i=h+1;i<rows.length;i++){
+    const r = rows[i]; if(!r || r.every(c => c === null || c === undefined || c === '')) continue;
+    const fecha = parseFecha(r[cFecha]);
+    let total = parseMonto(r[cTot]);
+    if(!fecha || total === null){ ignoradas++; continue; }
+    // Monotributo: suman facturas, recibos y notas de débito; restan notas de crédito
+    const ct = clasificarTipo(cTipo >= 0 ? r[cTipo] : '');
+    const tipo = ct.nombre, signo = ct.signo;
+    // moneda extranjera → pesos
+    const mon = cMon >= 0 ? norm(r[cMon]) : '';
+    const tc = cTC >= 0 ? parseMonto(r[cTC]) : null;
+    if(!enPesos && mon && !['$','pes','ars','pesos'].includes(mon) && tc && tc > 1) total = total * tc;
+    total = Math.abs(total) * signo;
+    const docT = cDocT >= 0 ? norm(r[cDocT]) : '';
+    let doc = cDoc >= 0 ? String(r[cDoc]||'').replace(/\D/g,'') : '';
+    const conCuit = doc.length === 11 && !/^0+$/.test(doc) && !docT.includes('dni') && docT !== '96';
+    const pv = cPV >= 0 ? String(r[cPV]||'').replace(/\D/g,'') : '';
+    const nro = cNro >= 0 ? String(r[cNro]||'').replace(/\D/g,'') : '';
+    out.push({
+      origen:'factura', fecha, total, tipo: tipo || (signo<0?'Nota de crédito':'Factura'),
+      comprobante: (pv||nro) ? (pv.padStart(5,'0')+'-'+nro.padStart(8,'0')) : '',
+      cuit: conCuit ? doc : '', receptor: cDen >= 0 ? String(r[cDen]||'').trim() : ''
+    });
+  }
+  return { filas: out, ignoradas };
+}
+
+/* --- LPG: lee el texto de un PDF oficial de ARCA --- */
+function leerTextoLpg(txt, nombre){
+  const t = txt.replace(/\s+/g,' ');
+  const coe = (t.match(/\b(33\d{10})\b/) || [])[1] || '';
+  let fecha = null;
+  const mf = t.match(/fecha[^0-9]{0,40}(\d{1,2}\/\d{1,2}\/\d{2,4})/i) || t.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+  if(mf) fecha = parseFecha(mf[1]);
+  const montoRe = '\\$?\\s?(-?[\\d][\\d.,]*\\d)';
+  let sub = null;
+  const ms = t.match(new RegExp('sub\\s?total(?: de la)?(?: operaci[oó]n)?[^0-9$\\-]{0,40}' + montoRe, 'i'));
+  if(ms) sub = parseMonto(ms[1]);
+  const ajuste = /ajuste/i.test(t);
+  const debito = /d[eé]bito/i.test(t) && ajuste;
+  const credito = /cr[eé]dito/i.test(t) && ajuste;
+  return { origen:'lpg', archivo:nombre, coe, fecha, total: sub, ajuste, credito, debito,
+           incluir: !ajuste && sub !== null && !!fecha };
+}
+
+/* --- carga de librerías bajo demanda --- */
+/* CSV de Mis Comprobantes: separado por ";" y con comillas */
+function parseCsv(txt){
+  txt = txt.replace(/^\uFEFF/,'');
+  const prim = txt.split(/\r?\n/)[0];
+  const sep = (prim.split(';').length >= prim.split(',').length) ? ';' : ',';
+  const rows = []; let row = [], cur = '', q = false;
+  for(let i=0;i<txt.length;i++){
+    const ch = txt[i];
+    if(q){ if(ch === '"'){ if(txt[i+1] === '"'){ cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if(ch === '"') q = true;
+    else if(ch === sep){ row.push(cur); cur = ''; }
+    else if(ch === '\n' || ch === '\r'){ if(ch === '\r' && txt[i+1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += ch;
+  }
+  if(cur !== '' || row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function cargarScript(src){ return new Promise((ok,err)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=err; document.head.appendChild(s); }); }
+async function libXlsx(){ if(!window.XLSX) await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); return window.XLSX; }
+async function libZip(){ if(!window.JSZip) await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'); return window.JSZip; }
+async function libPdf(){
+  if(!window.pdfjsLib){
+    await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  return window.pdfjsLib;
+}
+
+function anMsg(html, tipo){ const d=document.createElement('div'); d.className='msg '+(tipo||'ok'); d.innerHTML=html; document.getElementById('anMsgs').appendChild(d); }
+
+async function cargarVentas(files){
+  if(!files.length) return;
+  document.getElementById('stVentas').textContent = 'Leyendo…';
+  // desarmar ZIP (Mis Comprobantes descarga el CSV comprimido)
+  const lista = [];
+  for(const f of files){
+    if(/\.zip$/i.test(f.name)){
+      try{
+        const zip = await (await libZip()).loadAsync(await f.arrayBuffer());
+        for(const n of Object.keys(zip.files)){
+          if(zip.files[n].dir || !/\.(csv|xlsx?|txt)$/i.test(n)) continue;
+          lista.push({ name: n.split('/').pop(), csv: /\.(csv|txt)$/i.test(n), get: () => /\.(csv|txt)$/i.test(n) ? zip.files[n].async('string') : zip.files[n].async('arraybuffer') });
+        }
+      }catch(e){ anMsg('<b>'+f.name+':</b> no se pudo abrir el ZIP.', 'err'); }
+    } else {
+      const csv = /\.(csv|txt)$/i.test(f.name);
+      lista.push({ name: f.name, csv, get: () => csv ? f.text() : f.arrayBuffer() });
+    }
+  }
+  for(const f of lista){
+    try{
+      let rows;
+      if(f.csv) rows = parseCsv(await f.get());
+      else {
+        const XLSX = await libXlsx();
+        const wb = XLSX.read(await f.get(), { type:'array', cellDates:false, raw:true });
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:true, defval:'' });
+      }
+      const r = leerFilasVentas(rows, /expresados en pesos/i.test(f.name));
+      if(r.error){ anMsg('<b>'+f.name+':</b> '+r.error, 'err'); continue; }
+      // evitar duplicados si suben el mismo período dos veces
+      const claves = new Set(AN.ventas.map(v => v.tipo+'|'+v.comprobante+'|'+v.total));
+      let dup = 0;
+      for(const v of r.filas){ const k = v.tipo+'|'+v.comprobante+'|'+v.total; if(v.comprobante && claves.has(k)){ dup++; continue; } claves.add(k); AN.ventas.push(v); }
+      AN.archivosVentas.push(f.name);
+      anMsg('<b>'+f.name+':</b> '+(r.filas.length-dup)+' comprobantes leídos'+(dup?' ('+dup+' repetidos, no se sumaron dos veces)':'')+(r.ignoradas?' · '+r.ignoradas+' filas sin fecha o importe ignoradas':'')+'.', 'ok');
+    }catch(e){ anMsg('<b>'+f.name+':</b> no se pudo leer el archivo.', 'err'); }
+  }
+  document.getElementById('stVentas').textContent = AN.archivosVentas.length ? AN.archivosVentas.length+' archivo(s) cargado(s) ✓' : 'Tocá o arrastrá el archivo acá';
+  renderAnalisis();
+}
+
+async function cargarLpg(files){
+  if(!files.length) return;
+  document.getElementById('stLpg').textContent = 'Leyendo…';
+  const pdfjs = await libPdf();
+  let ok = 0;
+  for(const f of files){
+    try{
+      const pdf = await pdfjs.getDocument({ data: await f.arrayBuffer() }).promise;
+      let txt = '';
+      for(let p=1;p<=pdf.numPages;p++){ const c = await (await pdf.getPage(p)).getTextContent(); txt += ' ' + c.items.map(i=>i.str).join(' '); }
+      const l = leerTextoLpg(txt, f.name);
+      if(l.coe && AN.lpg.some(x => x.coe === l.coe)){ anMsg('<b>'+f.name+':</b> la liquidación COE '+l.coe+' ya estaba cargada, no se sumó de nuevo.', 'warn'); continue; }
+      AN.lpg.push(l); ok++;
+    }catch(e){ anMsg('<b>'+f.name+':</b> no se pudo leer el PDF.', 'err'); }
+  }
+  const revisar = AN.lpg.filter(l => !l.incluir).length;
+  if(ok) anMsg(ok+' liquidación(es) leída(s).'+(revisar?' <b>'+revisar+' quedaron "a revisar"</b>: son ajustes o no se encontró el subtotal. Revisalas en la tabla de abajo y tildalas si corresponde.':''), revisar?'warn':'ok');
+  document.getElementById('stLpg').textContent = AN.lpg.length ? AN.lpg.length+' liquidación(es) cargada(s) ✓' : 'Tocá o arrastrá los PDF acá';
+  renderAnalisis();
+}
+
+function claveMes(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function fmtMes(k){ const [y,m]=k.split('-'); return m+'/'+y.slice(2); }
+function fmtFecha(d){ return d ? String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getFullYear()).slice(2) : '—'; }
+function sumarMeses(d, n){ return new Date(d.getFullYear(), d.getMonth()+n, 1); }
+function moneyC(n){ return '$ '+(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+/* --- períodos de recategorización ---
+   enero de A: facturado del 01/01/(A-1) al 31/12/(A-1)
+   julio de A: facturado del 01/07/(A-1) al 30/06/A */
+function periodosRecat(hoy){
+  hoy = hoy || new Date();
+  const y = hoy.getFullYear(), m = hoy.getMonth();
+  const mk = (mes, anio) => mes === 1
+    ? { id:'1-'+anio, nombre:'Enero '+anio, ini:new Date(anio-1,0,1), fin:new Date(anio-1,11,31) }
+    : { id:'7-'+anio, nombre:'Julio '+anio, ini:new Date(anio-1,6,1), fin:new Date(anio,5,30) };
+  // próxima: si estamos entre enero y junio → julio de este año; si no → enero del año que viene
+  const prox = m < 6 ? mk(7, y) : mk(1, y+1);
+  const ant  = m < 6 ? mk(1, y) : mk(7, y);
+  const sig  = m < 6 ? mk(1, y+1) : mk(7, y+1);
+  prox.proxima = true;
+  return [prox, ant, sig];
+}
+function periodoActivo(){
+  const ps = periodosRecat();
+  const sel = (typeof document !== 'undefined' && document.getElementById('anPeriodo')) ? document.getElementById('anPeriodo').value : '';
+  return ps.find(p => p.id === sel) || ps[0];
+}
+function renderPeriodo(){
+  const sel = document.getElementById('anPeriodo');
+  const ps = periodosRecat();
+  if(!sel.options.length){
+    sel.innerHTML = ps.map(p => '<option value="'+p.id+'">Recategorización de '+p.nombre+(p.proxima?' (la próxima)':'')+'</option>').join('');
+  }
+  const p = periodoActivo(), hoy = new Date();
+  const hasta = p.fin < hoy ? p.fin : hoy;
+  document.getElementById('anPeriodoTxt').innerHTML =
+    'Período que se mira: <b>del '+fmtFecha(p.ini)+' al '+fmtFecha(p.fin)+'</b>.<br>' +
+    'En ARCA → <b>Mis Comprobantes → Emitidos</b>, poné <b>Fecha desde '+fmtFecha(p.ini)+'</b> y <b>Fecha hasta '+fmtFecha(hasta)+'</b>' +
+    (p.fin > hoy ? ' (hoy; el período todavía no terminó, así que te muestro también la proyección al cierre)' : '') + '.';
+  document.getElementById('stVentasPer').textContent = 'Período: '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
+  document.getElementById('stLpgPer').textContent = 'Liquidaciones del '+fmtFecha(p.ini)+' al '+fmtFecha(hasta);
+}
+
+function calcular(){
+  const P = periodoActivo();
+  const lpgOk = AN.lpg.filter(l => l.incluir && l.fecha && l.total !== null);
+  const todos = AN.ventas.concat(lpgOk.map(l => ({ origen:'lpg', fecha:l.fecha, total: (l.credito ? -Math.abs(l.total) : l.total), cuit:'' })));
+  if(!todos.length) return null;
+  const movs = todos.filter(m => m.fecha >= P.ini && m.fecha <= P.fin);
+  const fuera = todos.length - movs.length;
+  const meses = {};
+  let total = 0, excl = 0, ultima = null, primera = null;
+  for(const m of movs){
+    const k = claveMes(m.fecha);
+    meses[k] = meses[k] || { fact:0, lpg:0, excl:0 };
+    if(m.origen === 'lpg') meses[k].lpg += m.total; else meses[k].fact += m.total;
+    total += m.total;
+    if(m.cuit && AN.excluidos.has(m.cuit)){ meses[k].excl += m.total; excl += m.total; }
+    if(!ultima || m.fecha > ultima) ultima = m.fecha;
+    if(!primera || m.fecha < primera) primera = m.fecha;
+  }
+  const ks = Object.keys(meses).sort();
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const abierto = P.fin > hoy;
+  // ritmo: promedio de los últimos 3 meses completos con datos
+  const mesHoy = claveMes(hoy);
+  const completos = ks.filter(k => k < mesHoy).slice(-3);
+  const ritmo = completos.length ? completos.reduce((a,k)=>a+meses[k].fact+meses[k].lpg,0)/completos.length : 0;
+  const diasRestantes = abierto ? Math.max(0, (P.fin - (ultima && ultima > hoy ? ultima : hoy)) / 86400000) : 0;
+  const proyeccion = total + ritmo * diasRestantes / 30.44;
+  // aviso si el archivo no cubre el período completo
+  const faltaInicio = primera && (primera - P.ini) / 86400000 > 31;
+  return { P, meses, ks, total, excl, ultima, primera, fuera, abierto, ritmo, proyeccion, lpgOk, faltaInicio };
+}
+
+function categoriaPara(monto){
+  const cats = datasetActivo().categorias;
+  for(const c of cats) if(monto <= c.tope_facturacion) return c;
+  return null;
+}
+
+function renderAnalisis(){
+  const r = calcular();
+  const box = document.getElementById('anRes');
+  if(!r || !DATA){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const base = r.total;
+  const cat = categoriaPara(base), catP = categoriaPara(r.proyeccion);
+  const margen = cat ? 'Te quedan '+moneyC(cat.tope_facturacion - base)+' hasta el tope de la '+cat.letra : 'Supera el tope de la K';
+  const hasta = r.ultima ? fmtFecha(r.ultima) : '—';
+  let k = kpi(r.abierto ? 'Facturado hasta hoy' : 'Facturado en el período', moneyC(base), 'del '+fmtFecha(r.P.ini)+' al '+hasta, true) +
+          kpi(r.abierto ? 'Categoría al día de hoy' : 'Categoría para '+r.P.nombre, cat ? cat.letra : 'Fuera del régimen', margen);
+  if(r.abierto){
+    k += kpi('Ritmo mensual', moneyC(r.ritmo), 'promedio de los últimos meses completos') +
+         kpi('Proyección al '+fmtFecha(r.P.fin), moneyC(r.proyeccion), catP ? 'Categoría '+catP.letra+' en la recategorización de '+r.P.nombre : 'Superaría el tope de la K');
+  }
+  if(r.excl) k += kpi('Para Ingresos Brutos', moneyC(base - r.excl), 'sin los '+moneyC(r.excl)+' excluidos');
+  document.getElementById('anKpis').innerHTML = k;
+  let avisos = '';
+  if(r.fuera) avisos += '<div class="msg warn">'+r.fuera+' comprobante(s) quedan fuera del período '+fmtFecha(r.P.ini)+' al '+fmtFecha(r.P.fin)+' y no se suman. Si elegiste otra recategorización arriba, se recalcula solo.</div>';
+  if(r.faltaInicio) avisos += '<div class="msg warn">El primer comprobante cargado es del '+fmtFecha(r.primera)+'. Si facturaste antes dentro del período (desde el '+fmtFecha(r.P.ini)+'), subí también ese archivo.</div>';
+  document.getElementById('anAvisos').innerHTML = avisos;
+
+  // exclusiones por CUIT
+  const porCuit = {};
+  for(const v of AN.ventas){ if(!v.cuit) continue; porCuit[v.cuit] = porCuit[v.cuit] || { nombre:v.receptor, n:0, total:0 }; porCuit[v.cuit].n++; porCuit[v.cuit].total += v.total; }
+  const cuits = Object.keys(porCuit).sort((a,b)=>porCuit[b].total-porCuit[a].total);
+  document.getElementById('anExclBox').style.display = cuits.length ? 'block' : 'none';
+  document.getElementById('anExcl').innerHTML = '<tr><th>Incluir en IIBB</th><th style="text-align:left">CUIT / CUIL</th><th style="text-align:left">Receptor</th><th>Comprobantes</th><th>Total</th></tr>' +
+    cuits.map(c => '<tr><td><input type="checkbox" '+(AN.excluidos.has(c)?'':'checked')+' onchange="toggleExcl(\''+c+'\',this.checked)"></td><td style="text-align:left">'+c.slice(0,2)+'-'+c.slice(2,10)+'-'+c.slice(10)+'</td><td style="text-align:left">'+esc(porCuit[c].nombre||'—')+'</td><td>'+porCuit[c].n+'</td><td>'+moneyC(porCuit[c].total)+'</td></tr>').join('');
+
+  // tabla mensual
+  const hayLpg = r.lpgOk.length > 0, hayExcl = AN.excluidos.size > 0;
+  let h = '<tr><th>Mes</th><th>Facturas</th>'+(hayLpg?'<th>Granos (LPG)</th>':'')+'<th>Total Monotributo</th>'+(hayExcl?'<th>Total IIBB</th>':'')+'</tr>';
+  let tf=0, tl=0, te=0;
+  for(const k of r.ks){
+    const m = r.meses[k]; tf += m.fact; tl += m.lpg; te += m.excl;
+    h += '<tr><td>'+fmtMes(k)+(r.ultima && k===claveMes(r.ultima) && r.abierto?' <span class="hint">(hasta el '+fmtFecha(r.ultima)+')</span>':'')+'</td><td>'+moneyC(m.fact)+'</td>'+(hayLpg?'<td>'+moneyC(m.lpg)+'</td>':'')+'<td>'+moneyC(m.fact+m.lpg)+'</td>'+(hayExcl?'<td>'+moneyC(m.fact+m.lpg-m.excl)+'</td>':'')+'</tr>';
+  }
+  h += '<tr class="total"><td>Total cargado</td><td>'+moneyC(tf)+'</td>'+(hayLpg?'<td>'+moneyC(tl)+'</td>':'')+'<td>'+moneyC(tf+tl)+'</td>'+(hayExcl?'<td>'+moneyC(tf+tl-te)+'</td>':'')+'</tr>';
+  document.getElementById('anMeses').innerHTML = h;
+
+  // tabla LPG
+  document.getElementById('anLpgBox').style.display = AN.lpg.length ? 'block' : 'none';
+  document.getElementById('anLpg').innerHTML = '<tr><th>Sumar</th><th style="text-align:left">Archivo</th><th>COE</th><th>Fecha</th><th>Subtotal operación</th><th style="text-align:left">Estado</th></tr>' +
+    AN.lpg.map((l,i) => {
+      const est = l.total === null ? '<span class="warn">No encontré el subtotal</span>' : !l.fecha ? '<span class="warn">No encontré la fecha</span>' : l.ajuste ? 'Ajuste '+(l.credito?'(crédito, resta)':l.debito?'(débito, suma)':'— revisar si suma o resta') : 'OK';
+      return '<tr><td><input type="checkbox" '+(l.incluir?'checked':'')+' '+((l.total===null||!l.fecha)?'disabled':'')+' onchange="AN.lpg['+i+'].incluir=this.checked;renderAnalisis()"></td><td style="text-align:left">'+esc(l.archivo)+'</td><td>'+(l.coe||'—')+'</td><td>'+fmtFecha(l.fecha)+'</td><td>'+(l.total===null?'—':moneyC(l.total))+'</td><td style="text-align:left">'+est+'</td></tr>';
+    }).join('');
+}
+
+function kpi(lbl, val, s, dest){ return '<div class="kpi'+(dest?' dest':'')+'"><div class="lbl">'+lbl+'</div><div class="val">'+val+'</div><div class="s">'+(s||'')+'</div></div>'; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toggleExcl(c, incluir){ if(incluir) AN.excluidos.delete(c); else AN.excluidos.add(c); renderAnalisis(); }
+function usarEnCalculadora(){
+  const r = calcular(); if(!r) return;
+  document.getElementById('facturacion').value = r.total.toFixed(2);
+  render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function limpiarAnalisis(){
+  AN.ventas = []; AN.lpg = []; AN.excluidos = new Set(); AN.archivosVentas = [];
+  document.getElementById('anMsgs').innerHTML = '';
+  document.getElementById('stVentas').textContent = 'Tocá o arrastrá el archivo acá';
+  document.getElementById('stLpg').textContent = 'Tocá o arrastrá los PDF acá';
+  document.getElementById('fileVentas').value = ''; document.getElementById('fileLpg').value = '';
+  renderAnalisis();
+}
+function prepararDrop(dropId, inputId, fn){
+  const d = document.getElementById(dropId), inp = document.getElementById(inputId);
+  inp.addEventListener('change', e => { e.stopPropagation(); fn([...inp.files]); inp.value=''; });
+  ['dragenter','dragover'].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.remove('over'); }));
+  d.addEventListener('drop', e => fn([...e.dataTransfer.files]));
+}
+if(typeof document !== 'undefined' && document.getElementById('dropVentas')){
+  prepararDrop('dropVentas','fileVentas', cargarVentas);
+  prepararDrop('dropLpg','fileLpg', cargarLpg);
+  renderPeriodo();
+  document.getElementById('anPeriodo').addEventListener('change', () => { renderPeriodo(); renderAnalisis(); });
+}
 
 cargarDatos();
 </script>
