@@ -1183,5 +1183,35 @@ setTimeout(startTourIfNeeded, 500);
 </style>
 <div class="rindex-watermark no-print"><img src="../assets/logo-rindex.png" alt="">Sos parte de Rindex — Leé las reviews y sumate en <a href="https://rindex4.wordpress.com/" target="_blank" rel="noreferrer noopener">rindex4.wordpress.com</a></div>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c52853c676a74cb69406e268342b1155"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- GoatCounter (privado: solo cuenta visitas y usos, no guarda datos cargados) -->
+<script data-goatcounter="https://rindex.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+(function(){
+  var nombres={'':'Inicio / Liquidador','convertidor':'Conversor','calculadora-sueldo':'Calculadora de Sueldo','control-costos':'Gestión de Costos','monotributo':'Monotributo','despidos':'Indemnización','vencimientos':'Vencimientos'};
+  var seg=(location.pathname.replace(/^\/rindex-herramientas\/?/,'').split('/')[0]||'');
+  var tool=nombres[seg]||seg||'Inicio';
+  function send(nombre){
+    var p='uso/'+tool+' · '+nombre;
+    var go=function(){try{window.goatcounter.count({path:p,title:p,event:true});}catch(e){}};
+    if(window.goatcounter&&window.goatcounter.count)go();else setTimeout(function(){if(window.goatcounter&&window.goatcounter.count)go();},1500);
+  }
+  var usado=false;
+  function marcarUso(e){
+    var t=e.target;if(!t||!t.tagName)return;
+    if(t.type==='file'){send('subió archivo');}
+    if(!usado&&/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)){usado=true;send('usó la herramienta');}
+  }
+  document.addEventListener('change',marcarUso,true);
+  document.addEventListener('input',marcarUso,true);
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('button,a.btn,input[type=submit],input[type=button]');
+    if(!b)return;
+    var txt=(b.innerText||b.value||b.getAttribute('aria-label')||'').replace(/\s+/g,' ').trim().slice(0,40);
+    if(!txt||/^[×✕x]$/i.test(txt))return;
+    send('botón: '+txt);
+  },true);
+})();
+</script>
+<!-- Fin GoatCounter -->
 </body>
 </html>
