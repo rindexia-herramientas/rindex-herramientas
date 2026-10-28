@@ -386,7 +386,8 @@ function calcular(){
   // Sumas no remunerativas del acuerdo (proporcionales a la jornada)
   const usaNR = chk('chk_nr_acuerdo') && esc;
   const nrAcuerdo = usaNR ? esc.nr * f : 0;
-  const extAcuerdo = usaNR ? esc.ext * f : 0;   // sin antigüedad ni presentismo
+  const extAcuerdo = usaNR ? esc.ext * f : 0;   // sin antigüedad ni presentismo, proporcional a la jornada
+  const extConcepto = (esc && esc.ext_concepto) || 'Asignación extraordinaria única';
   const antigNR = nrAcuerdo * 0.01 * anios;
 
   const pres = chk('chk_presentismo');
@@ -454,7 +455,7 @@ function calcular(){
   return {
     f, basicoFull, basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
     ferNoMonto, ferSiMonto, ferSiNR, vacMonto, vacNR, presentismoMonto, presentismoNR,
-    nrAcuerdo, antigNR, extAcuerdo,
+    nrAcuerdo, antigNR, extAcuerdo, extConcepto,
     horasMes, he50, he100, valorHora, valorHoraNR, he50Monto, he100Monto, he50NR, he100NR, art101, detraccion, inacap,
     remuExtraSum, totalRemuAntesSac, esMesSac, sacMonto, totalRemunerativo,
     noRemuSum, totalBruto,
@@ -493,14 +494,14 @@ function aplicarEscala(){
   }
   if(!basicoManual) document.getElementById('basico').value = esc.basicos[cat];
   const [y,m] = esc.clave.split('-');
-  let txt = esc.estado === 'proyeccion' ? '⚠️ Proyección, verificá la escala oficial. ' : '✓ Escala oficial FAECYS. ';
+  let txt = esc.estado === 'proyeccion' ? '⚠️ Proyección, verificá la escala oficial. ' : esc.estado === 'acuerdo' ? '✓ Acuerdo salarial firmado (escala calculada; falta la planilla oficial FAECYS). ' : '✓ Escala oficial FAECYS. ';
   if(esc.repetida) txt = (esc.estado === 'proyeccion' ? '⚠️ ' : '') + `Se repite la última escala publicada (${MESES_TXT[+m-1]} ${y}) hasta que salga el nuevo acuerdo. `;
   txt += esc.nota ? esc.nota + ' ' : '';
   txt += `Actualizada al ${fechaCorta(ESCALAS.actualizado)}.`;
   if(basicoManual) txt = 'Básico cargado a mano. ' + txt;
   if(ESCALAS.pendiente_actualizacion) txt += ' Hay una planilla nueva en revisión.';
   el.textContent = txt;
-  nrEl.textContent = `Este período: $ ${fmt(esc.nr)} no remunerativo` + (esc.ext ? ` + $ ${fmt(esc.ext)} asignación extraordinaria` : '') + ' (jornada completa).';
+  nrEl.textContent = `Este período: $ ${fmt(esc.nr)} no remunerativo` + (esc.ext ? ` + $ ${fmt(esc.ext)} ${esc.ext_concepto || 'asignación extraordinaria'}` : '') + ' (jornada completa).';
 }
 fetch('../assets/escalas-comercio.json', {cache:'no-store'})
   .then(r => r.ok ? r.json() : null)
@@ -541,7 +542,7 @@ function render(){
     if(r.antigNR>0) remuHtml += row('Antigüedad s/ no remunerativo', r.antigNR, 'no remunerativo — '+r.anios+' año(s)');
     if(r.presentismoNR>0) remuHtml += row('Presentismo s/ no remunerativo', r.presentismoNR, 'no remunerativo — 8,33%');
   }
-  if(r.extAcuerdo>0) remuHtml += row('Asignación extraordinaria única', r.extAcuerdo, 'no remunerativo — sin antigüedad ni presentismo');
+  if(r.extAcuerdo>0) remuHtml += row(r.extConcepto, r.extAcuerdo, 'no remunerativo — sin antigüedad ni presentismo');
   if(r.ferSiNR>0) remuHtml += row('Feriado trabajado (no rem.)', r.ferSiNR, 'no remunerativo — ÷25');
   if(r.vacNR>0) remuHtml += row('Plus vacaciones (no rem.)', r.vacNR, 'no remunerativo');
   if(r.he50NR>0) remuHtml += row('Horas extras al 50% (no rem.)', r.he50NR, 'no remunerativo — '+r.he50+' h × 1,5');
