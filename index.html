@@ -94,6 +94,7 @@ table.rtable td.num{text-align:right;}
 tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-oscuro);font-size:7.6px;}
 .subtitle{color:var(--azul-medio);font-weight:bold;font-size:7.4px;margin-top:3.5px;}
 .rubros{display:flex;margin-top:4px;}
+.rtable td.subrow{background:var(--celeste-bg2);color:var(--azul-medio);}
 .rubros .cell{flex:1;border:1px solid var(--gris-linea);text-align:center;padding:2px 1px;font-size:5.8px;}
 .rubros .cell.nombre{background:var(--celeste-bg2);color:var(--azul-medio);font-weight:bold;border-bottom:none;}
 .rubros .cell.pct{border-top:none;font-style:italic;}
@@ -302,8 +303,11 @@ tr.total-row td{background:var(--celeste-bg2);font-weight:bold;color:var(--azul-
         <div class="pct-row"><label>ART fijo ($)</label><input type="number" id="art_fijo" value="1971" step="0.01"></div>
         <div class="pct-row"><label>ART variable (%)</label><input type="number" id="art_pct" value="3" step="0.01"></div>
         <div class="pct-row"><label>Seguro de vida (Dto. 1567/74) ($)</label><input type="number" id="seguro_vida" value="424.62" step="0.01"></div>
-        <div class="pct-row"><label>INACAP + Seg. Vida + OSECAC + La Estrella (%) s/remunerativo</label><input type="number" id="inacap_pct" value="1.6" step="0.01"></div>
-        <div class="pct-row"><label>INACAP + Seg. Vida + OSECAC + La Estrella fijo ($)</label><input type="number" id="inacap_fijo" value="35203.81" step="0.01"></div>
+        <div class="pct-row"><label>INACAP ($ fijo, CCT)</label><input type="number" id="inacap_fijo" value="6043.37" step="0.01"></div>
+        <div class="pct-row"><label>Contribución OSECAC ($ fijo, CCT)</label><input type="number" id="osecac_fijo" value="28000" step="0.01"></div>
+        <div class="pct-row"><label>Seguro de Retiro La Estrella (%) s/remunerativo</label><input type="number" id="estrella_pct" value="1.6" step="0.01"></div>
+        <div class="pct-row"><label>Seguro de Vida CCT 130/75 ($ fijo)</label><input type="number" id="segvida_cct" value="7203.81" step="0.01"></div>
+        <div class="pct-row"><label>INSSJP incluido en la contrib. de seg. social (%)</label><input type="number" id="pct_inssjp_emp" value="1.59" step="0.01"></div>
         <div class="pct-row"><label>Detracción Ley 27.430 ($, jornada completa)</label><input type="number" id="detraccion" value="7003.68" step="0.01"></div>
       </fieldset>
     </details>
@@ -482,14 +486,16 @@ function calcular(){
   const noRemuSum = RN + extAcuerdo + ferSiNR + vacNR + he50NR + he100NR + noRemuManual;
   const totalBruto = totalRemunerativo + noRemuSum;
 
+  // La suma única de revisión (extAcuerdo) no integra la base de obra social, aportes sindicales ni ART
+  const baseOS = totalBruto - extAcuerdo;
   const jub = totalRemunerativo * num('pct_jub')/100;
   const ley19032 = totalRemunerativo * num('pct_ley19032')/100;
-  const os = totalBruto * num('pct_os')/100;
-  const osRed = (chk('chk_osred') && f < 1) ? (totalBruto/f - totalBruto) * num('pct_os')/100 : 0;
+  const os = baseOS * num('pct_os')/100;
+  const osRed = (chk('chk_osred') && f < 1) ? (baseOS/f - baseOS) * num('pct_os')/100 : 0;
   const afiliado = chk('chk_afiliado');
-  const sind = afiliado ? totalBruto * num('pct_sind')/100 : 0;
-  const faecys = afiliado ? totalBruto * num('pct_faecys')/100 : 0;
-  const art101 = chk('chk_art101') ? (totalBruto/f) * num('pct_art101')/100 : 0;   // cuota afiliado, s/ bruto a jornada completa
+  const sind = afiliado ? baseOS * num('pct_sind')/100 : 0;
+  const faecys = afiliado ? baseOS * num('pct_faecys')/100 : 0;
+  const art101 = chk('chk_art101') ? (baseOS/f) * num('pct_art101')/100 : 0;   // cuota afiliado, s/ bruto a jornada completa
   const osecac = chk('chk_osecac') ? num('monto_osecac') : 0;
   const deducExtraSum = deducExtra.reduce((a,r)=>a+(r.m||0), 0);
   const totalDeducciones = jub+ley19032+os+osRed+sind+faecys+art101+osecac+deducExtraSum;
@@ -500,10 +506,15 @@ function calcular(){
   const hay = totalRemunerativo > 0;
   const detraccion = hay ? Math.min(num('detraccion') * f, totalRemunerativo) : 0;   // Ley 27.430, proporcional a la jornada
   const jubFne = (totalRemunerativo - detraccion) * num('pct_jubfne')/100;
-  const osPatr = (totalBruto/f) * num('pct_ospatr')/100;   // s/ bruto (rem. + no rem.) a jornada completa
-  const art = hay ? num('art_fijo') + totalBruto * num('art_pct')/100 : 0;
+  const osPatr = (baseOS/f) * num('pct_ospatr')/100;   // s/ bruto (sin suma única) a jornada completa
+  const art = hay ? num('art_fijo') + baseOS * num('art_pct')/100 : 0;
   const seguroVida = hay ? num('seguro_vida') : 0;
-  const inacap = hay ? num('inacap_fijo') + totalRemunerativo * num('inacap_pct')/100 : 0;
+  const inacapF = hay ? num('inacap_fijo') : 0;
+  const osecacC = hay ? num('osecac_fijo') : 0;
+  const estrella = hay ? totalRemunerativo * num('estrella_pct')/100 : 0;
+  const segVidaCCT = hay ? num('segvida_cct') : 0;
+  const inacap = inacapF + osecacC + estrella + segVidaCCT;   // total costo derivado del CCT
+  const inssjpEmp = (totalRemunerativo - detraccion) * num('pct_inssjp_emp')/100;   // parte INSSJP dentro de la contrib. de seg. social
   const totalContrib = jubFne + osPatr + art + seguroVida + inacap;
   const costoLaboral = totalBruto + totalContrib;
 
@@ -511,7 +522,7 @@ function calcular(){
     f, basicoFull, basico, anios, antiguedadMonto, valorDia, ferNo, ferSi, vac,
     ferNoMonto, ferSiMonto, ferSiNR, vacMonto, vacNR, presentismoMonto, presentismoNR,
     nrAcuerdo, antigNR, extAcuerdo, extConcepto,
-    horasMes, he50, he100, valorHora, valorHoraNR, he50Monto, he100Monto, he50NR, he100NR, art101, detraccion, inacap,
+    horasMes, he50, he100, valorHora, valorHoraNR, he50Monto, he100Monto, he50NR, he100NR, art101, detraccion, inacap, baseOS, inacapF, osecacC, estrella, segVidaCCT, inssjpEmp,
     remuExtraSum, totalRemuAntesSac, esMesSac, sacMonto, totalRemunerativo,
     noRemuSum, totalBruto,
     jub, ley19032, os, osRed, sind, faecys, osecac, deducExtraSum, totalDeducciones,
@@ -622,28 +633,36 @@ function render(){
     <div class="section-title"><div>2. CONTRIBUCIONES A CARGO DEL EMPLEADOR</div><div class="cita">Art. 140 inc. j LCT — se expone ANTES del bruto</div></div>
     <table class="rtable">
       <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
-      ${trow('Jubilación + F.N. Empleo + Asig.Fam. (Dto. 814/2001) — rem. menos detracción '+money(r.detraccion), money(r.totalRemunerativo - r.detraccion), num('pct_jubfne')+'%', r.jubFne)}
-      ${trow('Obra Social patronal (bruto a jornada completa)', money(r.totalBruto/(r.f||1)), num('pct_ospatr')+'%', r.osPatr)}
-      ${trow('A.R.T. + FFEP', money(r.totalBruto), 'fijo+'+num('art_pct')+'%', r.art)}
-      ${trow('Seguro de vida (Dto. 1567/74)', '—', '$ fijo', r.seguroVida)}
-      ${trow('INACAP + Seg. Vida + OSECAC + La Estrella', money(r.totalRemunerativo), num('inacap_pct')+'% + fijo', r.inacap)}
+      ${trow('A.R.T. + FFEP', money(r.baseOS), '$ '+fmt(num('art_fijo'))+' + '+num('art_pct')+'%', r.art)}
+      ${trow('Contribución Jubilación / SIPA (incluye F.N. Empleo, Asig. Fam. e INSSJP) — rem. menos detracción '+money(r.detraccion), money(r.totalRemunerativo - r.detraccion), num('pct_jubfne')+'%', r.jubFne)}
+      ${trow('Contribución Obra Social', money(r.baseOS/(r.f||1)), num('pct_ospatr')+'%', r.osPatr)}
+      ${trow('Seguro de Vida Obligatorio (Dto. 1567/74)', '—', '$ fijo', r.seguroVida)}
+      <tr><td colspan="4" class="subrow"><b>Costo derivado del CCT 130/75</b></td></tr>
+      ${trow('INACAP', '—', '$ fijo', r.inacapF)}
+      ${trow('Contribución OSECAC', '—', '$ fijo', r.osecacC)}
+      ${trow('Seguro de Retiro La Estrella', money(r.totalRemunerativo), num('estrella_pct')+'%', r.estrella)}
+      ${trow('Seguro de Vida CCT 130/75', '—', '$ fijo', r.segVidaCCT)}
       ${totalRow('TOTAL CONTRIBUCIONES DEL EMPLEADOR', r.totalContrib)}
     </table>
 
-    <div class="section-title"><div>2.1 RESUMEN — COMPOSICIÓN DEL COSTO LABORAL TOTAL</div><div class="cita">agrupado por rubro</div></div>
-    <div class="rubros">
-      <div class="cell nombre">Sindical</div><div class="cell nombre">Seg. Social</div><div class="cell nombre">Obra Social</div>
-      <div class="cell nombre">I.N.S.S.J.P.</div><div class="cell nombre">A.R.T.</div><div class="cell nombre">Cámaras</div><div class="cell nombre">Otros</div>
-    </div>
-    <div class="rubros">
-      <div class="cell pct">0,0%</div>
-      <div class="cell pct">${(r.jubFne/(r.totalContrib||1)*100).toFixed(1)}%</div>
-      <div class="cell pct">${(r.osPatr/(r.totalContrib||1)*100).toFixed(1)}%</div>
-      <div class="cell pct">0,0%</div>
-      <div class="cell pct">${(r.art/(r.totalContrib||1)*100).toFixed(1)}%</div>
-      <div class="cell pct">0,0%</div>
-      <div class="cell pct">${((r.seguroVida+r.inacap)/(r.totalContrib||1)*100).toFixed(1)}%</div>
-    </div>
+    <div class="section-title"><div>2.1 RESUMEN — COMPOSICIÓN DEL COSTO LABORAL TOTAL</div><div class="cita">aportes del trabajador y contribuciones del empleador, por rubro</div></div>
+    ${(() => {
+      const rub = [
+        ['Sindical (INACAP, OSECAC fijo, La Estrella, Seg. Vida CCT / Art. 100, FAECyS, Art. 101)', r.inacap, r.sind + r.faecys + r.art101],
+        ['Seguridad social (SIPA, F.N. Empleo, Asig. Fam. / Jubilación)', r.jubFne - r.inssjpEmp, r.jub],
+        ['Obra social', r.osPatr, r.os + r.osRed + r.osecac],
+        ['INSSJP (PAMI / Ley 19.032)', r.inssjpEmp, r.ley19032],
+        ['A.R.T. + FFEP', r.art, 0],
+        ['Seguro de Vida Obligatorio', r.seguroVida, 0],
+      ];
+      const otros = r.totalDeducciones - rub.reduce((a,x)=>a+x[2],0);
+      if(Math.abs(otros) > 0.004) rub.push(['Otras deducciones', 0, otros]);
+      return `<table class="rtable">
+        <tr><th>Rubro</th><th>Empleador</th><th>Trabajador</th><th>Total</th></tr>
+        ${rub.map(x => `<tr><td>${x[0]}</td><td class="num">${money(x[1])}</td><td class="num">${money(x[2])}</td><td class="num">${money(x[1]+x[2])}</td></tr>`).join('')}
+        <tr class="total-row"><td>TOTAL</td><td class="num">${money(r.totalContrib)}</td><td class="num">${money(r.totalDeducciones)}</td><td class="num">${money(r.totalContrib + r.totalDeducciones)}</td></tr>
+      </table>`;
+    })()}
     <div class="pie-wrap">
       ${pieSVG(r.neto, r.totalDeducciones, r.totalContrib)}
       <div class="pie-legend">
@@ -689,12 +708,12 @@ function render(){
       <tr><th>Concepto</th><th>Base de cálculo</th><th>Unidad</th><th>Monto</th></tr>
       ${trow('Jubilación', money(r.totalRemunerativo), num('pct_jub')+'%', r.jub)}
       ${trow('Ley 19.032 (INSSJP)', money(r.totalRemunerativo), num('pct_ley19032')+'%', r.ley19032)}
-      ${trow('Obra Social', money(r.totalBruto), num('pct_os')+'%', r.os)}
-      ${r.osRed>0 ? trow('Obra Social dif. jornada reducida', money(r.totalBruto/r.f - r.totalBruto), num('pct_os')+'%', r.osRed) : ''}
+      ${trow('Obra Social', money(r.baseOS), num('pct_os')+'%', r.os)}
+      ${r.osRed>0 ? trow('Obra Social dif. jornada reducida', money(r.baseOS/r.f - r.baseOS), num('pct_os')+'%', r.osRed) : ''}
       ${chk('chk_osecac') ? trow('OSECAC Aporte Voluntario', '—', '$ fijo', r.osecac) : ''}
-      ${r.afiliado ? trow('Sindicato Art. 100', money(r.totalBruto), num('pct_sind')+'%', r.sind) : ''}
-      ${r.afiliado ? trow('Faecys', money(r.totalBruto), num('pct_faecys')+'%', r.faecys) : ''}
-      ${r.art101>0 ? trow('Cuota afiliado Art. 101', money(r.totalBruto/r.f), num('pct_art101')+'%', r.art101) : ''}
+      ${r.afiliado ? trow('Sindicato Art. 100', money(r.baseOS), num('pct_sind')+'%', r.sind) : ''}
+      ${r.afiliado ? trow('Faecys', money(r.baseOS), num('pct_faecys')+'%', r.faecys) : ''}
+      ${r.art101>0 ? trow('Cuota afiliado Art. 101', money(r.baseOS/r.f), num('pct_art101')+'%', r.art101) : ''}
       ${deducExtra.map(x => trow(x.c || '[concepto]', '—', '—', x.m)).join('')}
       ${totalRow('TOTAL DEDUCCIONES', r.totalDeducciones)}
     </table>
