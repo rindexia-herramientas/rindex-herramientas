@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://herramientas.rindexia.com/sitemap.xml
