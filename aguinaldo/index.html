@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de Aguinaldo (SAC) 2026 — Rindex</title>
+<meta name="description" content="Calculadora de aguinaldo gratis (Argentina): calculá el SAC completo o proporcional por días trabajados, con bruto, descuentos y neto estimado. Fechas de pago: 30/06 y 18/12.">
+<link rel="canonical" href="https://herramientas.rindexia.com/aguinaldo/">
+<meta property="og:title" content="Calculadora de Aguinaldo (SAC) 2026 — Rindex">
+<meta property="og:description" content="Calculá tu aguinaldo completo o proporcional en un minuto, con el neto estimado a cobrar. Gratis.">
+<meta property="og:url" content="https://herramientas.rindexia.com/aguinaldo/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://herramientas.rindexia.com/assets/logo-rindex.png">
+<link rel="icon" href="../assets/logo-rindex.png">
+<style>
+:root{
+  --navy:#1B1740; --navy2:#241E52; --violet:#7C3AED; --violet-soft:#A78BFA;
+  --pink:#EC4899; --grad: linear-gradient(120deg,#7C3AED 0%,#C026D3 55%,#EC4899 100%);
+  --bg:#F5F3FC; --card-bg:#FFFFFF; --line:#E4DEF7; --text:#241E3D; --text-soft:#6B6484;
+  --ok-bg:#F1EBFF;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;padding-bottom:48px;}
+h1,h2,h3{font-family:"Poppins","Segoe UI",Arial,sans-serif;}
+
+/* ---------- HEADER ---------- */
+header.top{
+  background:var(--navy);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(124,58,237,.35), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(236,72,153,.30), transparent 50%);
+  color:#fff; padding:22px 20px 26px;
+}
+.top-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+.top-inner img{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+.top-title{display:flex;flex-direction:column;}
+.top-title .brand{font-size:20px;font-weight:700;letter-spacing:.3px;}
+.top-title .tag{font-size:12.5px;color:#CBB9FF;margin-top:1px;}
+.top-desc{max-width:1100px;margin:14px auto 0;font-size:13px;color:#D9CFFB;line-height:1.5;}
+
+/* ---------- AVISO LEGAL ---------- */
+.legal-banner{max-width:1100px;margin:16px auto 0;padding:0 18px;}
+.legal-banner .box{background:#FFF7DA;border:1px solid #F3DE9E;border-radius:12px;padding:12px 16px;font-size:11.5px;color:#946200;line-height:1.5;}
+.legal-banner .box b{color:#7A4E00;}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px;display:grid;
+  grid-template-columns:380px 1fr;gap:20px;align-items:flex-start;}
+@media (max-width:840px){ .wrap{grid-template-columns:1fr;} }
+
+/* ---------- FORM CARD ---------- */
+.card{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;
+  padding:18px 18px 20px;box-shadow:0 4px 18px rgba(76,29,149,.06);}
+.card h2{font-size:14.5px;color:var(--navy);margin:0 0 2px;}
+.card p.sub{font-size:11.5px;color:var(--text-soft);margin:0 0 14px;}
+fieldset{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;padding:10px 12px 13px;}
+legend{font-weight:700;color:var(--violet);font-size:11.5px;padding:0 6px;}
+label{display:block;font-size:11px;margin-top:8px;color:var(--text);font-weight:600;}
+label.inline{display:inline-flex;align-items:center;gap:6px;font-weight:600;margin-top:9px;}
+input[type=text],input[type=number],input[type=date],select{
+  width:100%;padding:7px 8px;font-size:12.5px;border:1px solid var(--line);border-radius:8px;
+  margin-top:3px;font-family:inherit;background:#FBFAFF;color:var(--text);}
+input:focus,select:focus{outline:none;border-color:var(--violet-soft);background:#fff;}
+input[type=checkbox]{width:14px;height:14px;accent-color:var(--violet);}
+.hint{font-size:9.5px;color:var(--text-soft);margin-top:3px;line-height:1.35;}
+
+/* ---------- RESULTADOS ---------- */
+.total-card{background:var(--grad);border-radius:18px;padding:22px 24px;color:#fff;
+  box-shadow:0 10px 26px rgba(124,58,237,.28);position:relative;overflow:hidden;}
+.total-card .lbl{font-size:12.5px;opacity:.9;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+.total-card .val{font-size:38px;font-weight:800;margin-top:4px;letter-spacing:.2px;}
+.total-card .sub{font-size:11px;opacity:.85;margin-top:8px;line-height:1.4;}
+.total-card .robot{position:absolute;right:14px;bottom:-10px;width:78px;height:78px;opacity:.16;}
+
+.detalle{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:16px 18px 8px;margin-top:14px;}
+.detalle h3{font-size:13px;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:7px;}
+.detalle h3::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--grad);display:inline-block;}
+table.dtable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
+table.dtable td{padding:6px 4px;border-bottom:1px solid var(--line);}
+table.dtable td.num{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap;}
+table.dtable tr.total td{font-weight:800;color:var(--violet);border-bottom:none;border-top:1.5px solid var(--violet-soft);}
+table.dtable td.concepto{color:var(--text);}
+table.dtable td.small{font-size:10px;color:var(--text-soft);}
+
+.aviso-prueba{background:#E9FBEF;border:1px solid #B7EDC7;border-radius:14px;padding:16px 18px;color:#1D8A4C;font-size:13px;line-height:1.5;margin-top:14px;}
+
+.footnote{font-size:10.5px;color:var(--text-soft);text-align:center;margin-top:22px;line-height:1.5;}
+.footnote a{color:var(--violet);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <img src="../assets/logo-rindex.png" alt="Rindex">
+    <div class="top-title">
+      <span class="brand">Rindex · Calculadora de Aguinaldo (SAC)</span>
+      <span class="tag">La IA que te paga en horas</span>
+    </div>
+  </div>
+  <p class="top-desc">Cargá tu mejor sueldo del semestre y mirá al instante cuánto te corresponde de aguinaldo: completo o proporcional a los días trabajados, con el bruto, los descuentos y el neto estimado a cobrar.</p>
+</header>
+
+<div class="legal-banner">
+  <div class="box">
+    ℹ️ <b>Cómo se calcula:</b> el aguinaldo es el 50% de la mayor remuneración mensual del semestre (Ley 23.041 y arts. 121 a 123 de la LCT). Si no trabajaste el semestre completo, se paga proporcional a los días trabajados. La reforma laboral (Ley 27.802) no cambió este esquema. El resultado es orientativo y no incluye la retención de Ganancias, si te corresponde.
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ FORMULARIO ============ -->
+  <div class="card">
+    <h2>Datos para calcular</h2>
+    <p class="sub">Trabajadores en relación de dependencia — Argentina</p>
+
+    <fieldset>
+      <legend>Semestre</legend>
+      <label>¿Qué aguinaldo querés calcular?</label>
+      <select id="semestre"></select>
+      <p class="hint" id="hint_semestre"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sueldo</legend>
+      <label>Mejor sueldo bruto del semestre ($)</label>
+      <input type="number" id="mejor_rem" placeholder="0.00" step="0.01" min="0">
+      <p class="hint">El sueldo bruto mensual más alto del semestre, con todos los conceptos remunerativos: básico, antigüedad, presentismo, horas extra, comisiones y adicionales. No se suman las vacaciones ni el aguinaldo anterior.</p>
+      <label>Sumas no remunerativas de ese mes ($) <span style="font-weight:400;color:var(--text-soft)">— opcional</span></label>
+      <input type="number" id="mejor_nr" placeholder="0.00" step="0.01" min="0">
+      <p class="hint">Solo si tu convenio dice que integran el aguinaldo. Por ejemplo, en <b>Comercio</b> las sumas no remunerativas de los acuerdos salariales se incluyen.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Días trabajados</legend>
+      <label class="inline"><input type="checkbox" id="chk_completo" checked> Trabajé el semestre completo</label>
+      <div id="box_parcial" style="display:none;">
+        <label>Fecha de ingreso <span style="font-weight:400;color:var(--text-soft)">— si entraste durante el semestre</span></label>
+        <input type="date" id="f_ingreso">
+        <label>Fecha de egreso <span style="font-weight:400;color:var(--text-soft)">— si te fuiste durante el semestre</span></label>
+        <input type="date" id="f_egreso">
+      </div>
+      <label>Días no computables</label>
+      <input type="number" id="dias_desc" placeholder="0" step="1" min="0">
+      <p class="hint">Licencias sin goce de sueldo, suspensiones o faltas injustificadas del semestre. Las vacaciones, feriados y licencias pagas sí cuentan como trabajados.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Descuentos</legend>
+      <label class="inline"><input type="checkbox" id="chk_aportes" checked> Descontar aportes (jubilación 11%, PAMI 3%, obra social 3%)</label>
+      <label class="inline"><input type="checkbox" id="chk_comercio"> Soy empleado de Comercio (CCT 130/75)</label>
+      <p class="hint">Suma el aporte solidario al sindicato (2%) y a FAECYS (0,5%), que se descuentan aunque no estés afiliado.</p>
+      <label>Cuota sindical de afiliado (%) <span style="font-weight:400;color:var(--text-soft)">— opcional</span></label>
+      <input type="number" id="cuota_sind" placeholder="0" step="0.1" min="0" max="10">
+    </fieldset>
+  </div>
+
+  <!-- ============ RESULTADOS ============ -->
+  <div>
+    <div class="total-card">
+      <div class="lbl">Aguinaldo neto estimado</div>
+      <div class="val" id="out_neto">$ 0,00</div>
+      <div class="sub" id="out_txt">Completá tu mejor sueldo del semestre para ver el cálculo.</div>
+      <svg class="robot" viewBox="0 0 100 100"><circle cx="50" cy="35" r="22" fill="#fff"/><rect x="30" y="55" width="40" height="35" rx="10" fill="#fff"/></svg>
+    </div>
+
+    <div class="detalle">
+      <h3>Detalle del cálculo</h3>
+      <table class="dtable" id="tbl_detalle"></table>
+    </div>
+
+    <div class="detalle">
+      <h3>Fechas de pago</h3>
+      <table class="dtable">
+        <tr><td class="concepto">Primera cuota (enero a junio)</td><td class="num">hasta el 30/06</td></tr>
+        <tr><td class="concepto">Segunda cuota (julio a diciembre)</td><td class="num">hasta el 18/12</td></tr>
+        <tr><td class="concepto small" colspan="2">La ley le da al empleador hasta 4 días hábiles más de tolerancia. Si te vas antes de que termine el semestre, el proporcional se cobra con la liquidación final.</td></tr>
+      </table>
+    </div>
+
+    <p class="footnote">Fórmula: aguinaldo = mejor remuneración del semestre ÷ 2 × días trabajados ÷ días del semestre. No contempla la retención de Ganancias ni particularidades de convenios distintos de Comercio. Para casos puntuales, consultá con tu contador o liquidador de sueldos. ¿Necesitás el recibo completo? Usá el <a href="../" target="_blank" rel="noopener">liquidador de sueldos</a>.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function money(n){ return '$ ' + (n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function pct(n){ return n.toLocaleString('es-AR',{maximumFractionDigits:2}) + '%'; }
+  function num(id){ var v=parseFloat(document.getElementById(id).value); return isNaN(v)||v<0 ? 0 : v; }
+  function $(id){ return document.getElementById(id); }
+  function fecha(id){ var v=$(id).value; return v ? new Date(v+'T00:00:00') : null; }
+  function ddmmaa(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+String(d.getFullYear()).slice(-2); }
+  function dias(a,b){ return Math.round((b-a)/86400000)+1; } /* ambos días incluidos */
+
+  /* Opciones de semestre: el actual, el anterior y el siguiente */
+  var hoy=new Date(), y=hoy.getFullYear(), s=hoy.getMonth()<6?1:2;
+  var ops=[];
+  [[y,s],[s===1?y-1:y, s===1?2:1],[s===2?y+1:y, s===2?1:2]].forEach(function(p){
+    ops.push({y:p[0], s:p[1]});
+  });
+  ops.sort(function(a,b){ return (b.y*10+b.s)-(a.y*10+a.s); });
+  ops.forEach(function(o){
+    var opt=document.createElement('option');
+    opt.value=o.y+'-'+o.s;
+    opt.textContent=(o.s===1?'1ª cuota · enero a junio ':'2ª cuota · julio a diciembre ')+o.y;
+    if(o.y===y && o.s===s) opt.selected=true;
+    $('semestre').appendChild(opt);
+  });
+
+  function periodo(){
+    var p=$('semestre').value.split('-'), yy=+p[0], ss=+p[1];
+    var ini = ss===1 ? new Date(yy,0,1) : new Date(yy,6,1);
+    var fin = ss===1 ? new Date(yy,5,30) : new Date(yy,11,31);
+    var pago = ss===1 ? new Date(yy,5,30) : new Date(yy,11,18);
+    return {ini:ini, fin:fin, pago:pago, total:dias(ini,fin), y:yy, s:ss};
+  }
+
+  function fila(c, v, cls){ return '<tr'+(cls?' class="'+cls+'"':'')+'><td class="concepto">'+c+'</td><td class="num">'+v+'</td></tr>'; }
+
+  function render(){
+    var P=periodo();
+    $('hint_semestre').textContent='Período: '+ddmmaa(P.ini)+' al '+ddmmaa(P.fin)+' ('+P.total+' días). Vence el '+ddmmaa(P.pago)+'.';
+    $('box_parcial').style.display = $('chk_completo').checked ? 'none' : 'block';
+
+    var rem=num('mejor_rem'), nr=num('mejor_nr');
+    var desde=P.ini, hasta=P.fin, aviso='';
+    if(!$('chk_completo').checked){
+      var fi=fecha('f_ingreso'), fe=fecha('f_egreso');
+      if(fi && fi>desde) desde=fi;
+      if(fe && fe<hasta) hasta=fe;
+      if((fi && fi>P.fin) || (fe && fe<P.ini)) aviso='Las fechas quedan fuera del semestre elegido.';
+    }
+    var egresa = hasta<P.fin;
+    var trab = hasta>=desde ? dias(desde,hasta) : 0;
+    trab = Math.max(0, trab - Math.round(num('dias_desc')));
+    if(trab>P.total) trab=P.total;
+    var prop = P.total ? trab/P.total : 0;
+
+    var sacRem = rem/2*prop, sacNr = nr/2*prop, bruto = sacRem+sacNr;
+
+    var t='';
+    t+=fila('Mejor sueldo bruto del semestre', money(rem));
+    if(nr>0) t+=fila('Sumas no remunerativas de ese mes', money(nr));
+    t+=fila('Días computados', trab+' de '+P.total+(prop<1?' ('+pct(prop*100)+')':''));
+    t+=fila('Aguinaldo remunerativo', money(sacRem));
+    if(nr>0) t+=fila('Aguinaldo no remunerativo', money(sacNr));
+    t+=fila('<b>Aguinaldo bruto</b>', money(bruto), 'total');
+
+    var desc=0, filas='';
+    if($('chk_aportes').checked){
+      [['Jubilación',11],['Ley 19.032 (PAMI)',3]].forEach(function(a){
+        var m=sacRem*a[1]/100; desc+=m; filas+=fila(a[0]+' ('+pct(a[1])+')','− '+money(m));
+      });
+      var os=bruto*3/100; desc+=os; filas+=fila('Obra social (3%)','− '+money(os));
+    }
+    if($('chk_comercio').checked){
+      [['Aporte solidario sindicato (art. 100)',2],['FAECYS (art. 100)',0.5]].forEach(function(a){
+        var m=bruto*a[1]/100; desc+=m; filas+=fila(a[0]+' ('+pct(a[1])+')','− '+money(m));
+      });
+    }
+    var cs=num('cuota_sind');
+    if(cs>0){ var m=bruto*cs/100; desc+=m; filas+=fila('Cuota sindical ('+pct(cs)+')','− '+money(m)); }
+    if(filas){ t+=filas; t+=fila('Total descuentos','− '+money(desc)); }
+    var neto=bruto-desc;
+    t+=fila('<b>Neto estimado a cobrar</b>', money(neto), 'total');
+    $('tbl_detalle').innerHTML=t;
+
+    $('out_neto').textContent=money(neto);
+    if(!rem){ $('out_txt').textContent='Completá tu mejor sueldo del semestre para ver el cálculo.'; }
+    else{
+      $('out_txt').textContent = aviso || ('Bruto: '+money(bruto)+(prop<1?' · proporcional a '+trab+' días':' · semestre completo')
+        +(egresa ? ' · se cobra con la liquidación final.' : ' · se cobra hasta el '+ddmmaa(P.pago)+'.'));
+    }
+  }
+
+  ['semestre','mejor_rem','mejor_nr','chk_completo','f_ingreso','f_egreso','dias_desc','chk_aportes','chk_comercio','cuota_sind']
+    .forEach(function(id){ $(id).addEventListener('input',render); $(id).addEventListener('change',render); });
+  render();
+})();
+</script>
+
+<style>
+.rindex-watermark{position:fixed;bottom:0;left:0;width:100%;background:#1B1740;color:#fff;text-align:center;
+  font-size:12px;padding:9px 14px;z-index:99999;box-shadow:0 -2px 10px rgba(0,0,0,.18);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;}
+.rindex-watermark a{color:#fff;font-weight:700;text-decoration:underline;}
+.rindex-watermark img{width:16px;height:16px;border-radius:50%;vertical-align:-3px;margin-right:6px;}
+@media print{.rindex-watermark{display:none !important;}}
+</style>
+<div class="rindex-watermark no-print"><img src="../assets/logo-rindex.png" alt="">📬 Recibí gratis los vencimientos de cada mes en tu mail — <a href="https://rindexia.com/vencimientos-por-mail/" target="_blank" rel="noopener">Suscribite acá</a> · <a href="https://rindexia.com/" target="_blank" rel="noopener">rindexia.com</a></div>
+<script src="../assets/rindex-share.js?v=2" defer></script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c52853c676a74cb69406e268342b1155"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- GoatCounter (privado: solo cuenta visitas y usos, no guarda datos cargados) -->
+<script data-goatcounter="https://rindex.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+(function(){
+  var nombres={'':'Inicio / Liquidador','convertidor':'Conversor','calculadora-sueldo':'Calculadora de Sueldo','control-costos':'Gestión de Costos','monotributo':'Monotributo','despidos':'Indemnización','vencimientos':'Vencimientos','aguinaldo':'Aguinaldo'};
+  var seg=(location.pathname.replace(/^\/rindex-herramientas\/?/,'').split('/')[0]||'');
+  var tool=nombres[seg]||seg||'Inicio';
+  function send(nombre){
+    var p='uso/'+tool+' · '+nombre;
+    var go=function(){try{window.goatcounter.count({path:p,title:p,event:true});}catch(e){}};
+    if(window.goatcounter&&window.goatcounter.count)go();else setTimeout(function(){if(window.goatcounter&&window.goatcounter.count)go();},1500);
+  }
+  var usado=false;
+  function marcarUso(e){
+    var t=e.target;if(!t||!t.tagName)return;
+    if(t.type==='file'){send('subió archivo');}
+    if(!usado&&/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)){usado=true;send('usó la herramienta');}
+  }
+  document.addEventListener('change',marcarUso,true);
+  document.addEventListener('input',marcarUso,true);
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('button,a.btn,input[type=submit],input[type=button]');
+    if(!b)return;
+    var txt=(b.innerText||b.value||b.getAttribute('aria-label')||'').replace(/\s+/g,' ').trim().slice(0,40);
+    if(!txt||/^[×✕x]$/i.test(txt))return;
+    send('botón: '+txt);
+  },true);
+})();
+</script>
+<!-- Fin GoatCounter -->
+</body>
+</html>

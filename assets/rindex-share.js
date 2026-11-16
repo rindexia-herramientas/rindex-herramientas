@@ -27,6 +27,8 @@
          res:function(){ var l=txt('#out_letra'), c=txt('#out_cuota'); return (vale(l)&&vale(c))?'Me dio categoría '+l+', cuota de '+c+' por mes':''; }},
     'vencimientos': {msg:'Mirá el calendario de vencimientos impositivos según tu CUIT (monotributo, IVA, autónomos y más), gratis 👇'},
     'control-costos': {msg:'Calculá el costo y el margen de ganancia de tus productos gratis, con reporte en PDF 👇'},
+    'aguinaldo': {msg:'Calculá tu aguinaldo completo o proporcional, con el neto a cobrar, gratis 👇',
+         res:function(){ var v=txt('#out_neto'); return vale(v)?'Me dio un aguinaldo neto de '+v:''; }},
     'convertidor': {msg:'Convertí, uní, dividí y comprimí PDFs e imágenes gratis y sin subir nada a internet 👇'}
   };
 
