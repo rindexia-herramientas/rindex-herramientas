@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asistente Rindex — ¿En qué te ayudo?</title>
+<meta name="description" content="Asistente gratis de Rindex: te lleva a la herramienta justa para calcular sueldos, monotributo, indemnización por despido, vencimientos impositivos y costos de tu negocio.">
+<link rel="canonical" href="https://herramientas.rindexia.com/asistente/">
+<meta property="og:title" content="Asistente Rindex — ¿En qué te ayudo?">
+<meta property="og:description" content="Contale qué necesitás y te lleva a la herramienta gratis justa: sueldos, monotributo, despidos, vencimientos y costos.">
+<meta property="og:url" content="https://herramientas.rindexia.com/asistente/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://herramientas.rindexia.com/assets/logo-rindex.png">
+<link rel="icon" href="../assets/logo-rindex.png">
+<style>
+:root{
+  --navy:#1B1740; --navy2:#241E52; --violet:#7C3AED; --violet-soft:#A78BFA;
+  --pink:#EC4899; --grad:linear-gradient(120deg,#7C3AED 0%,#C026D3 55%,#EC4899 100%);
+  --bg:#F5F3FC; --line:#E4DEF7; --text:#241E3D; --text-soft:#6B6484;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Poppins","Segoe UI",Arial,sans-serif;display:flex;flex-direction:column;}
+
+header.top{background:var(--navy);
+  background-image:radial-gradient(circle at 15% 20%,rgba(124,58,237,.35),transparent 45%),
+                   radial-gradient(circle at 85% 80%,rgba(236,72,153,.30),transparent 50%);
+  color:#fff;padding:14px 18px;flex:0 0 auto;}
+.top-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px;}
+.top-inner img{width:44px;height:44px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+.top-title{display:flex;flex-direction:column;flex:1;min-width:0;}
+.top-title .brand{font-size:17px;font-weight:700;}
+.top-title .tag{font-size:12px;color:#CBB9FF;display:flex;align-items:center;gap:6px;}
+.top-title .tag::before{content:"";width:8px;height:8px;border-radius:50%;background:#34D399;display:inline-block;}
+.top-links a{color:#fff;font-size:12.5px;text-decoration:none;border:1px solid rgba(255,255,255,.3);
+  padding:6px 11px;border-radius:999px;white-space:nowrap;}
+.top-links a:hover{background:rgba(255,255,255,.1);}
+
+main{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.chat{max-width:760px;margin:0 auto;padding:18px 14px 8px;display:flex;flex-direction:column;gap:10px;}
+
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:92%;animation:in .25s ease;}
+@keyframes in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.msg.bot img{width:30px;height:30px;border-radius:50%;flex:0 0 30px;}
+.bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-wrap:break-word;}
+.msg.bot .bubble{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px;
+  box-shadow:0 2px 10px rgba(76,29,149,.05);}
+.msg.user{align-self:flex-end;}
+.msg.user .bubble{background:var(--grad);color:#fff;border-bottom-right-radius:4px;}
+.bubble p{margin:0 0 6px;}
+.bubble p:last-child{margin-bottom:0;}
+.bubble b{color:var(--navy);}
+
+.actions{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.actions a{display:flex;align-items:center;gap:8px;text-decoration:none;font-size:13.5px;font-weight:600;
+  padding:9px 12px;border-radius:10px;}
+.actions a.main{background:var(--violet);color:#fff;}
+.actions a.main:hover{background:#6D28D9;}
+.actions a.sec{background:#F1EBFF;color:var(--violet);}
+.actions a.sec:hover{background:#E6DBFF;}
+
+.typing .bubble{display:flex;gap:4px;padding:13px 14px;}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--violet-soft);animation:blink 1s infinite;}
+.typing span:nth-child(2){animation-delay:.15s;} .typing span:nth-child(3){animation-delay:.3s;}
+@keyframes blink{0%,80%,100%{opacity:.3;}40%{opacity:1;}}
+
+.chips-wrap{flex:0 0 auto;background:var(--bg);border-top:1px solid var(--line);}
+.chips{max-width:760px;margin:0 auto;padding:10px 14px 4px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{flex:0 0 auto;background:#fff;border:1px solid var(--violet-soft);color:var(--violet);
+  border-radius:999px;padding:7px 13px;font:600 13px inherit;font-family:inherit;cursor:pointer;white-space:nowrap;}
+.chip:hover{background:#F1EBFF;}
+
+form.input{max-width:760px;margin:0 auto;padding:8px 14px 12px;display:flex;gap:8px;}
+form.input input{flex:1;min-width:0;padding:12px 14px;font-size:15px;border:1px solid var(--line);
+  border-radius:999px;font-family:inherit;background:#fff;color:var(--text);}
+form.input input:focus{outline:none;border-color:var(--violet-soft);}
+form.input button{flex:0 0 46px;height:46px;border:0;border-radius:50%;background:var(--grad);
+  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+form.input button svg{width:20px;height:20px;fill:#fff;}
+.foot{max-width:760px;margin:0 auto;padding:0 14px 12px;font-size:10.5px;color:var(--text-soft);text-align:center;line-height:1.4;}
+.foot a{color:var(--violet);}
+body.embed header.top{display:none;}
+body.embed .foot{display:none;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <img src="../assets/logo-rindex.png" alt="Rindex">
+    <div class="top-title">
+      <span class="brand">Asistente Rindex</span>
+      <span class="tag">Te respondo al toque</span>
+    </div>
+    <div class="top-links"><a href="https://rindexia.com/">← Volver al blog</a></div>
+  </div>
+</header>
+
+<main id="scroll"><div class="chat" id="chat" aria-live="polite"></div></main>
+
+<div class="chips-wrap">
+  <div class="chips" id="chips"></div>
+  <form class="input" id="form" autocomplete="off">
+    <input id="txt" type="text" placeholder="Escribí tu consulta… (ej: cuánto cobra un empleado de comercio)" aria-label="Escribí tu consulta" maxlength="300">
+    <button type="submit" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+  </form>
+  <div class="foot">Asistente automático con respuestas generales: no reemplaza el asesoramiento de un profesional. ¿Algo más puntual? Escribinos a <a href="mailto:hola@rindexia.com">hola@rindexia.com</a>.</div>
+</div>
+
+<script>
+(function(){
+  var H = 'https://herramientas.rindexia.com/';
+  var B = 'https://rindexia.com/';
+  var L = {
+    liquidador:  {t:'💸 Abrir el liquidador de sueldos', u:H},
+    calcSueldo:  {t:'🧮 Calculadora de sueldo (solo el neto)', u:H+'calculadora-sueldo/'},
+    mono:        {t:'🧾 Calculadora de monotributo', u:H+'monotributo/'},
+    despido:     {t:'⚖️ Calculadora de indemnización', u:H+'despidos/'},
+    venc:        {t:'🗓️ Calendario de vencimientos', u:H+'vencimientos/'},
+    costos:      {t:'📊 Gestión de costos de tu negocio', u:H+'control-costos/'},
+    conversor:   {t:'🗂️ Conversor de archivos (PDF e imágenes)', u:H+'convertidor/'},
+    mail:        {t:'📬 Recibir los vencimientos en mi mail', u:B+'vencimientos-por-mail/'},
+    todas:       {t:'🛠️ Ver todas las herramientas', u:B+'herramientas/'},
+    notaComercio:{t:'📖 Nota: cómo se calcula el sueldo de Comercio', u:B+'2026/11/16/como-calcular-sueldo-empleado-de-comercio/'},
+    notaMono:    {t:'📖 Nota: cómo saber tu categoría de monotributo', u:B+'2026/11/13/como-saber-categoria-monotributo/'},
+    notaDespido: {t:'📖 Nota: cómo se calcula la indemnización', u:B+'2026/11/13/como-calcular-indemnizacion-por-despido/'},
+    notaAuto:    {t:'📖 Nota: qué es automatizar y por dónde arrancar', u:B+'2026/11/10/que-es-automatizar-y-por-donde-arranca-tu-pyme-explicado-facil/'},
+    notaTop5:    {t:'📖 Nota: 5 apps con IA que te devuelven horas', u:B+'2026/08/19/top-5-apps-con-ia-que-te-devuelven-horas-de-vida/'},
+    blog:        {t:'📰 Ir al blog', u:B},
+    contacto:    {t:'✉️ Escribirnos', u:B+'contacto/'},
+    insta:       {t:'📷 Escribinos por Instagram', u:'https://www.instagram.com/rindex.ia/'}
+  };
+
+  /* Cada tema: palabras que lo activan, respuesta y botones (el primero es el principal). */
+  var TEMAS = [
+    {id:'aguinaldo', k:['aguinaldo','sac','medio aguinaldo','sueldo anual complementario'],
+     r:['El <b>aguinaldo (SAC)</b> es el 50% de la mejor remuneración mensual del semestre. Si no trabajaste el semestre completo, se paga proporcional a los días trabajados.',
+        'La segunda cuota vence el <b>18 de diciembre</b>. Estamos armando una calculadora de aguinaldo; mientras tanto, con el liquidador sacás la mejor remuneración del semestre.'],
+     a:['liquidador','notaComercio','mail']},
+    {id:'sueldo', k:['sueldo','salario','recibo','liquidar','liquidacion de sueldo','liquidador','neto','bruto','comercio','faecys','130/75','presentismo','antiguedad','cobra','cobrar','paritaria','escala','basico','horas extra','feriado','vacaciones','empleado','empleada','jornada'],
+     r:['Para sueldos tenés dos opciones gratis:',
+        '• El <b>liquidador</b> te arma el recibo completo en PDF (básico, antigüedad, presentismo, feriados, horas extra y descuentos).<br>• La <b>calculadora de sueldo</b> te da el neto rápido, sin el recibo.',
+        'Hoy están pensadas para el convenio de <b>Comercio (CCT 130/75)</b>.'],
+     a:['liquidador','calcSueldo','notaComercio']},
+    {id:'monotributo', k:['monotributo','monotributista','mono','categoria','recategorizacion','recategorizar','cuota mensual','facturacion anual','tope','arca','afip','monotributo social'],
+     r:['Con la <b>calculadora de monotributo</b> cargás lo que facturaste en los últimos 12 meses (y alquiler, superficie y energía si corresponde) y te dice en qué categoría estás y cuánto pagás por mes.',
+        'Recordá que la recategorización se hace dos veces por año: en <b>enero</b> y en <b>julio</b>.'],
+     a:['mono','notaMono','venc']},
+    {id:'despido', k:['despido','despidieron','despedir','echaron','echar','indemnizacion','indemnizar','preaviso','integracion','liquidacion final','renuncia','renunciar','art 245','245'],
+     r:['La <b>calculadora de indemnización</b> te estima cuánto corresponde por un despido sin causa: antigüedad, preaviso, integración del mes, vacaciones y aguinaldo proporcionales.',
+        'Es una estimación orientativa: si estás en un conflicto, consultalo con un abogado laboralista o con tu sindicato.'],
+     a:['despido','notaDespido','liquidador']},
+    {id:'vencimientos', k:['vencimiento','vencimientos','vence','vencen','fecha','fechas','calendario','iva','ganancias','autonomos','bienes personales','sicore','pagar impuestos','cuando pago','ddjj','declaracion jurada'],
+     r:['En el <b>calendario de vencimientos</b> ponés la terminación de tu CUIT y ves las fechas de monotributo, autónomos, IVA, ganancias, bienes personales y SICORE.',
+        'Y si querés que te lleguen solos, te los mandamos <b>gratis por mail</b> cada mes.'],
+     a:['venc','mail']},
+    {id:'costos', k:['costo','costos','precio','precios','margen','ganancia','rentabilidad','gastos','gasto fijo','gastos fijos','producto','productos','emprendimiento','negocio','vender','descuento'],
+     r:['La herramienta de <b>gestión de costos</b> te ayuda a calcular cuánto te cuesta cada producto, con qué margen vendés (con semáforo rojo, amarillo o verde) y cuánto aguanta un descuento.',
+        'Cargás ingresos, gastos fijos y variables, y te arma un reporte en PDF.'],
+     a:['costos','todas']},
+    {id:'conversor', k:['pdf','convertir','conversor','imagen','imagenes','foto','fotos','jpg','png','unir','juntar','dividir','separar','comprimir','achicar','zip','archivo','archivos','word','excel'],
+     r:['El <b>conversor de archivos</b> une, divide y comprime PDFs, y convierte imágenes, todo dentro de tu navegador: tus archivos no se suben a ningún lado.'],
+     a:['conversor','todas']},
+    {id:'ia', k:['ia','inteligencia artificial','automatizar','automatizacion','app','apps','aplicacion','aplicaciones','chatgpt','herramientas de ia','productividad','recomendame','recomendas','que app','review','resena'],
+     r:['En el blog probamos apps con IA y te contamos para qué sirve cada una. Decime qué necesitás resolver y te digo cuál conviene, por ejemplo:',
+        '🎙️ reuniones · 🗂️ tareas · 🗓️ agenda · ✍️ textos · 🔗 automatizar · 💬 WhatsApp e Instagram · 🌐 chat de la web · 📥 mails · 📈 ventas · 🛒 vender online · 📒 contabilidad · 🧾 facturar · 🪄 presentaciones · 🎬 videos · 🔊 voz'],
+     a:['notaAuto','notaTop5','blog']},
+    {id:'mail', k:['mail','correo','newsletter','suscribir','suscribirme','suscripcion','avisos','recordatorio','recordatorios','novedades'],
+     r:['Te mandamos <b>gratis</b> una vez por mes los vencimientos impositivos más importantes. Sin spam: te podés dar de baja cuando quieras.'],
+     a:['mail','venc']},
+    {id:'contacto', k:['contacto','contactar','hablar','persona','humano','asesor','asesoramiento','consulta puntual','ayuda personal','telefono','whatsapp rindex'],
+     r:['¡Claro! Para algo más puntual escribinos por mail a <b>hola@rindexia.com</b> o por Instagram a <b>@rindex.ia</b>, y te respondemos lo antes posible.'],
+     a:['contacto','insta']},
+    {id:'gracias', k:['gracias','genial','buenisimo','joya','barbaro','excelente','perfecto','listo','dale','ok'],
+     r:['¡De nada! 🙌 Si te sirvió, compartí Rindex con alguien que lo necesite. ¿Te ayudo con algo más?'],
+     a:['todas','mail'], menu:true},
+    {id:'hola', k:['hola','buenas','buen dia','buenos dias','buenas tardes','buenas noches','hey','que tal'],
+     r:['¡Hola! 👋 Contame qué necesitás o elegí una opción de abajo.'],
+     a:[], menu:true}
+  ];
+
+  /* Apps reseñadas en el blog: palabras de la necesidad + nombre de la app.
+     r = review en el blog (siempre), p = link para probarla (afiliado, si lo hay). */
+  var R = B+'2026/';
+  var APPS = [
+    {id:'fireflies', n:'Fireflies.ai', e:'🎙️', d:'graba, transcribe y resume tus reuniones de Zoom, Meet o Teams, y te deja las tareas anotadas',
+     k:['fireflies','reunion','reuniones','transcribir','transcripcion','grabar reunion','acta','minuta','zoom','meet','teams','tomar notas'],
+     r:R+'08/20/probamos-fireflies-ai-te-libera-de-tomar-notas-o-es-una-ia-mas-en-la-reunion-review-rindex/', p:'https://fireflies.ai/?fpr=rindex53'},
+    {id:'taskade', n:'Taskade', e:'🗂️', d:'ordena tareas, listas y proyectos con IA, solo o en equipo',
+     k:['taskade','tareas','tarea','pendientes','organizar','organizarme','to do','lista de tareas','proyecto','proyectos','equipo'],
+     r:R+'08/23/probamos-taskade-te-ordena-la-cabeza-o-es-una-app-mas-review-rindex/', p:'https://www.taskade.com/?via=jdnz86'},
+    {id:'motion', n:'Motion', e:'🗓️', d:'te arma la agenda solo: acomoda tareas y reuniones en tu calendario según prioridades',
+     k:['motion','agenda','calendario de trabajo','planificar','planificacion','organizar el dia','turnos','horarios','prioridades'],
+     r:R+'08/26/probamos-motion-te-organiza-el-dia-o-solo-te-complica-la-agenda-review-rindex/', p:'https://motion.so/?ref=stefania'},
+    {id:'rytr', n:'Rytr', e:'✍️', d:'te escribe textos, mails, descripciones de productos y posts en segundos',
+     k:['rytr','escribir','redactar','redaccion','textos','texto','copy','descripcion','descripciones','posteos','posts','publicaciones'],
+     r:R+'08/26/probamos-rytr-te-salva-la-redaccion-diaria-de-tu-pyme-review-rindex/', p:'https://rytr.me?via=stefania'},
+    {id:'make', n:'Make.com', e:'🔗', d:'conecta tus apps y automatiza tareas repetitivas sin programar',
+     k:['make','make com','integromat','conectar apps','integrar','integracion','tareas repetitivas','flujos','workflow','zapier'],
+     r:R+'08/28/probamos-make-com-le-podes-delegar-de-verdad-las-tareas-repetitivas-review-rindex/', p:'https://www.make.com/en/register?pc=rindexia'},
+    {id:'manychat', n:'ManyChat', e:'💬', d:'responde solo los mensajes y comentarios de WhatsApp e Instagram',
+     k:['manychat','whatsapp','instagram','mensajes automaticos','responder mensajes','dm','comentarios','bot de whatsapp','chatbot de instagram'],
+     r:R+'09/10/probamos-manychat-te-contesta-el-whatsapp-por-vos-o-solo-complica-el-chat-review-rindex/', p:'https://manychat.partnerlinks.io/rk1mvw6ucyry'},
+    {id:'tidio', n:'Tidio', e:'🌐', d:'pone un chat con IA en tu página web para atender consultas aunque no estés',
+     k:['tidio','chat web','chat en la web','chat en vivo','pagina web','sitio web','atencion al cliente','soporte','chatbot web'],
+     r:R+'09/10/probamos-tidio-te-atiende-el-chat-de-la-web-solo-o-igual-tenes-que-estar-pendiente-review-rindex/', p:'https://affiliate.tidio.com/whjguctjylk6'},
+    {id:'fyxer', n:'Fyxer', e:'📥', d:'ordena tu bandeja de entrada y te deja borradores de respuesta listos',
+     k:['fyxer','mails','bandeja de entrada','gmail','outlook','emails','responder mails','correos'],
+     r:R+'09/14/probamos-fyxer-le-podes-delegar-tu-bandeja-de-entrada-de-verdad-review-rindex/'},
+    {id:'pipedrive', n:'Pipedrive', e:'📈', d:'un CRM simple para seguir a cada cliente y cada venta sin que se te escape ninguna',
+     k:['pipedrive','crm','ventas','vendedores','seguimiento de clientes','clientes','embudo','prospectos','leads'],
+     r:R+'09/15/probamos-pipedrive-le-podes-meter-orden-a-las-ventas-o-es-un-excel-mas-caro-review-rindex/'},
+    {id:'zohocrm', n:'Zoho CRM', e:'🤝', d:'un CRM con plan gratis para ordenar clientes y ventas',
+     k:['zoho crm','crm gratis','crm gratuito'],
+     r:R+'11/05/probamos-zoho-crm-te-ordena-las-ventas-gratis-o-es-demasiado-sistema-para-tu-pyme-review-rindex/', p:'https://go.zoho.com/YZ4P'},
+    {id:'systeme', n:'Systeme.io', e:'🛒', d:'arma tu tienda, cursos, embudos de venta y mails en un solo lugar',
+     k:['systeme','systeme io','vender online','online','vender cursos','cursos online','membresia','tienda online','curso online','cursos','embudo de ventas','landing','email marketing'],
+     r:R+'09/23/probamos-systeme-io-podes-vender-online-sin-pagar-cinco-apps-distintas-review-rindex/', p:'https://systeme.io/es?sa=sa028034606791a9c1a83cb8a9bf0767686db646bc'},
+    {id:'zohobooks', n:'Zoho Books', e:'📒', d:'lleva las cuentas de la pyme: ingresos, gastos, bancos e informes',
+     k:['zoho books','contabilidad','cuentas','libros contables','sistema contable','conciliacion','balance','administracion'],
+     r:R+'10/13/probamos-zoho-books-te-ordena-las-cuentas-de-la-pyme-sin-pagar-un-sistema-caro-review-rindex/', p:'https://go.zoho.com/NqLO'},
+    {id:'zohoinvoice', n:'Zoho Invoice', e:'🧾', d:'arma presupuestos y facturas y te avisa a quién cobrarle',
+     k:['zoho invoice','factura','facturas','facturar','presupuesto','presupuestos','cobranza','cobrar a clientes','recordatorio de pago'],
+     r:R+'11/05/probamos-zoho-invoice-podes-facturar-y-cobrar-gratis-sin-perseguir-a-nadie-review-rindex/', p:'https://go.zoho.com/W0aJ'},
+    {id:'gamma', n:'Gamma', e:'✨', d:'te arma presentaciones, documentos y hasta una web a partir de una idea',
+     k:['gamma','presentacion','presentaciones','diapositivas','slides','power point','powerpoint','pagina simple'],
+     r:R+'10/29/probamos-gamma-presentaciones-documentos-web-review-rindex/'},
+    {id:'magicslides', n:'MagicSlides', e:'🪄', d:'convierte un texto o un PDF en una presentación en segundos',
+     k:['magicslides','magic slides','presentacion desde pdf','google slides'],
+     r:R+'09/30/magicslides-te-arma-la-presentacion-mientras-tomas-un-mate-review-rindex/', p:'https://www.magicslides.app/?via=stefania'},
+    {id:'synthesia', n:'Synthesia', e:'🎬', d:'hace videos con un presentador virtual, sin ponerte frente a la cámara',
+     k:['synthesia','video','videos','avatar','presentador','capacitacion','tutorial en video'],
+     r:R+'10/13/probamos-synthesia-podes-tener-videos-con-presentador-sin-ponerte-frente-a-la-camara-review-rindex/', p:'https://www.synthesia.io?via=stefania'},
+    {id:'elevenlabs', n:'ElevenLabs', e:'🔊', d:'convierte texto en voz que suena a persona real, para videos, audios o locuciones',
+     k:['elevenlabs','eleven labs','voz','voces','locucion','locutor','audio','texto a voz','doblaje','podcast'],
+     r:R+'10/29/probamos-elevenlabs-voz-con-ia-review-rindex/', p:'https://try.elevenlabs.io/43qs6wrslonq'}
+  ];
+  APPS.forEach(function(ap){
+    L['rev_'+ap.id] = {t:'📖 Leer la review de '+ap.n, u:ap.r};
+    var acc = ['rev_'+ap.id];
+    if(ap.p){ L['try_'+ap.id] = {t:ap.e+' Probar '+ap.n, u:ap.p}; acc.push('try_'+ap.id); }
+    acc.push('todas');
+    TEMAS.push({id:'app-'+ap.id, k:ap.k, app:true,
+      r:[ap.e+' Para eso te recomiendo <b>'+ap.n+'</b>: '+ap.d+'.',
+         'En la review te contamos cómo funciona, cuánto sale y si vale la pena para una pyme.'],
+      a:acc});
+  });
+
+  var CHIPS = [
+    {t:'💸 Calcular un sueldo', id:'sueldo'},
+    {t:'🧾 Monotributo', id:'monotributo'},
+    {t:'⚖️ Despido', id:'despido'},
+    {t:'🗓️ Vencimientos', id:'vencimientos'},
+    {t:'🎁 Aguinaldo', id:'aguinaldo'},
+    {t:'📊 Costos de mi negocio', id:'costos'},
+    {t:'🗂️ Convertir archivos', id:'conversor'},
+    {t:'🤖 Apps con IA', id:'ia'},
+    {t:'✉️ Hablar con alguien', id:'contacto'}
+  ];
+
+  var chat = document.getElementById('chat'), scroll = document.getElementById('scroll');
+  var chipsEl = document.getElementById('chips'), form = document.getElementById('form'), txt = document.getElementById('txt');
+
+  function norm(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[¿?¡!.,;:()"]/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function esc(s){ return s.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function down(){ scroll.scrollTop = scroll.scrollHeight; }
+  function contar(path){
+    try{ if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({path:'asistente/'+path, title:'asistente', event:true}); } }catch(e){}
+  }
+
+  function addUser(text){
+    var d=document.createElement('div'); d.className='msg user';
+    d.innerHTML='<div class="bubble">'+esc(text)+'</div>';
+    chat.appendChild(d); down();
+  }
+  function addBot(parrafos, acciones){
+    var d=document.createElement('div'); d.className='msg bot';
+    var html='<img src="../assets/logo-rindex.png" alt=""><div class="bubble">'
+      + parrafos.map(function(p){return '<p>'+p+'</p>';}).join('');
+    if(acciones && acciones.length){
+      html+='<div class="actions">'+acciones.map(function(key,i){
+        var l=L[key]; var ext = l.u.indexOf('rindexia.com')===-1 || l.u.indexOf('herramientas.')!==-1;
+        return '<a class="'+(i===0?'main':'sec')+'" href="'+l.u+'"'+(ext?' target="_blank" rel="noopener"':'')
+          +' data-k="'+key+'">'+l.t+'</a>';
+      }).join('')+'</div>';
+    }
+    d.innerHTML=html+'</div>';
+    chat.appendChild(d); down();
+  }
+  function typing(cb){
+    var d=document.createElement('div'); d.className='msg bot typing';
+    d.innerHTML='<img src="../assets/logo-rindex.png" alt=""><div class="bubble"><span></span><span></span><span></span></div>';
+    chat.appendChild(d); down();
+    setTimeout(function(){ d.remove(); cb(); }, 550);
+  }
+
+  function buscar(text){
+    var n=' '+norm(text)+' ', mejor=null, puntos=0;
+    TEMAS.forEach(function(t){
+      var p=0;
+      t.k.forEach(function(k){
+        var kk=norm(k);
+        if(n.indexOf(' '+kk+' ')!==-1) p += kk.split(' ').length>1 ? 3 : 2;
+        else if(kk.length>=5 && n.indexOf(kk)!==-1) p += 1;
+      });
+      /* los saludos y agradecimientos solo ganan si no hay otro tema */
+      if(t.menu && p>0) p = 0.5;
+      /* el tema general de apps pierde contra una app puntual */
+      if(t.id==='ia') p = p*0.6;
+      if(p>puntos){ puntos=p; mejor=t; }
+    });
+    return mejor;
+  }
+
+  function responder(tema){
+    typing(function(){
+      if(!tema){
+        addBot(['Mmm, no estoy seguro de haberte entendido 🤔',
+                'Probá con otras palabras (por ejemplo "monotributo", "despido" o "sueldo de comercio") o elegí una opción de abajo. Si es algo más puntual, escribinos.'],
+               ['todas','contacto']);
+        contar('sin-respuesta');
+        return;
+      }
+      addBot(tema.r, tema.a);
+      contar(tema.id);
+    });
+  }
+
+  function enviar(text){
+    text=(text||'').trim(); if(!text) return;
+    addUser(text); txt.value='';
+    responder(buscar(text));
+  }
+
+  CHIPS.forEach(function(c){
+    var b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=c.t;
+    b.addEventListener('click',function(){
+      addUser(c.t);
+      responder(TEMAS.filter(function(t){return t.id===c.id;})[0]);
+    });
+    chipsEl.appendChild(b);
+  });
+  form.addEventListener('submit',function(e){ e.preventDefault(); enviar(txt.value); });
+  chat.addEventListener('click',function(e){
+    var a=e.target.closest('a[data-k]'); if(a) contar('click/'+a.getAttribute('data-k'));
+  });
+
+  /* Modo embebido (?embed=1): sin cabecera, para mostrarlo dentro del blog más adelante */
+  try{ if(new URLSearchParams(location.search).get('embed')==='1') document.body.classList.add('embed'); }catch(e){}
+
+  /* Bienvenida */
+  addBot(['¡Hola! 👋 Soy el asistente de <b>Rindex</b>.',
+          'Te ayudo a encontrar la herramienta gratis justa para tu sueldo, tu monotributo o tu negocio. Escribí tu consulta o elegí una opción de abajo 👇']);
+
+  /* Si llega con ?q=consulta (desde el blog o redes), la responde directo */
+  try{
+    var q=new URLSearchParams(location.search).get('q');
+    if(q) setTimeout(function(){ enviar(q.slice(0,300)); }, 400);
+  }catch(e){}
+})();
+</script>
+<script data-goatcounter="https://rindex.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
